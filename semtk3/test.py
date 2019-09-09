@@ -1,4 +1,5 @@
 import semtk3
+from semtk3 import SEMTK3_CONN_MODEL
 
 #
 # Not done yet
@@ -40,9 +41,30 @@ if __name__ == '__main__':
     print(table.get_rows())
     
     #
-    # ingest
+    # ingest async with override
     #
+    TEST_CONN_STR = '''{
+        "name": "Paul Test v-dev",
+        "domain": "",
+        "enableOwlImports": true,
+        "model": [
+            {
+                "type": "virtuoso",
+                "url": "http://vesuvius-dev.crd.ge.com:2420",
+                "graph": "http://paultest"
+            }
+        ],
+        "data": [
+            {
+                "type": "virtuoso",
+                "url": "http://vesuvius-dev.crd.ge.com:2420",
+                "graph": "http://paultest"
+            }
+        ]
+    }'''
+    OWL_PATH = r'C:\Users\200001934\workspace-kepler\Lighting\OwlModels\Lighting.owl'
+    semtk3.upload_owl(OWL_PATH, TEST_CONN_STR, "dba2", "dba")
     
     # pec here
-    # large async
+    # what 
     #semtk3.ingest_by_id(nodegroup_id, csv_str, override_conn_json)

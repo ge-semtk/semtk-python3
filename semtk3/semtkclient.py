@@ -87,13 +87,22 @@ class SemTkClient(restclient.RestClient):
         return str(f)
     
     
-        
-    def post_to_simple(self, endpoint, dataObj={}):
+    def post_to_status(self, endpoint, dataObj={}, files=None):
         ''' 
             returns dict - the simple results
                            which can be used as a regular dict, or with error-handling get_simple_field*() methods
         '''
-        content_str = self.post(endpoint, dataObj)
+        content_str = self.post(endpoint, dataObj=dataObj, files=files)
+        content = json.loads(content_str)
+        self.__check_status(content)
+        return content
+        
+    def post_to_simple(self, endpoint, dataObj={}, files=None):
+        ''' 
+            returns dict - the simple results
+                           which can be used as a regular dict, or with error-handling get_simple_field*() methods
+        '''
+        content_str = self.post(endpoint, dataObj=dataObj, files=files)
         content = json.loads(content_str)
         self.__check_simple(content)
         return content["simpleresults"]
@@ -111,18 +120,16 @@ class SemTkClient(restclient.RestClient):
         table = semtktable.SemtkTable(content["table"]["@table"])
         return table
     
-    def post_to_record_process(self, endpoint, dataObj={}):
+    def post_to_record_process(self, endpoint, dataObj={}, files=None):
         ''' 
             returns dict - the table 
             raises RestException
         '''
-        content_str = self.post(endpoint, dataObj)
+        content_str = self.post(endpoint, dataObj=dataObj, files=files)
         content = json.loads(content_str)
 
         self.__check_record_process(content)
         
         record_process = content["recordProcessResults"]
         return record_process
-        
-        
     

@@ -6,6 +6,7 @@ import csv
 import io
 import json
 from dateutil import parser      # python-dateutil and six
+import re
 
 JSON_KEY_COL_NAMES = "col_names"
 JSON_KEY_COL_TYPES = "col_type"
@@ -110,7 +111,7 @@ class SemtkTable():
         for row in range(self.get_num_rows()):
             cw.writerow(self.dict[JSON_KEY_ROWS][row])
 
-        return si.getvalue()
+        return re.sub("[\r\n]+", "\n", si.getvalue())  # ghetto improper use of io.StringIO
     
     def get_rows(self):
         ''' returns array of arrays '''

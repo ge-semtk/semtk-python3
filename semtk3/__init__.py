@@ -1,8 +1,10 @@
 from . import util
 from . import nodegroupexecclient
+from . import queryclient
 from . import resultsclient
 from . import statusclient
 from . import runtimeconstraint
+from . import sparqlconnection
 
 import sys
 
@@ -11,6 +13,10 @@ import sys
 SEMTK3_HOST = "<unset>"
 SEMTK3_CONN_OVERRIDE=None
 
+SEMTK3_CONN_MODEL = sparqlconnection.SparqlConnection.MODEL
+SEMTK3_CONN_DATA = sparqlconnection.SparqlConnection.DATA
+
+QUERY_PORT = "12050"
 STATUS_PORT = "12051"
 RESULTS_PORT = "12052"
 NODEGROUP_EXEC_PORT = "12058"
@@ -45,24 +51,36 @@ def get_constraints_by_id(nodegroup_id):
     table = nge_client.exec_get_runtime_constraints_by_id(nodegroup_id)
     return table
 
-def get_filter_values_by_id(nodegroup_id, target_obj_sparql_id, override_conn_json=None, limit_override=None, offset_override=None, runtime_constraints=None, edc_constraints=None, flags=None ):
+def get_filter_values_by_id(nodegroup_id, target_obj_sparql_id, override_conn_json_str=None, limit_override=None, offset_override=None, runtime_constraints=None, edc_constraints=None, flags=None ):
     nge_client = __get_nge_client()
    
-    table = nge_client.exec_async_dispatch_filter_by_id(nodegroup_id, target_obj_sparql_id, override_conn_json, limit_override, offset_override, runtime_constraints, edc_constraints, flags)
+    table = nge_client.exec_async_dispatch_filter_by_id(nodegroup_id, target_obj_sparql_id, override_conn_json_str, limit_override, offset_override, runtime_constraints, edc_constraints, flags)
     return table
 
 def build_constraint(sparql_id, operator, operand_list):
     ret = runtimeconstraint.RuntimeConstraint(sparql_id, operator, operand_list)
     return ret
 
-def ingest_by_id(nodegroup_id, csv_str, override_conn_json=None):
+def ingest_by_id(nodegroup_id, csv_str, override_conn_json_str=None):
     nge_client = __get_nge_client()
    
-    table = nge_client.exec_async_ingest_from_csv(nodegroup_id, csv_str, override_conn_json)
+    table = nge_client.exec_async_ingest_from_csv(nodegroup_id, csv_str, override_conn_json_str)
     return table
+
+def upload_owl(owl_file_path, conn_json_str, user_name, password, model_or_data=SEMTK3_CONN_MODEL, conn_index=0):
+    query_client = __get_query_client(conn_json_str, user_name, password)
+    return query_client.exec_upload_owl(owl_file_path, model_or_data, conn_index)
+
+def query(query, conn_json_str, model_or_data=SEMTK3_CONN_DATA, conn_index=0):
+    query_client = __get_query_client(conn_json_str)
+    return query_client.exec_query(query, model_or_data, conn_index)
     
 def __get_nge_client():
     status_client = statusclient.StatusClient(SEMTK3_HOST+ ":" + STATUS_PORT)
     results_client = resultsclient.ResultsClient(SEMTK3_HOST+ ":" + RESULTS_PORT)
     return nodegroupexecclient.NodegroupExecClient(SEMTK3_HOST + ":" + NODEGROUP_EXEC_PORT, status_client, results_client)
+
+def __get_query_client(conn_json_str, user_name=None, password=None):
+    conn = sparqlconnection.SparqlConnection(conn_json_str, user_name, password)
+    return queryclient.QueryClient( (SEMTK3_HOST+ ":" + QUERY_PORT), conn)
     

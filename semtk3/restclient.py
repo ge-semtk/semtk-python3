@@ -57,7 +57,7 @@ class RestClient(object):
         # raise exception, adding URL and last content
         raise RestException(self.lastURL + ": " + msg + "\nDetails:\n" + c)
         
-    def post(self, endpoint, dataObj={}):
+    def post(self, endpoint, dataObj={}, files=None):
         ''' basic POST 
                endpoint - string
                dataObj - dict will be converted to json for the post  (default {})
@@ -65,16 +65,22 @@ class RestClient(object):
                returns string - response content
                raises RestException if response is not OK
         '''
-        data_str = json.dumps(dataObj)
+        
+        if (files):
+            data = dataObj 
+            headers = None
+        else :
+            data = json.dumps(dataObj)
+            headers = self.headers
+        
         self.lastURL = self.baseURL + endpoint
 
         sys.stderr.write("Posting to " + self.lastURL + "...\n")
-        response = requests.request("POST", self.lastURL, data=data_str, headers=self.headers)
+        response = requests.request("POST", self.lastURL, data=data, headers=headers, files=files)
 
         if response.ok:
             self.lastContent = response.content
             return response.content
         else:
             self.raise_exception("failed with reason: " + response.text)
-        
-    
+            
