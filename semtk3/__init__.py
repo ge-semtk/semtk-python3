@@ -1,5 +1,6 @@
 from . import util
 from . import nodegroupexecclient
+from . import oinfoclient
 from . import queryclient
 from . import resultsclient
 from . import statusclient
@@ -7,6 +8,7 @@ from . import runtimeconstraint
 from . import sparqlconnection
 
 import sys
+from semtk3.oinfoclient import OInfoClient
 
 # pip install requests
 
@@ -19,9 +21,18 @@ SEMTK3_CONN_DATA = sparqlconnection.SparqlConnection.DATA
 QUERY_PORT = "12050"
 STATUS_PORT = "12051"
 RESULTS_PORT = "12052"
+OINFO_PORT = "12057"
 NODEGROUP_EXEC_PORT = "12058"
 
 OP_MATCHES = runtimeconstraint.RuntimeConstraint.OP_MATCHES
+
+#   This is the main setup for semtk3
+#   
+#   All "normal" calls can be made through this object.
+#
+#
+#
+#
 
 #
 # Give extra error about missing dependencies
@@ -74,6 +85,12 @@ def upload_owl(owl_file_path, conn_json_str, user_name, password, model_or_data=
 def query(query, conn_json_str, model_or_data=SEMTK3_CONN_DATA, conn_index=0):
     query_client = __get_query_client(conn_json_str)
     return query_client.exec_query(query, model_or_data, conn_index)
+
+def get_oinfo_uri_label_table(conn_json_str):
+    oinfo_client = __get_oinfo_client(conn_json_str)
+    return oinfo_client.exec_get_uri_label_table()
+
+##############################
     
 def __get_nge_client():
     status_client = statusclient.StatusClient(SEMTK3_HOST+ ":" + STATUS_PORT)
@@ -83,4 +100,7 @@ def __get_nge_client():
 def __get_query_client(conn_json_str, user_name=None, password=None):
     conn = sparqlconnection.SparqlConnection(conn_json_str, user_name, password)
     return queryclient.QueryClient( (SEMTK3_HOST+ ":" + QUERY_PORT), conn)
+
+def __get_oinfo_client(conn_json_str):
+    return oinfoclient.OInfoClient( (SEMTK3_HOST+ ":" + OINFO_PORT), conn_json_str)
     

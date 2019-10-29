@@ -11,6 +11,7 @@ from semtk3 import SEMTK3_CONN_MODEL
 
 if __name__ == '__main__':
     semtk3.set_host("http://localhost")
+    
     nodegroup_id="Lighting Weekly Units Sold"
     
     # 
@@ -44,27 +45,26 @@ if __name__ == '__main__':
     # ingest async with override
     #
     TEST_CONN_STR = '''{
-        "name": "Paul Test v-dev",
-        "domain": "",
-        "enableOwlImports": true,
-        "model": [
-            {
-                "type": "virtuoso",
-                "url": "http://vesuvius-dev.crd.ge.com:2420",
-                "graph": "http://paultest"
-            }
-        ],
-        "data": [
-            {
-                "type": "virtuoso",
-                "url": "http://vesuvius-dev.crd.ge.com:2420",
-                "graph": "http://paultest"
-            }
-        ]
+        "name":"daDemo v-test",
+        "domain":"",
+        "enableOwlImports":true,
+        "model":[{
+            "type":"virtuoso",
+            "url":"http://vesuvius-test.crd.ge.com:2420",
+            "graph":"http://paultest/model"
+        }],
+        "data":[{
+            "type":"virtuoso",
+            "url":"http://vesuvius-test.crd.ge.com:2420",
+            "graph":"http://paultest/data"
+        }]
     }'''
-    OWL_PATH = r'C:\Users\200001934\workspace-kepler\Lighting\OwlModels\Lighting.owl'
-    semtk3.upload_owl(OWL_PATH, TEST_CONN_STR, "dba2", "dba")
     
-    # pec here
-    # what 
-    #semtk3.ingest_by_id(nodegroup_id, csv_str, override_conn_json)
+    # upload owl
+    OWL_PATH = r'C:\Users\200001934\workspace-kepler\Lighting\OwlModels\Lighting.owl'
+    semtk3.upload_owl(OWL_PATH, TEST_CONN_STR, "dba", "dba")
+    
+    # sample get oinfo table
+    table = semtk3.get_oinfo_uri_label_table(TEST_CONN_STR)
+    print(table.get_csv_string())
+    
