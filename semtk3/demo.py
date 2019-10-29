@@ -61,8 +61,8 @@ if __name__ == '__main__':
     }'''
     
     # upload owl
-    OWL_PATH = r'C:\Users\200001934\workspace-kepler\Lighting\OwlModels\Lighting.owl'
-    semtk3.upload_owl(OWL_PATH, TEST_CONN_STR, "dba", "dba")
+    #OWL_PATH = r'C:\Users\200001934\workspace-kepler\Lighting\OwlModels\Lighting.owl'
+    #semtk3.upload_owl(OWL_PATH, TEST_CONN_STR, "dba", "dba")
     
     # sample get oinfo table
     table = semtk3.get_oinfo_uri_label_table(TEST_CONN_STR)
