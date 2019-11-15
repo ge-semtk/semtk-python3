@@ -1,4 +1,5 @@
 from . import util
+from . import nodegroupclient
 from . import nodegroupexecclient
 from . import oinfoclient
 from . import queryclient
@@ -23,6 +24,7 @@ STATUS_PORT = "12051"
 RESULTS_PORT = "12052"
 OINFO_PORT = "12057"
 NODEGROUP_EXEC_PORT = "12058"
+NODEGROUP_PORT = "12059"
 
 OP_MATCHES = runtimeconstraint.RuntimeConstraint.OP_MATCHES
 
@@ -90,6 +92,19 @@ def get_oinfo_uri_label_table(conn_json_str):
     oinfo_client = __get_oinfo_client(conn_json_str)
     return oinfo_client.exec_get_uri_label_table()
 
+#
+# params:
+#    class_uri - class of node to add
+#    sparql_id - optional sparql id
+#
+# ret["sparqlID"] will be sparqlID of new node
+# ret["nodegroup"] will be nodegroup json
+#
+def create_nodegroup(conn_json_str, class_uri, sparql_id=None):
+    ng_client = __get_nodegroup_client()
+    ret = ng_client.exec_create_nodegroup(conn_json_str, class_uri, sparql_id)
+    return ret 
+
 ##############################
     
 def __get_nge_client():
@@ -103,4 +118,9 @@ def __get_query_client(conn_json_str, user_name=None, password=None):
 
 def __get_oinfo_client(conn_json_str):
     return oinfoclient.OInfoClient( (SEMTK3_HOST+ ":" + OINFO_PORT), conn_json_str)
+
+def __get_nodegroup_client():
+    status_client = statusclient.StatusClient(SEMTK3_HOST+ ":" + STATUS_PORT)
+    results_client = resultsclient.ResultsClient(SEMTK3_HOST+ ":" + RESULTS_PORT)
+    return nodegroupclient.NodegroupClient(SEMTK3_HOST + ":" + NODEGROUP_PORT, status_client, results_client)
     
