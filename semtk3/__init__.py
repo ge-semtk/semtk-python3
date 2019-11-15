@@ -3,6 +3,7 @@ from . import nodegroupclient
 from . import nodegroupexecclient
 from . import oinfoclient
 from . import queryclient
+from . import hiveclient
 from . import resultsclient
 from . import statusclient
 from . import runtimeconstraint
@@ -22,6 +23,7 @@ SEMTK3_CONN_DATA = sparqlconnection.SparqlConnection.DATA
 QUERY_PORT = "12050"
 STATUS_PORT = "12051"
 RESULTS_PORT = "12052"
+HIVE_PORT = "12055"
 OINFO_PORT = "12057"
 NODEGROUP_EXEC_PORT = "12058"
 NODEGROUP_PORT = "12059"
@@ -105,6 +107,14 @@ def create_nodegroup(conn_json_str, class_uri, sparql_id=None):
     ret = ng_client.exec_create_nodegroup(conn_json_str, class_uri, sparql_id)
     return ret 
 
+def override_ports(hive_port=None):
+    global HIVE_PORT
+    if hive_port: HIVE_PORT = hive_port
+
+def query_hive(hiveserver_host, hiveserver_port, hiveserver_database, query):
+    hive_client = __get_hive_client(hiveserver_host, hiveserver_port, hiveserver_database)
+    return hive_client.exec_query_hive(query)
+
 ##############################
     
 def __get_nge_client():
@@ -123,4 +133,8 @@ def __get_nodegroup_client():
     status_client = statusclient.StatusClient(SEMTK3_HOST+ ":" + STATUS_PORT)
     results_client = resultsclient.ResultsClient(SEMTK3_HOST+ ":" + RESULTS_PORT)
     return nodegroupclient.NodegroupClient(SEMTK3_HOST + ":" + NODEGROUP_PORT, status_client, results_client)
-    
+
+def __get_hive_client(hiveserver_host, hiveserver_port, hiveserver_database):
+    status_client = statusclient.StatusClient(SEMTK3_HOST+ ":" + STATUS_PORT)
+    results_client = resultsclient.ResultsClient(SEMTK3_HOST+ ":" + RESULTS_PORT)
+    return hiveclient.HiveClient( (SEMTK3_HOST+ ":" + HIVE_PORT), hiveserver_host, hiveserver_port, hiveserver_database, status_client, results_client)    
