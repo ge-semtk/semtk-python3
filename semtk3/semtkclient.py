@@ -13,7 +13,7 @@ from . import semtktable
 
 class SemTkClient(restclient.RestClient):
     
-    def __check_status(self, content):
+    def _check_status(self, content):
         ''' check content is a dict, has status=="success"
         '''
         if not isinstance(content, dict):
@@ -25,18 +25,18 @@ class SemTkClient(restclient.RestClient):
         if content["status"] != "success":
             self.raise_exception("Rest service call did not succeed ")
 
-    def __check_simple(self, content):
+    def _check_simple(self, content):
         ''' perform all checks on content through checking for simpleresults 
         '''
-        self.__check_status(content)
+        self._check_status(content)
         
         if "simpleresults" not in content.keys():
             self.raise_exception("Rest service did not return simpleresults")
             
-    def __check_table(self, content):
+    def _check_table(self, content):
         ''' perform all checks on content through checking for table 
         '''
-        self.__check_status(content)
+        self._check_status(content)
         
         if  "table" not in content.keys():
             self.raise_exception("Rest service did not return table")
@@ -44,11 +44,11 @@ class SemTkClient(restclient.RestClient):
         if "@table" not in content["table"].keys():
             self.raise_exception("Rest service table does not contain @table")
     
-    def __check_record_process(self, content):
+    def _check_record_process(self, content):
         ''' perform all checks on content through checking for table 
         '''
         try:
-            self.__check_status(content)
+            self._check_status(content)
         except Exception as e:
             print >> sys.stderr, content["recordProcessResults"]["errorTable"]
             raise e
@@ -94,7 +94,7 @@ class SemTkClient(restclient.RestClient):
         '''
         content_str = self.post(endpoint, dataObj=dataObj, files=files)
         content = json.loads(content_str)
-        self.__check_status(content)
+        self._check_status(content)
         return content
         
     def post_to_simple(self, endpoint, dataObj={}, files=None):
@@ -104,7 +104,7 @@ class SemTkClient(restclient.RestClient):
         '''
         content_str = self.post(endpoint, dataObj=dataObj, files=files)
         content = json.loads(content_str)
-        self.__check_simple(content)
+        self._check_simple(content)
         return content["simpleresults"]
     
     def post_to_table(self, endpoint, dataObj={}):
@@ -115,7 +115,7 @@ class SemTkClient(restclient.RestClient):
         content_str = self.post(endpoint, dataObj)
         content = json.loads(content_str)
 
-        self.__check_table(content)
+        self._check_table(content)
         
         table = semtktable.SemtkTable(content["table"]["@table"])
         return table
@@ -128,7 +128,7 @@ class SemTkClient(restclient.RestClient):
         content_str = self.post(endpoint, dataObj=dataObj, files=files)
         content = json.loads(content_str)
 
-        self.__check_record_process(content)
+        self._check_record_process(content)
         
         record_process = content["recordProcessResults"]
         return record_process

@@ -1,14 +1,13 @@
-from . import semtkasyncclient
-
+from . import edcclient
 #
 # A client to HiveService
 #
-class HiveClient(semtkasyncclient.SemTkAsyncClient):
+class HiveClient(edcclient.EdcClient):
     
-    def __init__(self, serverURL, hiveserver_host, hiveserver_port, hiveserver_database):
+    def __init__(self, serverURL, hiveserver_host, hiveserver_port, hiveserver_database, status_client=None, results_client=None):
         ''' serverURL string - e.g. http://machine:12055
         '''
-        super(HiveClient, self).__init__(serverURL, "hiveService")
+        super(HiveClient, self).__init__(serverURL, "hiveService", status_client, results_client)
         self.hiveserverhost = hiveserver_host
         self.hiveserverport = hiveserver_port
         self.hiveserverdatabase = hiveserver_database

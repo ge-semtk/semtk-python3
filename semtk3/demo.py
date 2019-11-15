@@ -1,5 +1,4 @@
 import semtk3
-from semtk3 import SEMTK3_CONN_MODEL
 
 #
 # Not done yet
