@@ -1,2 +1,15 @@
 # semtk-python3
-python3 clients
+This package contains python3 clients to the SemTK services.
+
+## Build whl file
+```
+pip install wheel
+```
+```
+python3 setup.py sdist bdist_wheel
+```
+
+## Install whl file
+```
+python -m pip install /path/to/whl/file
+```
