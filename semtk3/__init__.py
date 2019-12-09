@@ -8,6 +8,7 @@ from . import resultsclient
 from . import statusclient
 from . import runtimeconstraint
 from . import sparqlconnection
+from . import semtkasyncclient
 
 import sys
 from semtk3.oinfoclient import OInfoClient
@@ -93,6 +94,17 @@ def query(query, conn_json_str, model_or_data=SEMTK3_CONN_DATA, conn_index=0):
 def get_oinfo_uri_label_table(conn_json_str):
     oinfo_client = __get_oinfo_client(conn_json_str)
     return oinfo_client.exec_get_uri_label_table()
+
+def get_table(jobid):
+    async_client = semtkasyncclient.SemTkAsyncClient("http://nothing");
+    async_client.poll_until_success(jobid);
+    return async_client.post_get_table_results(jobid);
+
+def get_status_client():
+    return statusclient.StatusClient(SEMTK3_HOST+ ":" + STATUS_PORT)
+
+def get_results_client():
+    return resultsclient.ResultsClient(SEMTK3_HOST+ ":" + RESULTS_PORT)
 
 #
 # params:

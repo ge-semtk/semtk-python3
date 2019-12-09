@@ -2,3 +2,4 @@
 .pydevproject
 *.pyc
 build/
+semtk_python3.egg-info
