@@ -13,22 +13,6 @@ Alternatively, use the wheel file provided in `semtk-python3/dist/`
 ```
 python -m pip install /path/to/whl/file
 ```
-## Sample code 
+## Sample usage 
 
-To execute a query via a stored nodegroup:
-```
-```
-
-To execute a query against the SemTK Hive Service:
-```
-import semtk3
-import numpy as np
-
-semtk3.set_host("http://semtk-service-host")
-
-hive_query=""
-table=semtk3.query_hive("hive-server-host.crd.ge.com", "10000", "databasename", hive_query)
-   
-# convert to numpy array
-npa = np.array(table.get_rows())
-```
+For sample usage, see demo.py
