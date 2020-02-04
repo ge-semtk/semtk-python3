@@ -67,3 +67,17 @@ if __name__ == '__main__':
     table = semtk3.get_oinfo_uri_label_table(TEST_CONN_STR)
     print(table.get_csv_string())
     
+    
+    #
+    # Execute query against SemTK HiveService
+    #
+    # import semtk3
+    # import numpy as np
+    #
+    # semtk3.set_host("http://semtk-service-host")
+    #
+    # hive_query=""
+    # table=semtk3.query_hive("hive-server-host.crd.ge.com", "10000", "databasename", hive_query)
+    #   
+    # convert to numpy array
+    # npa = np.array(table.get_rows())
