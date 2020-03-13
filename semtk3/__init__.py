@@ -1,4 +1,5 @@
 from . import util
+from . import fdccacheclient
 from . import nodegroupclient
 from . import nodegroupexecclient
 from . import oinfoclient
@@ -9,6 +10,7 @@ from . import statusclient
 from . import runtimeconstraint
 from . import sparqlconnection
 from . import semtkasyncclient
+from . import semtktable
 
 import sys
 from semtk3.oinfoclient import OInfoClient
@@ -28,6 +30,7 @@ HIVE_PORT = "12055"
 OINFO_PORT = "12057"
 NODEGROUP_EXEC_PORT = "12058"
 NODEGROUP_PORT = "12059"
+FDCCACHE_PORT = "12068"
 
 OP_MATCHES = runtimeconstraint.RuntimeConstraint.OP_MATCHES
 
@@ -100,11 +103,16 @@ def get_table(jobid):
     async_client.poll_until_success(jobid);
     return async_client.post_get_table_results(jobid);
 
+def fdc_cache_bootstrap_table(conn_json_str, spec_id, bootstrap_table, max_age_sec):
+    cache_client = __get_fdc_cache_client()
+    cache_client.exec_cache_using_table_bootstrap(conn_json_str, spec_id, bootstrap_table, max_age_sec)
+    
 def get_status_client():
     return statusclient.StatusClient(SEMTK3_HOST+ ":" + STATUS_PORT)
 
 def get_results_client():
     return resultsclient.ResultsClient(SEMTK3_HOST+ ":" + RESULTS_PORT)
+
 
 #
 # params:
@@ -128,7 +136,11 @@ def query_hive(hiveserver_host, hiveserver_port, hiveserver_database, query):
     return hive_client.exec_query_hive(query)
 
 ##############################
-    
+def __get_fdc_cache_client():
+    status_client = statusclient.StatusClient(SEMTK3_HOST+ ":" + STATUS_PORT)
+    results_client = resultsclient.ResultsClient(SEMTK3_HOST+ ":" + RESULTS_PORT)
+    return fdccacheclient.FdcCacheClient(SEMTK3_HOST + ":" + FDCCACHE_PORT, status_client, results_client)
+
 def __get_nge_client():
     status_client = statusclient.StatusClient(SEMTK3_HOST+ ":" + STATUS_PORT)
     results_client = resultsclient.ResultsClient(SEMTK3_HOST+ ":" + RESULTS_PORT)

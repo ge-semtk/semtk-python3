@@ -130,14 +130,6 @@ class SemTkAsyncClient(semtkclient.SemTkClient):
             
     ######## these choose results/status clients if they exist   #######
     ######## otherwise use the version attached to self          #######
-            
-    def post_to_jobid(self, endpoint, dataObj={}):
-        ''' 
-            returns string jobid
-            raises errors otherwise
-        '''
-        simple_res = self.post_to_simple(endpoint, dataObj)
-        return self.get_simple_field_str(simple_res, "JobId")
     
     def post_get_table_results(self, jobid):
         ''' get table results using results, otherwise using self

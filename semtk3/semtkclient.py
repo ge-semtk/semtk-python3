@@ -133,3 +133,10 @@ class SemTkClient(restclient.RestClient):
         record_process = content["recordProcessResults"]
         return record_process
     
+    def post_to_jobid(self, endpoint, dataObj={}):
+        ''' 
+            returns string jobid
+            raises errors otherwise
+        '''
+        simple_res = self.post_to_simple(endpoint, dataObj)
+        return self.get_simple_field_str(simple_res, "JobId")

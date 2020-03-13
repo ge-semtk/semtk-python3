@@ -23,6 +23,24 @@ class SemtkTable():
         '''
         self.dict = table_dict
         
+    # create a table with no checking so far
+    #
+    # use it like this:   
+    #
+    #     from semtk3 import semtktable
+    #     table = semtktable(SemtkTable.create_table_dict(["col1", "col2"], ["string", "string"], [["a1", "a2"]["b1","b2]])
+    #
+    @staticmethod
+    def create_table_dict(col_names, col_types, rows):
+        d = {}
+        d[JSON_KEY_ROW_COUNT] = len(rows)
+        d[JSON_KEY_COL_COUNT] = len(col_names)
+        d[JSON_KEY_COL_NAMES] = col_names
+        d[JSON_KEY_COL_TYPES] = col_types
+        d[JSON_KEY_ROWS] = rows
+        return d
+        
+        
     def get_num_rows(self):
         return self.dict[JSON_KEY_ROW_COUNT]
     
