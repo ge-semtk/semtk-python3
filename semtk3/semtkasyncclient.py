@@ -83,6 +83,9 @@ class SemTkAsyncClient(semtkclient.SemTkClient):
 
     ######## the main externally used methods #######
     
+    #
+    # Use async jobID and results/status to get table
+    #
     def post_async_to_table(self, endpoint, dataObj={}):
         ''' 
             returns SemTkTable

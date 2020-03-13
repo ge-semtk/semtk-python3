@@ -1,4 +1,5 @@
 from . import semtkasyncclient
+from . import sparqlconnection
 
 class NodegroupExecClient(semtkasyncclient.SemTkAsyncClient):
     USE_NODEGROUP_CONN = "{\"name\": \"%NODEGROUP%\",\"domain\": \"%NODEGROUP%\",\"model\": [],\"data\": []}"
@@ -77,7 +78,20 @@ class NodegroupExecClient(semtkasyncclient.SemTkAsyncClient):
         payload = {}
         payload["nodegroupId"] = nodegroup_id
 
-        return self.post_to_table("getRuntimeConstraintsByNodeGroupID", payload)        
+        return self.post_to_table("getRuntimeConstraintsByNodeGroupID", payload)     
+    
+    def exec_dispatch_clear_graph(self, conn, model_or_data, index):
+        ''' execute clear graph
+            returns:  message,      
+                      some text   
+            throws: exception otherwise
+        '''
+        payload = {}
+        payload["serverType"] = conn.get_server_type(model_or_data, index)
+        payload["serverAndPort"] = conn.get_server_and_port(model_or_data, index)
+        payload["graph"] = conn.get_graph(model_or_data, index)
+
+        return self.post_async_to_table("dispatchClearGraph", payload)   
     
     def exec_async_ingest_from_csv(self, nodegroup_id, csv_str, override_conn_json=None):
         ''' nodegroup_id - from nodegroup store

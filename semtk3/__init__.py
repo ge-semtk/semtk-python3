@@ -57,6 +57,15 @@ for depend in ['requests']:
 def set_host(hostUrl):
     global SEMTK3_HOST
     SEMTK3_HOST = hostUrl
+
+#
+# returns a message string or raises failure exception
+#
+def clear_graph(sparql_conn, model_or_data, index):
+    nge_client = __get_nge_client()
+   
+    table = nge_client.exec_dispatch_clear_graph(sparql_conn, model_or_data, index)
+    return table.get_cell(0,0)
     
 def select_by_id(nodegroup_id, limit_override=0, offset_override=0, runtime_constraints=None, edc_constraints=None, flags=None ):
     nge_client = __get_nge_client()
