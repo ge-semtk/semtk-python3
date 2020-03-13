@@ -13,13 +13,13 @@ class FdcCacheClient(semtkasyncclient.SemTkAsyncClient):
     # Upload owl.
     # Default to model[0] graph in the connection
     #
-    def exec_cache_using_table_bootstrap(self, conn_json_str, spec_id, bootstrap_table, max_age_sec):
+    def exec_cache_using_table_bootstrap(self, conn_json_str, spec_id, bootstrap_table, recache_after_sec):
         
         payload = {
             "conn": conn_json_str,
             "specId": spec_id,
             "bootstrapTableJsonStr": bootstrap_table.to_json_str(),
-            "maxAgeSeconds": max_age_sec
+            "recacheAfterSec": recache_after_sec
         }
 
         job_id = self.post_to_jobid("cacheUsingTableBootstrap", payload)

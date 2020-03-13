@@ -103,9 +103,9 @@ def get_table(jobid):
     async_client.poll_until_success(jobid);
     return async_client.post_get_table_results(jobid);
 
-def fdc_cache_bootstrap_table(conn_json_str, spec_id, bootstrap_table, max_age_sec):
+def fdc_cache_bootstrap_table(conn_json_str, spec_id, bootstrap_table, recache_after_sec):
     cache_client = __get_fdc_cache_client()
-    cache_client.exec_cache_using_table_bootstrap(conn_json_str, spec_id, bootstrap_table, max_age_sec)
+    cache_client.exec_cache_using_table_bootstrap(conn_json_str, spec_id, bootstrap_table, recache_after_sec)
     
 def get_status_client():
     return statusclient.StatusClient(SEMTK3_HOST+ ":" + STATUS_PORT)
