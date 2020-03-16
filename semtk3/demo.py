@@ -1,5 +1,5 @@
 import semtk3
-from semtk3 import sparqlconnection
+
 #
 # Not done yet
 #   - override connections
@@ -59,8 +59,10 @@ if __name__ == '__main__':
         }]
     }'''
     
-    conn = sparqlconnection.SparqlConnection(TEST_CONN_STR)
-    semtk3.clear_graph(conn, sparqlconnection.SparqlConnection.MODEL, 0)
+    # this type of import cleans up code further:
+    from semtk3.sparqlconnection import SparqlConnection
+    
+    semtk3.clear_graph(TEST_CONN_STR, SparqlConnection.MODEL, 0)
     
     # upload owl
     #OWL_PATH = r'C:\Users\200001934\workspace-kepler\Lighting\OwlModels\Lighting.owl'

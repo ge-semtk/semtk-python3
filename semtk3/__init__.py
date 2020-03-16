@@ -61,7 +61,8 @@ def set_host(hostUrl):
 #
 # returns a message string or raises failure exception
 #
-def clear_graph(sparql_conn, model_or_data, index):
+def clear_graph(conn_json_str, model_or_data, index):
+    sparql_conn = sparqlconnection.SparqlConnection(conn_json_str)
     nge_client = __get_nge_client()
    
     table = nge_client.exec_dispatch_clear_graph(sparql_conn, model_or_data, index)
