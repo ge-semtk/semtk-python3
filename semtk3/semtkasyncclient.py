@@ -1,6 +1,7 @@
 from . import semtkclient
-import time
-import sys
+import logging
+
+semtk3_logger = logging.getLogger("semtk3")
 
 class SemTkAsyncClient(semtkclient.SemTkClient):
     
@@ -92,7 +93,7 @@ class SemTkAsyncClient(semtkclient.SemTkClient):
             raises errors otherwise
         '''
         jobid = self.post_to_jobid(endpoint, dataObj)
-        sys.stderr.write("jobid:  " + jobid + "\n")
+        semtk3_logger.debug("jobid:  " + jobid)
         self.poll_until_success(jobid)
         table = self.post_get_table_results(jobid)
         return table
@@ -107,7 +108,7 @@ class SemTkAsyncClient(semtkclient.SemTkClient):
         INCREMENT = 20
         
         percent_complete = self.post_wait_for_percent_or_msec(jobid, INCREMENT, MSEC)
-        sys.stderr.write("Percent complete:  " + str(percent_complete) + "%\n")
+        semtk3_logger.info("Percent complete:  " + str(percent_complete) + "%")
 
         # loop on percent complete calls
         while percent_complete < 100:
@@ -116,17 +117,14 @@ class SemTkAsyncClient(semtkclient.SemTkClient):
                 percent_complete = 100
             
             percent_complete = self.post_wait_for_percent_or_msec(jobid, percent_complete, MSEC)
-            sys.stderr.write("Percent complete:  " + str(percent_complete) + "%\n")
-            
-        sys.stderr.write("\n")
-        
+            semtk3_logger.info("Percent complete:  " + str(percent_complete) + "%")
+                    
         # throw exception on job failure
         if not self.post_get_status_boolean(jobid):
             msg = self.post_get_status_message(jobid)
             self.raise_exception("Job " + jobid + " failed: " + msg)
-            sys.stderr.write("FAILURE\n")
         else:
-            sys.stderr.write("SUCCESS\n")
+            semtk3_logger.debug("SUCCESS")
             
         # otherwise return quietly
         return   

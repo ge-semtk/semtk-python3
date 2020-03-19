@@ -1,4 +1,5 @@
 import semtk3
+import logging
 
 #
 # Not done yet
@@ -10,6 +11,12 @@ import semtk3
 
 if __name__ == '__main__':
     semtk3.set_host("http://localhost")
+    
+    #
+    # configure logging:   http://docs.python.org/3/howto/logging.html
+    # using:               https://docs.python.org/3/howto/logging-cookbook.html
+    #
+    logging.basicConfig(level=logging.INFO)
     
     nodegroup_id="Lighting Weekly Units Sold"
     

@@ -1,6 +1,8 @@
 import json
 import requests
-import sys
+import logging
+
+semtk3_logger = logging.getLogger("semtk3")
 
 # 
 # SETUP NOTES
@@ -75,7 +77,7 @@ class RestClient(object):
         
         self.lastURL = self.baseURL + endpoint
 
-        sys.stderr.write("Posting to " + self.lastURL + "...\n")
+        semtk3_logger.debug("Posting to " + self.lastURL + "...")
         response = requests.request("POST", self.lastURL, data=data, headers=headers, files=files)
 
         if response.ok:
