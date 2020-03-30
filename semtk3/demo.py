@@ -32,15 +32,28 @@ if __name__ == '__main__':
     # configure logging:   http://docs.python.org/3/howto/logging.html
     # using:               https://docs.python.org/3/howto/logging-cookbook.html
     #
-    logging.basicConfig(level=logging.INFO)
     
-    nodegroup_id="Lighting Weekly Units Sold"
+    ### LOGGING ####
+    # set up logging globally
+    logging.basicConfig(filename=None, level=logging.ERROR);
+    
+    # set semtk3 logging to DEBUG   (below we switch it to the more typical logging.INFO)
+    semtk3_logger = logging.getLogger("semtk3")
+    semtk3_logger.setLevel(level=logging.DEBUG)
+    
     
     # 
     # get a table of constraints for a nodegroup_id
     #
+    nodegroup_id="Lighting Weekly Units Sold"
     table = semtk3.get_constraints_by_id(nodegroup_id)
     print(table.get_rows())
+    
+    #
+    # logging
+    # show only high-level logging (e.g. percent complete)
+    #
+    semtk3_logger.setLevel(level=logging.INFO)
     
     #
     # get all existings values for the constraint "?pc"
