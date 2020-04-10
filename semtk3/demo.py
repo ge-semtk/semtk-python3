@@ -35,11 +35,10 @@ if __name__ == '__main__':
     
     ### LOGGING ####
     # set up logging globally
-    logging.basicConfig(filename=None, level=logging.ERROR);
+    logging.basicConfig(filename=None, level=logging.DEBUG);
     
     # set semtk3 logging to DEBUG   (below we switch it to the more typical logging.INFO)
-    semtk3_logger = logging.getLogger("semtk3")
-    semtk3_logger.setLevel(level=logging.DEBUG)
+    semtk3.logger.setLevel(level=logging.INFO)
     
     
     # 
@@ -53,7 +52,7 @@ if __name__ == '__main__':
     # logging
     # show only high-level logging (e.g. percent complete)
     #
-    semtk3_logger.setLevel(level=logging.INFO)
+    semtk3.logger.setLevel(level=logging.INFO)
     
     #
     # get all existings values for the constraint "?pc"

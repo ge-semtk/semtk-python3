@@ -30,6 +30,7 @@ from . import semtkasyncclient
 from . import semtktable
 
 import sys
+import logging
 from semtk3.oinfoclient import OInfoClient
 
 # pip install requests
@@ -74,6 +75,8 @@ for depend in ['requests']:
 def set_host(hostUrl):
     global SEMTK3_HOST
     SEMTK3_HOST = hostUrl
+
+logger = logging.getLogger("semtk3")
 
 #
 # returns a message string or raises failure exception
