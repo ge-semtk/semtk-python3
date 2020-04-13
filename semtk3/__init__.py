@@ -76,8 +76,11 @@ def set_host(hostUrl):
     global SEMTK3_HOST
     SEMTK3_HOST = hostUrl
 
-logger = logging.getLogger("semtk3")
-
+#
+# can't understand why this is needed
+#
+def get_logger():
+    return logging.getLogger("semtk3")
 #
 # returns a message string or raises failure exception
 #
