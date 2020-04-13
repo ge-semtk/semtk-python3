@@ -35,11 +35,13 @@ if __name__ == '__main__':
     
     ### LOGGING ####
     # set up logging globally
-    logging.basicConfig(filename=None, level=logging.DEBUG);
+    logging.basicConfig(filename=None, level=logging.ERROR);
     
     # set semtk3 logging to DEBUG   (below we switch it to the more typical logging.INFO)
-    semtk3.logger.setLevel(level=logging.INFO)
+    semtk3.get_logger().setLevel(level=logging.INFO)
     
+    if not semtk3.check_services():
+        print("A service failed.  Check logs")
     
     # 
     # get a table of constraints for a nodegroup_id
@@ -52,7 +54,7 @@ if __name__ == '__main__':
     # logging
     # show only high-level logging (e.g. percent complete)
     #
-    semtk3.logger.setLevel(level=logging.INFO)
+    semtk3.get_logger().setLevel(level=logging.INFO)
     
     #
     # get all existings values for the constraint "?pc"

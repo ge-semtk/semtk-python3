@@ -14,12 +14,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from . import semtkasyncclient
 from . import sparqlconnection
 
 import ntpath
+from semtk3.semtkclient import SemTkClient
 
-class QueryClient(semtkasyncclient.SemTkAsyncClient):
+class QueryClient(SemTkClient):
     
     def __init__(self, serverURL, conn_obj):
         ''' servierURL string - e.g. http://machine:12050

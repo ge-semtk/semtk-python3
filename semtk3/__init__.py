@@ -90,7 +90,25 @@ def clear_graph(conn_json_str, model_or_data, index):
    
     table = nge_client.exec_dispatch_clear_graph(sparql_conn, model_or_data, index)
     return table.get_cell(0,0)
+
+#
+# INFO logs success or ERROR logs failure
+# Returns boolean : did everything succeed
+#
+def check_services():
+    b1 = __get_fdc_cache_client().ping()
+    b2 = __get_hive_client("server", "host", "db").ping()
+    b3 = __get_nge_client().ping() 
+    b4 = __get_nodegroup_client().ping()
+    b5 = __get_oinfo_client("{}").ping()
+    b6 = __get_query_client("{}").ping()
+    b7 = __get_status_client().ping()
+    b8 = __get_results_client().ping()
     
+    return b1 and b2 and b3 and b4 and b5 and b6 and b7 and b8
+    
+   
+     
 def select_by_id(nodegroup_id, limit_override=0, offset_override=0, runtime_constraints=None, edc_constraints=None, flags=None ):
     nge_client = __get_nge_client()
    
@@ -139,13 +157,6 @@ def get_table(jobid):
 def fdc_cache_bootstrap_table(conn_json_str, spec_id, bootstrap_table, recache_after_sec):
     cache_client = __get_fdc_cache_client()
     cache_client.exec_cache_using_table_bootstrap(conn_json_str, spec_id, bootstrap_table, recache_after_sec)
-    
-def get_status_client():
-    return statusclient.StatusClient(SEMTK3_HOST+ ":" + STATUS_PORT)
-
-def get_results_client():
-    return resultsclient.ResultsClient(SEMTK3_HOST+ ":" + RESULTS_PORT)
-
 
 #
 # params:
@@ -182,6 +193,12 @@ def __get_nge_client():
 def __get_query_client(conn_json_str, user_name=None, password=None):
     conn = sparqlconnection.SparqlConnection(conn_json_str, user_name, password)
     return queryclient.QueryClient( (SEMTK3_HOST+ ":" + QUERY_PORT), conn)
+
+def __get_status_client():
+    return statusclient.StatusClient(SEMTK3_HOST+ ":" + STATUS_PORT)
+
+def __get_results_client():
+    return resultsclient.ResultsClient(SEMTK3_HOST+ ":" + RESULTS_PORT)
 
 def __get_oinfo_client(conn_json_str):
     return oinfoclient.OInfoClient( (SEMTK3_HOST+ ":" + OINFO_PORT), conn_json_str)

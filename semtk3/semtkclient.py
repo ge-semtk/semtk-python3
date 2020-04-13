@@ -16,6 +16,7 @@
 #
 import json
 import sys
+import logging
 from . import restclient
 from . import semtktable
 
@@ -25,6 +26,8 @@ from . import semtktable
 #           unless NO_PROXY is set up on your endpoint
 #
 
+
+semtk3_logger = logging.getLogger("semtk3")
 
 
 class SemTkClient(restclient.RestClient):
@@ -102,7 +105,19 @@ class SemTkClient(restclient.RestClient):
         f = self.get_simple_field(simple_res, field)
         return str(f)
     
-    
+    def ping(self):
+        '''
+            logger.INFO(success)  or  logger.ERROR(error)
+            returns True (success) or False (failure)
+        '''
+        try:
+            res = self.post_to_simple("serviceInfo/ping")
+            semtk3_logger.info(self.baseURL + self.get_simple_field_str(res, "available"))
+            return True
+        except Exception as e:
+            semtk3_logger.error(str(e).replace("\n", ""))
+            return False
+        
     def post_to_status(self, endpoint, dataObj={}, files=None):
         ''' 
             returns dict - the simple results

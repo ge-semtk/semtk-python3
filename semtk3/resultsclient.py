@@ -15,11 +15,11 @@
 # limitations under the License.
 #
 import json
-from . import semtkclient
 from . import util
+from semtk3.semtkclient import SemTkClient
 
 
-class ResultsClient(semtkclient.SemTkClient): 
+class ResultsClient(SemTkClient): 
    
     def __init__(self, serverURL):
         ''' servierURL string - e.g. http://machine:8099
