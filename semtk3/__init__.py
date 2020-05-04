@@ -19,6 +19,7 @@ from . import util
 from . import fdccacheclient
 from . import nodegroupclient
 from . import nodegroupexecclient
+from . import nodegroupstoreclient
 from . import oinfoclient
 from . import queryclient
 from . import hiveclient
@@ -45,6 +46,7 @@ QUERY_PORT = "12050"
 STATUS_PORT = "12051"
 RESULTS_PORT = "12052"
 HIVE_PORT = "12055"
+NODEGROUP_STORE_PORT = "12056"
 OINFO_PORT = "12057"
 NODEGROUP_EXEC_PORT = "12058"
 NODEGROUP_PORT = "12059"
@@ -145,6 +147,10 @@ def query(query, conn_json_str, model_or_data=SEMTK3_CONN_DATA, conn_index=0):
     query_client = __get_query_client(conn_json_str)
     return query_client.exec_query(query, model_or_data, conn_index)
 
+def get_nodegroup_store_data():
+    store_client = __get_nodegroup_store_client()
+    return store_client.exec_get_nodegroup_metadata()
+
 def get_oinfo_uri_label_table(conn_json_str):
     oinfo_client = __get_oinfo_client(conn_json_str)
     return oinfo_client.exec_get_uri_label_table()
@@ -202,6 +208,9 @@ def __get_results_client():
 
 def __get_oinfo_client(conn_json_str):
     return oinfoclient.OInfoClient( (SEMTK3_HOST+ ":" + OINFO_PORT), conn_json_str)
+
+def __get_nodegroup_store_client():
+    return nodegroupstoreclient.NodegroupStoreClient( (SEMTK3_HOST+ ":" + NODEGROUP_STORE_PORT))
 
 def __get_nodegroup_client():
     status_client = statusclient.StatusClient(SEMTK3_HOST+ ":" + STATUS_PORT)

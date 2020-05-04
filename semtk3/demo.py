@@ -44,6 +44,12 @@ if __name__ == '__main__':
         print("A service failed.  Check logs")
     
     # 
+    # get a list of nodegroups
+    #
+    table = semtk3.get_nodegroup_store_data()
+    print(table.get_rows())
+    
+    # 
     # get a table of constraints for a nodegroup_id
     #
     nodegroup_id="Lighting Weekly Units Sold"
