@@ -171,9 +171,16 @@ def create_nodegroup(conn_json_str, class_uri, sparql_id=None):
     ret = ng_client.exec_create_nodegroup(conn_json_str, class_uri, sparql_id)
     return ret 
 
-def override_ports(hive_port=None):
-    global HIVE_PORT
+def override_ports(query_port=None, status_port=None, results_port=None, hive_port=None, oinfo_port=None, nodegroup_exec_port=None, nodegroup_port=None, fdcache_port=None):
+    global QUERY_PORT, STATUS_PORT, RESULTS_PORT, HIVE_PORT, OINFO_PORT, NODEGROUP_EXEC_PORT, NODEGROUP_PORT, FDCCACHE_PORT
+    if query_port: QUERY_PORT = query_port
+    if status_port: STATUS_PORT = status_port
+    if results_port: RESULTS_PORT = results_port
     if hive_port: HIVE_PORT = hive_port
+    if oinfo_port: OINFO_PORT = oinfo_port
+    if nodegroup_exec_port: NODEGROUP_EXEC_PORT = nodegroup_exec_port
+    if nodegroup_port: NODEGROUP_PORT = nodegroup_port
+    if fdcache_port: FDCCACHE_PORT = fdcache_port 
 
 def query_hive(hiveserver_host, hiveserver_port, hiveserver_database, query):
     hive_client = __get_hive_client(hiveserver_host, hiveserver_port, hiveserver_database)
