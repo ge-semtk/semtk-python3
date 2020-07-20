@@ -147,6 +147,25 @@ def query(query, conn_json_str, model_or_data=SEMTK3_CONN_DATA, conn_index=0):
     query_client = __get_query_client(conn_json_str)
     return query_client.exec_query(query, model_or_data, conn_index)
 
+def get_nodegroup_by_id(nodegroup_id):
+    """Get nodegroup json string
+
+    Args:
+        nodegroup_id: The first parameter.
+
+    Returns:
+        nodegroup_str: to be sent to other semtk functions
+
+    Raises:
+        Exception: if nodegroup_id is not valid, or other system errors
+    """
+    store_client = __get_nodegroup_store_client()
+    table = store_client.exec_get_nodegroup_by_id(nodegroup_id)
+    if table.get_num_rows() < 1:
+        raise Exception("Could not find nodegroup with id: " + nodegroup_id)
+    
+    return table.get_cell(0, table.get_column_index("NodeGroup"))
+ 
 def get_nodegroup_store_data():
     store_client = __get_nodegroup_store_client()
     return store_client.exec_get_nodegroup_metadata()

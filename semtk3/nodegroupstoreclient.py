@@ -26,12 +26,17 @@ class NodegroupStoreClient(semtkclient.SemTkClient):
         semtkclient.SemTkClient.__init__(self, serverURL, "nodeGroupStore")
     
     def exec_get_nodegroup_metadata(self):
-        ''' 
-            returns int
-        '''
 
         payload = {}
         
         return self.post_to_table("getNodeGroupMetadata", payload)
+    
+    
+    def exec_get_nodegroup_by_id(self, nodegroup_id):
+
+        payload = {}
+        payload["id"] = nodegroup_id;
+        
+        return self.post_to_table("getNodeGroupById", payload)
             
     
