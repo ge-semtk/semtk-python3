@@ -66,13 +66,8 @@ class SemTkClient(restclient.RestClient):
     def _check_record_process(self, content):
         ''' perform all checks on content through checking for table 
         '''
-        try:
-            self._check_status(content)
-        except Exception as e:
-            print >> sys.stderr, content["recordProcessResults"]["errorTable"]
-            raise e
-            
-        
+        self._check_status(content)
+
         if  "recordProcessResults" not in content.keys():
             self.raise_exception("Rest service did not record process results")
     
