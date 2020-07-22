@@ -30,6 +30,9 @@ from . import sparqlconnection
 from . import semtkasyncclient
 from . import semtktable
 
+import csv
+import ntpath
+import re
 import sys
 import logging
 from semtk3.oinfoclient import OInfoClient
@@ -154,7 +157,7 @@ def get_nodegroup_by_id(nodegroup_id):
         nodegroup_id: The first parameter.
 
     Returns:
-        nodegroup_str: to be sent to other semtk functions
+        nodegroup_json_str: to be sent to other semtk functions
 
     Raises:
         Exception: if nodegroup_id is not valid, or other system errors
@@ -167,9 +170,89 @@ def get_nodegroup_by_id(nodegroup_id):
     return table.get_cell(0, table.get_column_index("NodeGroup"))
  
 def get_nodegroup_store_data():
+    """
+    Get nodegroup store meta-data
+    @return SemtkTable with columns 'ID', 'comments', 'creationDate', 'creator'
+    """
     store_client = __get_nodegroup_store_client()
     return store_client.exec_get_nodegroup_metadata()
 
+def delete_nodegroup_from_store(nodegroup_id):
+    """
+    Deletes nodegroup_id from the store
+    """
+    store_client = __get_nodegroup_store_client()
+    store_client.exec_delete_stored_nodegroup(nodegroup_id)
+    return
+
+def store_nodegroup(nodegroup_id, comments, creator, nodegroup_json_str):
+    """
+    Saves a single nodegroup to the store
+    Fails if nodegroup_id already exists
+    """
+    store_client = __get_nodegroup_store_client()
+    return store_client.exec_store_nodegroup(nodegroup_id, comments, creator, nodegroup_json_str)
+
+def store_nodegroups(folder_path):
+    """
+    Reads a file of the standard "store_data.csv" format
+        ID,comments,creator,jsonfile
+        id27,Test comments,200001111,file.json
+    
+    ...and saves the specified nodegroups to the store.
+    """
+    
+    # get current store data
+    id_list = get_nodegroup_store_data().get_column("ID")
+    
+    filename = ntpath.join(folder_path, "store_data.csv")
+    with open(filename, mode='r') as csv_file:
+        csv_reader = csv.DictReader(csv_file)
+        line_count = 0
+        for row in csv_reader:
+            nodegroup_id = row["ID"]
+            if line_count > 0:
+                # delete if already exists
+                if nodegroup_id in id_list:
+                    delete_nodegroup_from_store(nodegroup_id)
+                
+                # read the json and store the nodegroup       
+                json_path = ntpath.join(folder_path, row["jsonFile"])
+                with open(json_path,'r') as json_file:   
+                    nodegroup_json_str = json_file.read()
+                    store_nodegroup(nodegroup_id, row["comments"], row["creator"], nodegroup_json_str)
+            line_count += 1
+
+def retrieve_from_store(regex_str, folder_path):
+    
+    # open the output and write the header
+    with open(ntpath.join(folder_path, "store_data.csv"), "w") as store_data:
+        store_writer = csv.writer(store_data, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL,lineterminator='\n')
+        store_writer.writerow(['ID', 'comments', 'creator', 'jsonFile'])
+        
+        # get store data
+        regex = re.compile(regex_str)
+        store_table = get_nodegroup_store_data()
+        
+        for i in range(store_table.get_num_rows()):
+            
+            # for rows matching regex
+            if (regex.search(store_table.get_cell(i,"ID"))):
+                nodegroup_id = store_table.get_cell(i, "ID")
+                comments = store_table.get_cell(i, "comments")
+                creator = store_table.get_cell(i, "creator")
+               
+                # get nodegroup and write it
+                filename = nodegroup_id +".json"
+                filepath = ntpath.join(folder_path, filename)
+                json_str = get_nodegroup_by_id(nodegroup_id)
+                with open(filepath, "w") as f:
+                    f.write(json_str)
+                
+                # add row to file 
+                store_writer.writerow([nodegroup_id, comments, creator, filename])
+    
+    
 def get_oinfo_uri_label_table(conn_json_str):
     oinfo_client = __get_oinfo_client(conn_json_str)
     return oinfo_client.exec_get_uri_label_table()

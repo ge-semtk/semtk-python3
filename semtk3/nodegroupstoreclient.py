@@ -38,5 +38,24 @@ class NodegroupStoreClient(semtkclient.SemTkClient):
         payload["id"] = nodegroup_id;
         
         return self.post_to_table("getNodeGroupById", payload)
+    
+    def exec_delete_stored_nodegroup(self, nodegroup_id):
+
+        payload = {}
+        payload["id"] = nodegroup_id;
+        
+        self.post_to_status("deleteStoredNodeGroup", payload)
+        return
+    
+    def exec_store_nodegroup(self, nodegroup_id, comments, creator, jsonRenderedNodegroup):
+
+        payload = {}
+        payload["name"] = nodegroup_id;
+        payload["comments"] = comments;
+        payload["creator"] = creator;
+        payload["jsonRenderedNodeGroup"] = jsonRenderedNodegroup;
+        
+        self.post_to_status("storeNodeGroup", payload)
+        return
             
     

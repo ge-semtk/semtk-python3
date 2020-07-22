@@ -89,9 +89,16 @@ class SemtkTable():
         except ValueError:
             return False
     
+    def get_column(self, col):
+        ret = []
+        c = self.get_column_index(col) if isinstance(col, str) else col
+        for row in self.get_rows():
+            ret.append(row[c])
+        return ret     
+         
     def get_cell(self, row, col):
-        ''' returns cell by zero-based row/col as a unicode string '''
-        return self.dict[JSON_KEY_ROWS][row][col]
+        c = self.get_column_index(col) if isinstance(col, str) else col
+        return self.dict[JSON_KEY_ROWS][row][c]
     
     def get_cell_as_string(self, row, col):
         return self.get_cell(row, col)
