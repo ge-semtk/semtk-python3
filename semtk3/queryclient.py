@@ -16,7 +16,7 @@
 #
 from . import sparqlconnection
 
-import ntpath
+import os.path
 from semtk3.semtkclient import SemTkClient
 
 class QueryClient(SemTkClient):
@@ -42,7 +42,7 @@ class QueryClient(SemTkClient):
         }
         
         files = {
-            "owlFile": (ntpath.basename(owl_file_path), open(owl_file_path, 'rb'))
+            "owlFile": (os.path.basename(owl_file_path), open(owl_file_path, 'rb'))
         }
 
         res = self.post_to_status("uploadOwl", payload, files)
@@ -63,7 +63,7 @@ class QueryClient(SemTkClient):
         }
         
         files = {
-            "owlFile": (ntpath.basename(owl_file_path), open(owl_file_path, 'rb'))
+            "owlFile": (os.path.basename(owl_file_path), open(owl_file_path, 'rb'))
         }
 
         res = self.post_to_status("uploadTurtle", payload, files)
