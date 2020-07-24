@@ -43,10 +43,10 @@ if __name__ == '__main__':
     if not semtk3.check_services():
         print("A service failed.  Check logs")
     
-    semtk3.retrieve_from_store("[Pp]aul", "C:\\Users\\200001934\\Desktop\\Temp\\current-bug")
-    semtk3.delete_nodegroup_from_store("paulTest")
-    semtk3.store_nodegroups("C:\\Users\\200001934\\Desktop\\Temp\\current-bug")
-    semtk3.retrieve_from_store("[Pp]aul", "C:\\Users\\200001934\\Desktop\\Temp\\current-bug")
+    # don't want to demo mucking with nodegroup store.  Also need valid local folder path.
+    #semtk3.retrieve_from_store("regex", "folder path")
+    #semtk3.delete_nodegroup_from_store("nodegroup_id")
+    #semtk3.store_nodegroups("folder path")
     
     # 
     # get a list of nodegroups
