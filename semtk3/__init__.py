@@ -31,7 +31,7 @@ from . import semtkasyncclient
 from . import semtktable
 
 import csv
-import ntpath
+import os.path
 import re
 import sys
 import logging
@@ -205,7 +205,7 @@ def store_nodegroups(folder_path):
     # get current store data
     id_list = get_nodegroup_store_data().get_column("ID")
     
-    filename = ntpath.join(folder_path, "store_data.csv")
+    filename = os.path.join(folder_path, "store_data.csv")
     with open(filename, mode='r') as csv_file:
         csv_reader = csv.DictReader(csv_file)
         line_count = 0
@@ -217,7 +217,7 @@ def store_nodegroups(folder_path):
                     delete_nodegroup_from_store(nodegroup_id)
                 
                 # read the json and store the nodegroup       
-                json_path = ntpath.join(folder_path, row["jsonFile"])
+                json_path = os.path.join(folder_path, row["jsonFile"])
                 with open(json_path,'r') as json_file:   
                     nodegroup_json_str = json_file.read()
                     store_nodegroup(nodegroup_id, row["comments"], row["creator"], nodegroup_json_str)
@@ -226,7 +226,7 @@ def store_nodegroups(folder_path):
 def retrieve_from_store(regex_str, folder_path):
     
     # open the output and write the header
-    with open(ntpath.join(folder_path, "store_data.csv"), "w") as store_data:
+    with open(os.path.join(folder_path, "store_data.csv"), "w") as store_data:
         store_writer = csv.writer(store_data, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL,lineterminator='\n')
         store_writer.writerow(['ID', 'comments', 'creator', 'jsonFile'])
         
@@ -244,7 +244,7 @@ def retrieve_from_store(regex_str, folder_path):
                
                 # get nodegroup and write it
                 filename = nodegroup_id +".json"
-                filepath = ntpath.join(folder_path, filename)
+                filepath = os.path.join(folder_path, filename)
                 json_str = get_nodegroup_by_id(nodegroup_id)
                 with open(filepath, "w") as f:
                     f.write(json_str)
