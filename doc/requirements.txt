@@ -1,0 +1,7 @@
+sphinx==2.2.0
+sphinx-paramlinks==0.3.7
+sphinxcontrib-autoprogram @ git+https://github.com/sphinx-contrib/autoprogram@be79535#egg=sphinxcontrib-autoprogram
+
+# semtk3 requirements:
+requests
+python-dateutil
