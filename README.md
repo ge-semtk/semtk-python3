@@ -4,7 +4,10 @@ Tested on Python 3.7.5.  May be incompatible with Python 3.7.6+
 
 ## Documentation
 
-See [./doc](./doc/README.md).
+Documentation is auto-generated at check-in to:
+[readthedocs.io](https://semtk-python3.readthedocs.io/en/lb-doc/api/semtk3.html)
+
+For more info, see [./doc](./doc/README.md).
 
 ## Build whl file
 ```
