@@ -208,20 +208,19 @@ def store_nodegroups(folder_path):
     filename = ntpath.join(folder_path, "store_data.csv")
     with open(filename, mode='r') as csv_file:
         csv_reader = csv.DictReader(csv_file)
-        line_count = 0
         for row in csv_reader:
             nodegroup_id = row["ID"]
-            if line_count > 0:
-                # delete if already exists
-                if nodegroup_id in id_list:
-                    delete_nodegroup_from_store(nodegroup_id)
+            
+            # delete if already exists
+            if nodegroup_id in id_list:
+                delete_nodegroup_from_store(nodegroup_id)
+            
+            # read the json and store the nodegroup       
+            json_path = ntpath.join(folder_path, row["jsonFile"])
+            with open(json_path,'r') as json_file:   
+                nodegroup_json_str = json_file.read()
+                store_nodegroup(nodegroup_id, row["comments"], row["creator"], nodegroup_json_str)
                 
-                # read the json and store the nodegroup       
-                json_path = ntpath.join(folder_path, row["jsonFile"])
-                with open(json_path,'r') as json_file:   
-                    nodegroup_json_str = json_file.read()
-                    store_nodegroup(nodegroup_id, row["comments"], row["creator"], nodegroup_json_str)
-            line_count += 1
 
 def retrieve_from_store(regex_str, folder_path):
     
