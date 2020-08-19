@@ -84,23 +84,31 @@ def set_host(hostUrl):
 #
 # can't understand why this is needed
 #
+
 def get_logger():
     return logging.getLogger("semtk3")
-#
-# returns a message string or raises failure exception
-#
+
 def clear_graph(conn_json_str, model_or_data, index):
+    '''
+    Clear a graph
+    :param conn_json_str: connection json as a string
+    :param model_or_data: string "model" or "data"
+    :param index: integer specifying which model or data graph to use
+    :return: message
+    :rtype: string
+    '''
     sparql_conn = sparqlconnection.SparqlConnection(conn_json_str)
     nge_client = __get_nge_client()
    
     table = nge_client.exec_dispatch_clear_graph(sparql_conn, model_or_data, index)
     return table.get_cell(0,0)
 
-#
-# INFO logs success or ERROR logs failure
-# Returns boolean : did everything succeed
-#
 def check_services():
+    '''
+    logs success or failure of each service
+    :return: did all pings succeed
+    :rtype: boolean
+    '''
     b1 = __get_fdc_cache_client().ping()
     b2 = __get_hive_client("server", "host", "db").ping()
     b3 = __get_nge_client().ping() 
@@ -115,53 +123,116 @@ def check_services():
    
      
 def select_by_id(nodegroup_id, limit_override=0, offset_override=0, runtime_constraints=None, edc_constraints=None, flags=None ):
+    '''
+    Execute a select query for a given nodegroup id
+    :param nodegroup_id: id of nodegroup in the store
+    :param limit_override: optional override of LIMIT clause
+    :param offset_override: optional override of OFFSET clause
+    :param runtime_constraints: optional runtime constraints built by build_constraint()
+    :param edc_constraints: optional edc constraints
+    :param flags: optional query flags
+    :return: results
+    :rtype: semtktable
+    '''
     nge_client = __get_nge_client()
    
     table = nge_client.exec_async_dispatch_select_by_id(nodegroup_id, SEMTK3_CONN_OVERRIDE, limit_override, offset_override, runtime_constraints, edc_constraints, flags)
     return table
 
 def get_constraints_by_id(nodegroup_id):
+    '''
+    Get runtime constraints for a stored nodegroup
+    :param nodegroup_id: the id
+    :return: columns valueId, itemType and valueType
+    :rtype: semtktable
+    '''
     nge_client = __get_nge_client()
    
     table = nge_client.exec_get_runtime_constraints_by_id(nodegroup_id)
     return table
 
 def get_filter_values_by_id(nodegroup_id, target_obj_sparql_id, override_conn_json_str=None, limit_override=None, offset_override=None, runtime_constraints=None, edc_constraints=None, flags=None ):
+    '''
+    Run a filter values query, which returns all the existing values for a given variable in the nodegroup
+    :param nodegroup_id: the id
+    :param target_obj_sparql_id: the variable to be interrogated
+    :param override_conn_json_str: optional override connection json string
+    :param limit_override: optional override of LIMIT clause
+    :param offset_override: optional override of OFFSET clause
+    :param runtime_constraints: optional runtime constraints built by build_constraint()
+    :param edc_constraints: optional edc constraints
+    :param flags: optional query flags
+    :return: results
+    :rtype semtktable
+    '''
     nge_client = __get_nge_client()
    
     table = nge_client.exec_async_dispatch_filter_by_id(nodegroup_id, target_obj_sparql_id, override_conn_json_str, limit_override, offset_override, runtime_constraints, edc_constraints, flags)
     return table
 
 def build_constraint(sparql_id, operator, operand_list):
+    '''
+    Build a contraint to be used as a query parameter
+    :param sparql_id: the variable name
+    :param operator: operator {MATCHES,REGEX,GREATERTHAN,GREATERTHANOREQUALS,LESSTHAN,LESSTHANOREQUALS,VALUEBETWEEN,VALUEBETWEENUNINCLUSIVE}
+    :param operand_list: list of values
+    :return: the constraint
+    :rettype: RuntimeConstraint
+    '''
     ret = runtimeconstraint.RuntimeConstraint(sparql_id, operator, operand_list)
     return ret
 
 def ingest_by_id(nodegroup_id, csv_str, override_conn_json_str=None):
+    '''
+    Perform data ingestion
+    :param nodegroup_id: nodegroup with ingestion template
+    :param csv_str: string csv data
+    :param override_conn_json_str: optional override connection
+    :return: table of errors
+    :rettype: semtktable
+    '''
     nge_client = __get_nge_client()
    
     table = nge_client.exec_async_ingest_from_csv(nodegroup_id, csv_str, override_conn_json_str)
     return table
 
 def upload_owl(owl_file_path, conn_json_str, user_name, password, model_or_data=SEMTK3_CONN_MODEL, conn_index=0):
+    '''
+    Upload an owl file
+    :param owl_file_path: path to the file
+    :param conn_json_str: connection json string
+    :param user_name: optional user name
+    :param password: optional password
+    :param model_or_data: optional "model" or "data" specifying which endpoint in the sparql connection, defaults to "model"
+    :param conn_index: index specifying which of the model or data endpoints in the sparql connection, defaults to 0
+    :return: message
+    :rettype: string
+    '''
     query_client = __get_query_client(conn_json_str, user_name, password)
     return query_client.exec_upload_owl(owl_file_path, model_or_data, conn_index)
 
 def query(query, conn_json_str, model_or_data=SEMTK3_CONN_DATA, conn_index=0):
+    '''
+    Run a raw SPARQL query
+    :param query: SPARQL
+    :param conn_json_str: connection json string
+    :param model_or_data: optional "model" or "data" specifying which endpoint in the sparql connection, defaults to "model"
+    :param conn_index: index specifying which of the model or data endpoints in the sparql connection, defaults to 0
+    :return: results
+    :rettype: semtktable
+    
+    '''
     query_client = __get_query_client(conn_json_str)
     return query_client.exec_query(query, model_or_data, conn_index)
 
 def get_nodegroup_by_id(nodegroup_id):
-    """Get nodegroup json string
-
-    Args:
-        nodegroup_id: The first parameter.
-
-    Returns:
-        nodegroup_json_str: to be sent to other semtk functions
-
-    Raises:
-        Exception: if nodegroup_id is not valid, or other system errors
-    """
+    '''
+    Retrieve a nodegroup from the store
+    :param nodegroup_id: the id
+    :return: a nodegroup
+    :rettype: json string
+    '''
+    
     store_client = __get_nodegroup_store_client()
     table = store_client.exec_get_nodegroup_by_id(nodegroup_id)
     if table.get_num_rows() < 1:
@@ -170,37 +241,46 @@ def get_nodegroup_by_id(nodegroup_id):
     return table.get_cell(0, table.get_column_index("NodeGroup"))
  
 def get_nodegroup_store_data():
-    """
-    Get nodegroup store meta-data
-    @return SemtkTable with columns 'ID', 'comments', 'creationDate', 'creator'
-    """
+    '''
+    Get list of everything in the nodegroup store
+    :return: SemtkTable with columns 'ID', 'comments', 'creationDate', 'creator'
+    :rettype: semtktable
+    '''
     store_client = __get_nodegroup_store_client()
     return store_client.exec_get_nodegroup_metadata()
 
 def delete_nodegroup_from_store(nodegroup_id):
-    """
-    Deletes nodegroup_id from the store
-    """
+    '''
+    Delete nodegroup_id from the store
+    :param nodegroup_id: the id
+    '''
     store_client = __get_nodegroup_store_client()
     store_client.exec_delete_stored_nodegroup(nodegroup_id)
     return
 
 def store_nodegroup(nodegroup_id, comments, creator, nodegroup_json_str):
-    """
-    Saves a single nodegroup to the store
-    Fails if nodegroup_id already exists
-    """
+    '''
+    Saves a single nodegroup to the store, fails if nodegroup_id already exists
+    :param nodegroup_id: the id
+    :param comments: comment string
+    :param creator: creator string
+    :param nodegroup_json_str: nodegroup in json string form
+    :return: status
+    :rettype: string
+    '''
     store_client = __get_nodegroup_store_client()
     return store_client.exec_store_nodegroup(nodegroup_id, comments, creator, nodegroup_json_str)
 
 def store_nodegroups(folder_path):
-    """
+    '''
     Reads a file of the standard "store_data.csv" format
         ID,comments,creator,jsonfile
         id27,Test comments,200001111,file.json
     
     ...and saves the specified nodegroups to the store.
-    """
+    
+    :param folder_path: target folder
+    '''
     
     # get current store data
     id_list = get_nodegroup_store_data().get_column("ID")
@@ -223,6 +303,11 @@ def store_nodegroups(folder_path):
             
 
 def retrieve_from_store(regex_str, folder_path):
+    '''
+    Retrieve all nodegroups matching a pattern, create store_data.csv
+    :param regex_str: pattern to match on nodegroup id's
+    :param folder_path: target folder
+    '''
     
     # open the output and write the header
     with open(os.path.join(folder_path, "store_data.csv"), "w") as store_data:
@@ -253,32 +338,61 @@ def retrieve_from_store(regex_str, folder_path):
     
     
 def get_oinfo_uri_label_table(conn_json_str):
+    '''
+    Get a table describing the ontology model
+    :param conn_json_str: connection string of graph(s) holding the model
+    :rettype: semtktable
+    '''
     oinfo_client = __get_oinfo_client(conn_json_str)
     return oinfo_client.exec_get_uri_label_table()
 
 def get_table(jobid):
+    '''
+    Get a table from an async job
+    :param jobid: the job id
+    :rettype: semtktable
+    '''
     async_client = semtkasyncclient.SemTkAsyncClient("http://nothing");
     async_client.poll_until_success(jobid);
     return async_client.post_get_table_results(jobid);
 
 def fdc_cache_bootstrap_table(conn_json_str, spec_id, bootstrap_table, recache_after_sec):
+    '''
+    Run an fdc cache spec
+    :param conn_json_str: connection containing model and data graphs
+    :param spec_id: the fdc cache spec identifier
+    :param bootstrap_table: semtktable to kick off the cache
+    :param recache_after_sec: maximum age of cache
+    '''
     cache_client = __get_fdc_cache_client()
     cache_client.exec_cache_using_table_bootstrap(conn_json_str, spec_id, bootstrap_table, recache_after_sec)
 
-#
-# params:
-#    class_uri - class of node to add
-#    sparql_id - optional sparql id
-#
-# ret["sparqlID"] will be sparqlID of new node
-# ret["nodegroup"] will be nodegroup json
-#
+
 def create_nodegroup(conn_json_str, class_uri, sparql_id=None):
+    '''
+    Create a nodegroup containing a single uri
+    :param conn_json_str: connection json string
+    :param class_uri: class to add
+    :param sparql_id: optional sparqlID if different from ?ClassName
+    :return: nodegroup
+    :rettype: nodegroup json string
+    '''
     ng_client = __get_nodegroup_client()
     ret = ng_client.exec_create_nodegroup(conn_json_str, class_uri, sparql_id)
     return ret 
 
 def override_ports(query_port=None, status_port=None, results_port=None, hive_port=None, oinfo_port=None, nodegroup_exec_port=None, nodegroup_port=None, fdcache_port=None):
+    '''
+    Override the default port(s) for Semtk service(s)
+    :param query_port: optional
+    :param status_port: optional
+    :param results_port: optional
+    :param hive_port: optional
+    :param oinfo_port: optional
+    :param nodegroup_exec_port: optional
+    :param nodegroup_port: optional
+    :param fdcache_port: optional
+    '''
     global QUERY_PORT, STATUS_PORT, RESULTS_PORT, HIVE_PORT, OINFO_PORT, NODEGROUP_EXEC_PORT, NODEGROUP_PORT, FDCCACHE_PORT
     if query_port: QUERY_PORT = query_port
     if status_port: STATUS_PORT = status_port
@@ -290,6 +404,15 @@ def override_ports(query_port=None, status_port=None, results_port=None, hive_po
     if fdcache_port: FDCCACHE_PORT = fdcache_port 
 
 def query_hive(hiveserver_host, hiveserver_port, hiveserver_database, query):
+    '''
+    Execute a hive quiery
+    :param hiveserver_host: hive host
+    :param hiveserver_port: hive port
+    :param hiveserver_database: hive database
+    :param query: sql
+    :return: SemtkTable with columns 'ID', 'comments', 'creationDate', 'creator'
+    :rettype: semtktable
+    '''
     hive_client = __get_hive_client(hiveserver_host, hiveserver_port, hiveserver_database)
     return hive_client.exec_query_hive(query)
 
