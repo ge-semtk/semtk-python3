@@ -31,6 +31,7 @@ from . import semtkasyncclient
 from . import semtktable
 
 import csv
+import json
 import os.path
 import re
 import sys
@@ -330,11 +331,31 @@ def retrieve_from_store(regex_str, folder_path):
                 filename = nodegroup_id +".json"
                 filepath = os.path.join(folder_path, filename)
                 json_str = get_nodegroup_by_id(nodegroup_id)
+                
+                # format the json nicely
+                j = json.loads(json_str)
+                json_str = json.dumps(j,  indent=4, sort_keys=True)
+                
                 with open(filepath, "w") as f:
                     f.write(json_str)
                 
                 # add row to file 
                 store_writer.writerow([nodegroup_id, comments, creator, filename])
+                
+def delete_nodegroups_from_store(regex_str):
+    '''
+    Delete matching nodegroups from store
+    :param regex_str: pattern to match on nodegroup id's
+
+    '''
+    store_table = get_nodegroup_store_data()
+    regex = re.compile(regex_str)
+
+    for i in range(store_table.get_num_rows()):
+        nodegroup_id = store_table.get_cell(i, "ID")
+        if (regex.search(nodegroup_id)):  
+            delete_nodegroup_from_store(nodegroup_id)
+   
     
     
 def get_oinfo_uri_label_table(conn_json_str):
