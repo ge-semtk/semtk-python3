@@ -119,7 +119,7 @@ class SemTkClient(restclient.RestClient):
                            which can be used as a regular dict, or with error-handling get_simple_field*() methods
         '''
         content = self.post(endpoint, dataObj=dataObj, files=files)
-        content = json.loads(content.decode("utf-8"))
+        content = json.loads(content.decode("utf-8", errors='ignore'))
         self._check_status(content)
         return content
         
@@ -129,7 +129,7 @@ class SemTkClient(restclient.RestClient):
                            which can be used as a regular dict, or with error-handling get_simple_field*() methods
         '''
         content = self.post(endpoint, dataObj=dataObj, files=files)
-        content = json.loads(content.decode("utf-8"))
+        content = json.loads(content.decode("utf-8", errors='ignore'))
         self._check_simple(content)
         return content["simpleresults"]
     
@@ -139,7 +139,7 @@ class SemTkClient(restclient.RestClient):
             raises RestException
         '''
         content = self.post(endpoint, dataObj)
-        content = json.loads(content.decode("utf-8"))
+        content = json.loads(content.decode("utf-8", errors='ignore'))
 
         self._check_table(content)
         
@@ -152,7 +152,7 @@ class SemTkClient(restclient.RestClient):
             raises RestException
         '''
         content = self.post(endpoint, dataObj=dataObj, files=files)
-        content = json.loads(content.decode("utf-8"))
+        content = json.loads(content.decode("utf-8", errors='ignore'))
 
         self._check_record_process(content)
         
