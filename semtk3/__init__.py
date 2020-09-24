@@ -57,6 +57,13 @@ NODEGROUP_PORT = "12059"
 FDCCACHE_PORT = "12068"
 
 OP_MATCHES = runtimeconstraint.RuntimeConstraint.OP_MATCHES
+OP_REGEX = runtimeconstraint.RuntimeConstraint.OP_REGEX
+OP_GREATERTHAN = runtimeconstraint.RuntimeConstraint.OP_GREATERTHAN
+OP_GREATERTHANOREQUALS = runtimeconstraint.RuntimeConstraint.OP_GREATERTHANOREQUALS
+OP_LESSTHAN = runtimeconstraint.RuntimeConstraint.OP_LESSTHAN
+OP_LESSTHANOREQUALS = runtimeconstraint.RuntimeConstraint.OP_LESSTHANOREQUALS
+OP_VALUEBETWEEN = runtimeconstraint.RuntimeConstraint.OP_VALUEBETWEEN
+OP_VALUEBETWEENUNINCLUSIVE = runtimeconstraint.RuntimeConstraint.OP_VALUEBETWEENUNINCLUSIVE
 
 #   This is the main setup for semtk3
 #   

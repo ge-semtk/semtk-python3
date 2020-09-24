@@ -81,6 +81,13 @@ if __name__ == '__main__':
     constraint = semtk3.build_constraint("?pc", semtk3.OP_MATCHES, list2)
     table = semtk3.select_by_id(nodegroup_id, runtime_constraints=[constraint])
     print(table.get_rows())
+    
+    #
+    # build a constraint of the first two legal values and run it
+    #
+    constraint = semtk3.build_constraint("?pc", semtk3.OP_GREATERTHAN, [1000])
+    table = semtk3.select_by_id(nodegroup_id, runtime_constraints=[constraint])
+    print(table.get_rows())
 
     #
     # run the whole query
