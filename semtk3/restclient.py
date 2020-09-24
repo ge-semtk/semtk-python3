@@ -31,6 +31,9 @@ class RestException(Exception):
 
 class RestClient(object):
     
+    HEADERS = {'content-type': "application/json",
+               'cache-control': "no-cache"}
+    
     def __init__(self, baseURL, service=None):
         '''
             baseURL string - http://machine:8000, http://machine:8000/,  http://machine:8000/service, or http://machine:8000/service/
@@ -52,13 +55,13 @@ class RestClient(object):
         self.lastURL = ""
         # lastContent
         self.lastContent = ""
-        
-        # self.headers
-        self.headers = {
-            'content-type': "application/json",
-            'cache-control': "no-cache"
-        }
 
+    @staticmethod
+    def set_headers(headers):
+        RestClient.HEADERS = headers
+        RestClient.HEADERS['content-type'] = "application/json"
+        RestClient.HEADERS['cache-control'] = "no-cache"
+        
     def to_json_array(self, to_jsonable_list):
         ret = "[" + to_jsonable_list[0].to_json()
         for i in range(1, len(to_jsonable_list)):
@@ -86,15 +89,14 @@ class RestClient(object):
         
         if (files):
             data = dataObj 
-            headers = None
         else :
             data = json.dumps(dataObj)
-            headers = self.headers
+            
         
         self.lastURL = self.baseURL + endpoint
 
         semtk3_logger.debug("Posting to " + self.lastURL + "...")
-        response = requests.request("POST", self.lastURL, data=data, headers=headers, files=files)
+        response = requests.request("POST", self.lastURL, data=data, headers=RestClient.HEADERS, files=files)
 
         if response.ok:
             self.lastContent = response.content

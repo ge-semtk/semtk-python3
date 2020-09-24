@@ -40,6 +40,7 @@ if __name__ == '__main__':
     # set semtk3 logging to DEBUG   (below we switch it to the more typical logging.INFO)
     semtk3.get_logger().setLevel(level=logging.INFO)
 
+    semtk3.set_headers({ "extra" : "idk"})
     if not semtk3.check_services():
         print("A service failed.  Check logs")
 

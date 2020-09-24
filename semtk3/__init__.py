@@ -22,6 +22,7 @@ from . import nodegroupexecclient
 from . import nodegroupstoreclient
 from . import oinfoclient
 from . import queryclient
+from . import restclient
 from . import hiveclient
 from . import resultsclient
 from . import statusclient
@@ -93,6 +94,9 @@ def set_host(hostUrl):
 # can't understand why this is needed
 #
 
+def set_headers(headers):
+    restclient.RestClient.set_headers(headers);
+    
 def get_logger():
     return logging.getLogger("semtk3")
 
