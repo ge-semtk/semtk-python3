@@ -71,6 +71,27 @@ class NodegroupExecClient(semtkasyncclient.SemTkAsyncClient):
         
         return table
     
+    def exec_async_dispatch_count_by_id(self, nodegroup_id, override_conn_json=None, limit_override=None, offset_override=None, runtime_constraints=None, edc_constraints=None, flags=None ):
+        ''' execute a count by nodegroup id
+            returns: the table
+            thorws: exception otherwise
+        '''
+        payload = {}
+        payload["externalDataConnectionConstraints"] = ""
+        payload["flags"] = ""
+        if (limit_override):  payload["limitOverride"] = limit_override
+        if (offset_override): payload["offsetOverride"] = offset_override
+        payload["nodeGroupId"] = nodegroup_id
+        payload["runtimeConstraints"] = ""
+        payload["sparqlConnection"] = override_conn_json if override_conn_json else self.USE_NODEGROUP_CONN
+        if (flags):  payload["flags"] = flags
+        if (runtime_constraints): payload["runtimeConstraints"] = self.to_json_array(runtime_constraints)
+        if (edc_constraints): payload["externalDataConnectionConstraints"] = edc_constraints
+        
+
+        table = self.post_async_to_table("dispatchCountById", payload)
+        
+        return table
     def exec_async_dispatch_raw_sparql(self, sparql, override_conn_json=None):
         ''' execute a select by nodegroup id
             returns: the table
