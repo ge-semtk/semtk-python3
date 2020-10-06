@@ -151,6 +151,23 @@ def select_by_id(nodegroup_id, limit_override=0, offset_override=0, runtime_cons
     table = nge_client.exec_async_dispatch_select_by_id(nodegroup_id, SEMTK3_CONN_OVERRIDE, limit_override, offset_override, runtime_constraints, edc_constraints, flags)
     return table
 
+def count_by_id(nodegroup_id, limit_override=0, offset_override=0, runtime_constraints=None, edc_constraints=None, flags=None ):
+    '''
+    Execute a count query for a given nodegroup id
+    :param nodegroup_id: id of nodegroup in the store
+    :param limit_override: optional override of LIMIT clause
+    :param offset_override: optional override of OFFSET clause
+    :param runtime_constraints: optional runtime constraints built by build_constraint()
+    :param edc_constraints: optional edc constraints
+    :param flags: optional query flags
+    :return: results
+    :rtype: semtktable
+    '''
+    nge_client = __get_nge_client()
+   
+    table = nge_client.exec_async_dispatch_count_by_id(nodegroup_id, SEMTK3_CONN_OVERRIDE, limit_override, offset_override, runtime_constraints, edc_constraints, flags)
+    return table
+
 def get_constraints_by_id(nodegroup_id):
     '''
     Get runtime constraints for a stored nodegroup
