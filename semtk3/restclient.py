@@ -31,7 +31,7 @@ class RestException(Exception):
 
 class RestClient(object):
     
-    HEADERS = {'content-type': "application/json",
+    HEADERS = {
                'cache-control': "no-cache"}
     
     def __init__(self, baseURL, service=None):
@@ -59,7 +59,6 @@ class RestClient(object):
     @staticmethod
     def set_headers(headers):
         RestClient.HEADERS = headers
-        RestClient.HEADERS['content-type'] = "application/json"
         RestClient.HEADERS['cache-control'] = "no-cache"
         
     def to_json_array(self, to_jsonable_list):
@@ -87,16 +86,21 @@ class RestClient(object):
                raises RestException if response is not OK
         '''
         
+        self.lastURL = self.baseURL + endpoint
+        semtk3_logger.debug("Posting to " + self.lastURL + "...")
+        
+        headers = RestClient.HEADERS.copy()
         if (files):
-            data = dataObj 
+            headers.pop("content-type", None)
+            response = requests.request("POST", self.lastURL, params=dataObj, headers=headers, files=files)
+
         else :
-            data = json.dumps(dataObj)
+            headers["content-type"] = "application/json"
+            response = requests.request("POST", self.lastURL, data=json.dumps(dataObj), headers=headers)
             
         
-        self.lastURL = self.baseURL + endpoint
-
-        semtk3_logger.debug("Posting to " + self.lastURL + "...")
-        response = requests.request("POST", self.lastURL, data=data, headers=RestClient.HEADERS, files=files)
+        
+        
 
         if response.ok:
             self.lastContent = response.content
