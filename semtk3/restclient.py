@@ -58,7 +58,7 @@ class RestClient(object):
 
     @staticmethod
     def set_headers(headers):
-        RestClient.HEADERS = headers
+        RestClient.HEADERS = headers if headers else {}
         RestClient.HEADERS['cache-control'] = "no-cache"
         
     def to_json_array(self, to_jsonable_list):
