@@ -240,6 +240,21 @@ def upload_owl(owl_file_path, conn_json_str, user_name, password, model_or_data=
     query_client = __get_query_client(conn_json_str, user_name, password)
     return query_client.exec_upload_owl(owl_file_path, model_or_data, conn_index)
 
+def upload_turtle(turtle_file_path, conn_json_str, user_name, password, model_or_data=SEMTK3_CONN_MODEL, conn_index=0):
+    '''
+    Upload a turtle file
+    :param turtle_file_path: path to the file
+    :param conn_json_str: connection json string
+    :param user_name: optional user name
+    :param password: optional password
+    :param model_or_data: optional "model" or "data" specifying which endpoint in the sparql connection, defaults to "model"
+    :param conn_index: index specifying which of the model or data endpoints in the sparql connection, defaults to 0
+    :return: message
+    :rettype: string
+    '''
+    query_client = __get_query_client(conn_json_str, user_name, password)
+    return query_client.exec_upload_turtle(turtle_file_path, model_or_data, conn_index)
+
 def query(query, conn_json_str, model_or_data=SEMTK3_CONN_DATA, conn_index=0):
     '''
     Run a raw SPARQL query
