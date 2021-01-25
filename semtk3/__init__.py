@@ -14,6 +14,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+# pip notes
+# ---------
+# pip install requests
+# pip install python-dateutil
+#
 
 from . import util
 from . import fdccacheclient
@@ -415,7 +420,9 @@ def create_nodegroup(conn_json_str, class_uri, sparql_id=None):
 
 def override_ports(query_port=None, status_port=None, results_port=None, hive_port=None, oinfo_port=None, nodegroup_exec_port=None, nodegroup_port=None, fdcache_port=None):
     '''
-    Override the default port(s) for Semtk service(s)
+    Override the default port(s) for Semtk service(s).  
+    Ports may be numbers (port will be appended with colon), e.g. 80 or "80"
+    or context string (port will simply be appended)         e.g. "/query"
     :param query_port: optional
     :param status_port: optional
     :param results_port: optional
@@ -450,37 +457,47 @@ def query_hive(hiveserver_host, hiveserver_port, hiveserver_database, query):
 
 ##############################
 def __get_fdc_cache_client():
-    status_client = statusclient.StatusClient(SEMTK3_HOST+ ":" + STATUS_PORT)
-    results_client = resultsclient.ResultsClient(SEMTK3_HOST+ ":" + RESULTS_PORT)
-    return fdccacheclient.FdcCacheClient(SEMTK3_HOST + ":" + FDCCACHE_PORT, status_client, results_client)
+    status_client = statusclient.StatusClient(__build_client_url(SEMTK3_HOST, STATUS_PORT))
+    results_client = resultsclient.ResultsClient(__build_client_url(SEMTK3_HOST, RESULTS_PORT))
+    return fdccacheclient.FdcCacheClient(__build_client_url(SEMTK3_HOST, FDCCACHE_PORT), status_client, results_client)
 
 def __get_nge_client():
-    status_client = statusclient.StatusClient(SEMTK3_HOST+ ":" + STATUS_PORT)
-    results_client = resultsclient.ResultsClient(SEMTK3_HOST+ ":" + RESULTS_PORT)
-    return nodegroupexecclient.NodegroupExecClient(SEMTK3_HOST + ":" + NODEGROUP_EXEC_PORT, status_client, results_client)
+    status_client = statusclient.StatusClient(__build_client_url(SEMTK3_HOST, STATUS_PORT))
+    results_client = resultsclient.ResultsClient(__build_client_url(SEMTK3_HOST, RESULTS_PORT))
+    return nodegroupexecclient.NodegroupExecClient(__build_client_url(SEMTK3_HOST, NODEGROUP_EXEC_PORT), status_client, results_client)
 
 def __get_query_client(conn_json_str, user_name=None, password=None):
     conn = sparqlconnection.SparqlConnection(conn_json_str, user_name, password)
-    return queryclient.QueryClient( (SEMTK3_HOST+ ":" + QUERY_PORT), conn)
+    return queryclient.QueryClient( __build_client_url(SEMTK3_HOST, QUERY_PORT), conn)
 
 def __get_status_client():
-    return statusclient.StatusClient(SEMTK3_HOST+ ":" + STATUS_PORT)
+    return statusclient.StatusClient(__build_client_url(SEMTK3_HOST, STATUS_PORT))
 
 def __get_results_client():
-    return resultsclient.ResultsClient(SEMTK3_HOST+ ":" + RESULTS_PORT)
+    return resultsclient.ResultsClient(__build_client_url(SEMTK3_HOST, RESULTS_PORT))
 
 def __get_oinfo_client(conn_json_str):
-    return oinfoclient.OInfoClient( (SEMTK3_HOST+ ":" + OINFO_PORT), conn_json_str)
+    return oinfoclient.OInfoClient( __build_client_url(SEMTK3_HOST, OINFO_PORT), conn_json_str)
 
 def __get_nodegroup_store_client():
-    return nodegroupstoreclient.NodegroupStoreClient( (SEMTK3_HOST+ ":" + NODEGROUP_STORE_PORT))
+    return nodegroupstoreclient.NodegroupStoreClient( __build_client_url(SEMTK3_HOST, NODEGROUP_STORE_PORT))
 
 def __get_nodegroup_client():
-    status_client = statusclient.StatusClient(SEMTK3_HOST+ ":" + STATUS_PORT)
-    results_client = resultsclient.ResultsClient(SEMTK3_HOST+ ":" + RESULTS_PORT)
-    return nodegroupclient.NodegroupClient(SEMTK3_HOST + ":" + NODEGROUP_PORT, status_client, results_client)
+    status_client = statusclient.StatusClient(__build_client_url(SEMTK3_HOST, STATUS_PORT))
+    results_client = resultsclient.ResultsClient(__build_client_url(SEMTK3_HOST, RESULTS_PORT))
+    return nodegroupclient.NodegroupClient(__build_client_url(SEMTK3_HOST, NODEGROUP_PORT), status_client, results_client)
 
 def __get_hive_client(hiveserver_host, hiveserver_port, hiveserver_database):
-    status_client = statusclient.StatusClient(SEMTK3_HOST+ ":" + STATUS_PORT)
-    results_client = resultsclient.ResultsClient(SEMTK3_HOST+ ":" + RESULTS_PORT)
-    return hiveclient.HiveClient( (SEMTK3_HOST+ ":" + HIVE_PORT), hiveserver_host, hiveserver_port, hiveserver_database, status_client, results_client)    
+    status_client = statusclient.StatusClient(__build_client_url(SEMTK3_HOST, STATUS_PORT))
+    results_client = resultsclient.ResultsClient(__build_client_url(SEMTK3_HOST, RESULTS_PORT))
+    return hiveclient.HiveClient( __build_client_url(SEMTK3_HOST,HIVE_PORT), hiveserver_host, hiveserver_port, hiveserver_database, status_client, results_client)    
+
+# build a url using a ":" if the port is a number, otherwise just appending it
+def __build_client_url(base_url, port):
+    sep = ""
+    try:
+        int(port)
+        sep = ":"
+    except:
+        sep = ""
+    return base_url + sep + port
