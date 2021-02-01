@@ -102,6 +102,11 @@ def set_host(hostUrl):
 def set_headers(headers):
     restclient.RestClient.set_headers(headers);
     
+def print_wait_dots(seconds):
+    semtkasyncclient.SemTkAsyncClient.WAIT_MSEC = seconds * 1000
+    semtkasyncclient.SemTkAsyncClient.PERCENT_INCREMENT = 100
+    semtkasyncclient.SemTkAsyncClient.PRINT_DOTS = True
+    
 def get_logger():
     return logging.getLogger("semtk3")
 

@@ -27,7 +27,11 @@ import logging
 
 if __name__ == '__main__':
     semtk3.set_host("http://localhost")
-
+    
+    #semtk3.print_wait_dots(3)
+    table = semtk3.select_by_id("DeleteMe")
+    print(table.get_rows())
+    
     #
     # configure logging:   http://docs.python.org/3/howto/logging.html
     # using:               https://docs.python.org/3/howto/logging-cookbook.html

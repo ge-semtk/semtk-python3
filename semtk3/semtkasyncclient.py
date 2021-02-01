@@ -21,6 +21,10 @@ semtk3_logger = logging.getLogger("semtk3")
 
 class SemTkAsyncClient(semtkclient.SemTkClient):
     
+    PRINT_DOTS = False
+    WAIT_MSEC = 5000
+    PERCENT_INCREMENT = 20
+    
     def __init__(self, baseURL, service=None, status_client=None, results_client=None):
         ''' Client for a semtk service that uses status and results services
           
@@ -120,20 +124,24 @@ class SemTkAsyncClient(semtkclient.SemTkClient):
             
             returns void
         '''
-        MSEC = 5000
-        INCREMENT = 20
         
-        percent_complete = self.post_wait_for_percent_or_msec(jobid, INCREMENT, MSEC)
+        
+        percent_complete = self.post_wait_for_percent_or_msec(jobid, SemTkAsyncClient.PERCENT_INCREMENT, SemTkAsyncClient.WAIT_MSEC)
         semtk3_logger.info("Percent complete:  " + str(percent_complete) + "%")
 
         # loop on percent complete calls
         while percent_complete < 100:
-            percent_complete += INCREMENT
+            percent_complete += SemTkAsyncClient.PERCENT_INCREMENT
             if percent_complete > 100:
                 percent_complete = 100
             
-            percent_complete = self.post_wait_for_percent_or_msec(jobid, percent_complete, MSEC)
+            percent_complete = self.post_wait_for_percent_or_msec(jobid, percent_complete, SemTkAsyncClient.WAIT_MSEC)
             semtk3_logger.info("Percent complete:  " + str(percent_complete) + "%")
+            if SemTkAsyncClient.PRINT_DOTS:
+                print('.', end='')
+                
+        if SemTkAsyncClient.PRINT_DOTS:
+                print(' ')
                     
         # throw exception on job failure
         if not self.post_get_status_boolean(jobid):
