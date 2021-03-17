@@ -10,8 +10,10 @@ API Documentation is auto-generated and available online at:
 For more info, see [./doc](./doc/README.md).
 
 ## pip install
+
+Shown with a sample commit tag.  You'll want to choose the latest or one that works for you.
 ```
-pip install git+https://github.com/ge-semtk/semtk-python3@replace_with_desired_commit_tag
+pip install git+https://github.com/ge-semtk/semtk-python3@d44a45941d06ec6466bbe61bfd81cd667d6a5137
 ```
 
 ## Build whl file
