@@ -11,7 +11,7 @@ For more info, see [./doc](./doc/README.md).
 
 ## pip install
 ```
-pip install git+https://github.com/ge-semtk/semtk-python3@d44a--latest-tag--1cd667d6a5137
+pip install git+https://github.com/ge-semtk/semtk-python3@replace_with_desired_commit_tag
 ```
 
 ## Build whl file
