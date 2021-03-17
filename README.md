@@ -9,6 +9,11 @@ API Documentation is auto-generated and available online at:
 
 For more info, see [./doc](./doc/README.md).
 
+## pip install
+```
+pip install git+https://github.com/ge-semtk/semtk-python3@d44a--latest-tag--1cd667d6a5137
+```
+
 ## Build whl file
 ```
 pip install wheel
