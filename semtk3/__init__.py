@@ -44,7 +44,7 @@ import os.path
 import re
 import sys
 import logging
-import plotly.io
+import plotly
 from semtk3.oinfoclient import OInfoClient
 
 # pip install requests
@@ -201,8 +201,9 @@ def select_plot_by_id(nodegroup_id):
     print("processed plot spec is ", plot)
     # generate figure
     #plotly.io.renderers.default = "jpg"    # requires psutil package
-    plotly.io.show(plot["spec"])            # TODO remove after properly returning something
-    return                                  # TODO what to return?
+    figure = plotly.graph_objects.Figure(plot["spec"])
+    figure.show()  # TODO remove           
+    return figure
 
 def get_constraints_by_id(nodegroup_id):
     '''
