@@ -31,10 +31,12 @@ from . import restclient
 from . import hiveclient
 from . import resultsclient
 from . import statusclient
+from . import utilityclient
 from . import runtimeconstraint
 from . import sparqlconnection
 from . import semtkasyncclient
 from . import semtktable
+from . import sparqlgraphjson
 
 import csv
 import json
@@ -59,6 +61,7 @@ NODEGROUP_STORE_PORT = "12056"
 OINFO_PORT = "12057"
 NODEGROUP_EXEC_PORT = "12058"
 NODEGROUP_PORT = "12059"
+UTILITY_PORT = "12060"
 FDCCACHE_PORT = "12068"
 
 QUERY_HOST = "<unset>"
@@ -69,6 +72,7 @@ NODEGROUP_STORE_HOST = "<unset>"
 OINFO_HOST = "<unset>"
 NODEGROUP_EXEC_HOST = "<unset>"
 NODEGROUP_HOST = "<unset>"
+UTILITY_HOST = "<unset>"
 FDCCACHE_HOST = "<unset>"
 
 OP_MATCHES = runtimeconstraint.RuntimeConstraint.OP_MATCHES
@@ -101,7 +105,7 @@ for depend in ['requests']:
 ###########################
 
 def set_host(hostUrl):
-    global QUERY_HOST, STATUS_HOST, RESULTS_HOST, HIVE_HOST, NODEGROUP_STORE_HOST, OINFO_HOST, NODEGROUP_EXEC_HOST, NODEGROUP_HOST, FDCCACHE_HOST
+    global QUERY_HOST, STATUS_HOST, RESULTS_HOST, HIVE_HOST, NODEGROUP_STORE_HOST, OINFO_HOST, NODEGROUP_EXEC_HOST, NODEGROUP_HOST, UTILITY_HOST, FDCCACHE_HOST
         
     QUERY_HOST = hostUrl
     STATUS_HOST = hostUrl
@@ -111,6 +115,7 @@ def set_host(hostUrl):
     OINFO_HOST = hostUrl
     NODEGROUP_EXEC_HOST = hostUrl
     NODEGROUP_HOST = hostUrl
+    UTILITY_HOST = hostUrl
     FDCCACHE_HOST = hostUrl
 
 #
@@ -178,6 +183,24 @@ def select_by_id(nodegroup_id, limit_override=0, offset_override=0, runtime_cons
    
     table = nge_client.exec_async_dispatch_select_by_id(nodegroup_id, SEMTK3_CONN_OVERRIDE, limit_override, offset_override, runtime_constraints, edc_constraints, flags)
     return table
+
+
+def select_plot_by_id(nodegroup_id):
+    '''
+    Create a plot for a given nodegroup id
+    TODO error handling
+    '''
+    # get results table for given nodegroup
+    tableJsonStr = select_by_id(nodegroup_id).to_json_str()
+    # get 0th plot spec from nodegroup
+    sg_json = sparqlgraphjson.SparqlGraphJson(get_nodegroup_by_id(nodegroup_id))
+    plotSpecJsonStr = json.dumps(sg_json.get_plots()[0])
+    print("plot spec is ", plotSpecJsonStr)
+    # call utility service to populate the data
+    plot = __get_utility_client().exec_process_plot_spec(plotSpecJsonStr, tableJsonStr)
+    print("processed plot spec is ", plot)
+    # TODO return figure
+
 
 def get_constraints_by_id(nodegroup_id):
     '''
@@ -441,7 +464,7 @@ def create_nodegroup(conn_json_str, class_uri, sparql_id=None):
     ret = ng_client.exec_create_nodegroup(conn_json_str, class_uri, sparql_id)
     return ret 
 
-def override_ports(query_port=None, status_port=None, results_port=None, hive_port=None, oinfo_port=None, nodegroup_exec_port=None, nodegroup_port=None, fdcache_port=None):
+def override_ports(query_port=None, status_port=None, results_port=None, hive_port=None, oinfo_port=None, nodegroup_exec_port=None, nodegroup_port=None, utility_port=None, fdcache_port=None):
     '''
     Override the default port(s) for Semtk service(s).  
     Ports may be numbers (port will be appended with colon), e.g. 80 or "80"
@@ -455,7 +478,7 @@ def override_ports(query_port=None, status_port=None, results_port=None, hive_po
     :param nodegroup_port: optional
     :param fdcache_port: optional
     '''
-    global QUERY_PORT, STATUS_PORT, RESULTS_PORT, HIVE_PORT, OINFO_PORT, NODEGROUP_EXEC_PORT, NODEGROUP_PORT, FDCCACHE_PORT
+    global QUERY_PORT, STATUS_PORT, RESULTS_PORT, HIVE_PORT, OINFO_PORT, NODEGROUP_EXEC_PORT, NODEGROUP_PORT, UTILITY_PORT, FDCCACHE_PORT
     if query_port: QUERY_PORT = query_port
     if status_port: STATUS_PORT = status_port
     if results_port: RESULTS_PORT = results_port
@@ -463,9 +486,10 @@ def override_ports(query_port=None, status_port=None, results_port=None, hive_po
     if oinfo_port: OINFO_PORT = oinfo_port
     if nodegroup_exec_port: NODEGROUP_EXEC_PORT = nodegroup_exec_port
     if nodegroup_port: NODEGROUP_PORT = nodegroup_port
+    if utility_port: UTILITY_PORT = utility_port
     if fdcache_port: FDCCACHE_PORT = fdcache_port 
 
-def override_hosts(query_host=None, status_host=None, results_host=None, hive_host=None, oinfo_host=None, nodegroup_exec_host=None, nodegroup_host=None, fdcache_host=None):
+def override_hosts(query_host=None, status_host=None, results_host=None, hive_host=None, oinfo_host=None, nodegroup_exec_host=None, nodegroup_host=None, utility_host=None, fdcache_host=None):
     '''
     Override the default host(s) for Semtk service(s).  
     
@@ -478,7 +502,7 @@ def override_hosts(query_host=None, status_host=None, results_host=None, hive_ho
     :param nodegroup_host: optional
     :param fdcache_host: optional
     '''
-    global QUERY_HOST, STATUS_HOST, RESULTS_HOST, HIVE_HOST, NODEGROUP_STORE_HOST, OINFO_HOST, NODEGROUP_EXEC_HOST, NODEGROUP_HOST, FDCCACHE_HOST
+    global QUERY_HOST, STATUS_HOST, RESULTS_HOST, HIVE_HOST, NODEGROUP_STORE_HOST, OINFO_HOST, NODEGROUP_EXEC_HOST, NODEGROUP_HOST, UTILITY_HOST, FDCCACHE_HOST
     if query_host: QUERY_HOST = query_host
     if status_host: STATUS_HOST = status_host
     if results_host: RESULTS_HOST = results_host
@@ -486,6 +510,7 @@ def override_hosts(query_host=None, status_host=None, results_host=None, hive_ho
     if oinfo_host: OINFO_HOST = oinfo_host
     if nodegroup_exec_host: NODEGROUP_EXEC_HOST = nodegroup_exec_host
     if nodegroup_host: NODEGROUP_HOST = nodegroup_host
+    if utility_host: UTILITY_HOST = utility_host
     if fdcache_host: FDCCACHE_HOST = fdcache_host 
 
 def query_hive(hiveserver_host, hiveserver_port, hiveserver_database, query):
@@ -537,6 +562,9 @@ def __get_hive_client(hiveserver_host, hiveserver_port, hiveserver_database):
     status_client = statusclient.StatusClient(__build_client_url(STATUS_HOST, STATUS_PORT))
     results_client = resultsclient.ResultsClient(__build_client_url(RESULTS_HOST, RESULTS_PORT))
     return hiveclient.HiveClient( __build_client_url(HIVE_HOST,HIVE_PORT), hiveserver_host, hiveserver_port, hiveserver_database, status_client, results_client)    
+
+def __get_utility_client():
+    return utilityclient.UtilityClient( __build_client_url(UTILITY_HOST, UTILITY_PORT))
 
 # build a url using a ":" if the port is a number, otherwise just appending it
 def __build_client_url(base_url, port):
