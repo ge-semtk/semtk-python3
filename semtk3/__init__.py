@@ -44,6 +44,7 @@ import os.path
 import re
 import sys
 import logging
+import plotly.io
 from semtk3.oinfoclient import OInfoClient
 
 # pip install requests
@@ -195,12 +196,13 @@ def select_plot_by_id(nodegroup_id):
     # get 0th plot spec from nodegroup
     sg_json = sparqlgraphjson.SparqlGraphJson(get_nodegroup_by_id(nodegroup_id))
     plotSpecJsonStr = json.dumps(sg_json.get_plots()[0])
-    print("plot spec is ", plotSpecJsonStr)
     # call utility service to populate the data
-    plot = __get_utility_client().exec_process_plot_spec(plotSpecJsonStr, tableJsonStr)
+    plot = __get_utility_client().exec_process_plot_spec(plotSpecJsonStr, tableJsonStr)["simpleresults"]["plot"]
     print("processed plot spec is ", plot)
-    # TODO return figure
-
+    # generate figure
+    #plotly.io.renderers.default = "jpg"    # requires psutil package
+    plotly.io.show(plot["spec"])            # TODO remove after properly returning something
+    return                                  # TODO what to return?
 
 def get_constraints_by_id(nodegroup_id):
     '''
