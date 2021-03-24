@@ -193,9 +193,8 @@ def select_plot_by_id(nodegroup_id):
     tableJsonStr = select_by_id(nodegroup_id).to_json_str()                                     # get results table
     sg_json = sparqlgraphjson.SparqlGraphJson(get_nodegroup_by_id(nodegroup_id))                
     plotSpecJsonStr = json.dumps(sg_json.get_plots()[0])                                        # get 0th plot spec
-    result_set = __get_utility_client().exec_process_plot_spec(plotSpecJsonStr, tableJsonStr)   # populate plot spec with data
-    plot = result_set["plot"]["spec"]
-    return plotly.graph_objects.Figure(plot)
+    plot = __get_utility_client().exec_process_plot_spec(plotSpecJsonStr, tableJsonStr)         # populate plot spec with data
+    return plotly.graph_objects.Figure(plot["spec"])
 
 
 def get_constraints_by_id(nodegroup_id):
