@@ -31,7 +31,7 @@ class UtilityClient(semtkclient.SemTkClient):
         payload["plotSpecJson"] = plotSpecJson;
         payload["tableJson"] = tableJson;
         
-        return self.post_to_status("processPlotSpec", payload)
+        return self.post_to_simple("processPlotSpec", payload)
         
             
     

@@ -189,21 +189,14 @@ def select_by_id(nodegroup_id, limit_override=0, offset_override=0, runtime_cons
 def select_plot_by_id(nodegroup_id):
     '''
     Create a plot for a given nodegroup id
-    TODO error handling
     '''
-    # get results table for given nodegroup
-    tableJsonStr = select_by_id(nodegroup_id).to_json_str()
-    # get 0th plot spec from nodegroup
-    sg_json = sparqlgraphjson.SparqlGraphJson(get_nodegroup_by_id(nodegroup_id))
-    plotSpecJsonStr = json.dumps(sg_json.get_plots()[0])
-    # call utility service to populate the data
-    plot = __get_utility_client().exec_process_plot_spec(plotSpecJsonStr, tableJsonStr)["simpleresults"]["plot"]
-    print("processed plot spec is ", plot)
-    # generate figure
-    #plotly.io.renderers.default = "jpg"    # requires psutil package
-    figure = plotly.graph_objects.Figure(plot["spec"])
-    figure.show()  # TODO remove           
-    return figure
+    tableJsonStr = select_by_id(nodegroup_id).to_json_str()                                     # get results table
+    sg_json = sparqlgraphjson.SparqlGraphJson(get_nodegroup_by_id(nodegroup_id))                
+    plotSpecJsonStr = json.dumps(sg_json.get_plots()[0])                                        # get 0th plot spec
+    result_set = __get_utility_client().exec_process_plot_spec(plotSpecJsonStr, tableJsonStr)   # populate plot spec with data
+    plot = result_set["plot"]["spec"]
+    return plotly.graph_objects.Figure(plot)
+
 
 def get_constraints_by_id(nodegroup_id):
     '''
