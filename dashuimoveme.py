@@ -14,6 +14,7 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 semtk3.set_host("http://vesuvius-test")
 semtk3.override_ports(utility_port="5900")
 fig = semtk3.select_plot_by_id("demoNodegroupPlotting-JWWtemp")
+fig2 = semtk3.select_plot_by_id("demoNodegroupPlotting-JWWtemp2")
 
 app.layout = html.Div(children=[
     html.H1(children='Hello Dash'),
@@ -23,8 +24,13 @@ app.layout = html.Div(children=[
     '''),
 
     dcc.Graph(
-        id='example-graph',
+        id='figure1',
         figure=fig
+    ),
+    
+    dcc.Graph(
+        id='figure2',
+        figure=fig2
     )
 ])
 
