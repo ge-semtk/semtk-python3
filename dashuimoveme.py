@@ -33,7 +33,8 @@ app.layout = html.Div(children=[
         id='nodegroup-dropdown',
         options=[
             {'label': 'demoNodegroupPlotting-JWWtemp', 'value': 'demoNodegroupPlotting-JWWtemp'},
-            {'label': 'demoNodegroupPlotting-JWWtemp2', 'value': 'demoNodegroupPlotting-JWWtemp2'}
+            {'label': 'demoNodegroupPlotting-JWWtemp2', 'value': 'demoNodegroupPlotting-JWWtemp2'},
+            {'label': 'demoNodegroupPlotting-JWWtemp-timestamp', 'value': 'demoNodegroupPlotting-JWWtemp-timestamp'}
         ],
         value='demoNodegroupPlotting-JWWtemp',
         style={'width': '50%'}
