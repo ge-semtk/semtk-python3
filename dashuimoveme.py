@@ -23,7 +23,8 @@ app.layout = html.Div(children=[
 
     dcc.Graph(
         id='figure1',
-        figure=fig_default
+        figure=fig_default,
+        style={'width': '40%'}
     ),
     
     html.Label('Select a nodegroup:'),
@@ -34,11 +35,14 @@ app.layout = html.Div(children=[
             {'label': 'demoNodegroupPlotting-JWWtemp', 'value': 'demoNodegroupPlotting-JWWtemp'},
             {'label': 'demoNodegroupPlotting-JWWtemp2', 'value': 'demoNodegroupPlotting-JWWtemp2'}
         ],
-        value='demoNodegroupPlotting-JWWtemp'
+        value='demoNodegroupPlotting-JWWtemp',
+        style={'width': '50%'}
     ),
     
+    html.Br(),
     dcc.Graph(
-        id='figure2'
+        id='figure2',
+        style={'width': '40%'}
     )
 ])
 
