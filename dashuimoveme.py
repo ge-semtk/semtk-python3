@@ -14,29 +14,21 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
 semtk3.set_host("http://vesuvius-test")
 semtk3.override_ports(utility_port="5900")
-fig_default = semtk3.select_plot_by_id("demoNodegroupPlotting-JWWtemp")
 
 app.layout = html.Div(children=[
     
-    html.H1(children='Template UI...'),
+    html.H1(children='Template UI'),
     html.Br(),
-
-    dcc.Graph(
-        id='figure1',
-        figure=fig_default,
-        style={'width': '40%'}
-    ),
     
     html.Label('Select a nodegroup:'),
     html.Br(),
     dcc.Dropdown(
         id='nodegroup-dropdown',
         options=[
-            {'label': 'demoNodegroupPlotting-JWWtemp', 'value': 'demoNodegroupPlotting-JWWtemp'},
-            {'label': 'demoNodegroupPlotting-JWWtemp2', 'value': 'demoNodegroupPlotting-JWWtemp2'},
-            {'label': 'demoNodegroupPlotting-JWWtemp-timestamp', 'value': 'demoNodegroupPlotting-JWWtemp-timestamp'}
+            {'label': 'demoNodegroupPlotting-JWW1', 'value': 'demoNodegroupPlotting-JWW1'},
+            {'label': 'demoNodegroupPlotting-JWW2', 'value': 'demoNodegroupPlotting-JWW2'},
         ],
-        value='demoNodegroupPlotting-JWWtemp',
+        value='demoNodegroupPlotting-JWW1',
         style={'width': '50%'}
     ),
     
