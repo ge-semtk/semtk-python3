@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 from . import semtkclient
-from . import plotshandler
+from . import plotspecshandler
 
 class UtilityClient(semtkclient.SemTkClient):
    
@@ -33,7 +33,7 @@ class UtilityClient(semtkclient.SemTkClient):
         
         simple = self.post_to_simple("processPlotSpec", payload)
         plotJson = self.get_simple_field(simple, "plot")
-        return plotshandler.PlotSpecHandler(plotJson)
+        return plotspecshandler.PlotSpecHandler(plotJson)
         
             
     

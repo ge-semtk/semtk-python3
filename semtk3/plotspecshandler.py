@@ -19,24 +19,24 @@ import json
 #
 # Encapsulate a JSON array containing a set of plot specifications
 #
-class PlotsHandler:
+class PlotSpecsHandler:
     
     def __init__(self, json_arr):
         self.json_arr = json_arr
         
-    def get_num_plots(self):
+    def get_num_plot_specs(self):
         return len(self.json_arr)
 
-    def get_plot_by_id(self, index):
+    def get_plot_spec_by_id(self, index):
         return PlotSpecHandler(self.json_arr[index])
     
-    def get_plot_by_name(self, name):
+    def get_plot_spec_by_name(self, name):
         for o in self.json_arr:
             if(PlotSpecHandler(o).get_name() == name):
                 return PlotSpecHandler(o)
         return   
     
-    def get_plot_names(self):
+    def get_plot_spec_names(self):
         names = []
         for o in self.json_arr:
             names.append(PlotSpecHandler(o).get_name())

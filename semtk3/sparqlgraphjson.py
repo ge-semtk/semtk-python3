@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from . import plotshandler
+from . import plotspecshandler
 
 #
 # Encapsulate the JSON format of a nodegroup
@@ -23,7 +23,7 @@ class SparqlGraphJson:
     
     def __init__(self, json):
         self.json = json
-        self.plots_handler = plotshandler.PlotsHandler(json["plots"])
+        self.plot_specs_handler = plotspecshandler.PlotSpecsHandler(json["plotSpecs"])
    
     def get_plots_handler(self):
-        return self.plots_handler
+        return self.plot_specs_handler
