@@ -18,8 +18,9 @@ Dash is running on http://127.0.0.1:8050/
 ```
 The application may be accessed at the URL indicated above (http://127.0.0.1:8050/).
 
+TODO: add a screenshot
+
 ## To edit the UI
 
-Modify UI components by editing the main .py file.
-
-Modify the style by editing assets/*.css
+* Modify UI components by editing the main .py file.
+* Modify the style by editing assets/*.css

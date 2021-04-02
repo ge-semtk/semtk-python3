@@ -32,7 +32,7 @@ if __name__ == '__main__':
     table = semtk3.select_by_id("DeleteMe")
     print(table.get_rows())
      
-    plot = semtk3.select_plot_by_id("DeleteMe", 0)
+    plot = semtk3.select_plot_by_id("DeleteMe", "plot name")
     plot.show() 
      
     #

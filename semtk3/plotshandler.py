@@ -27,8 +27,14 @@ class PlotsHandler:
     def get_num_plots(self):
         return len(self.json_arr)
 
-    def get_plot(self, index):
+    def get_plot_by_id(self, index):
         return PlotSpecHandler(self.json_arr[index])
+    
+    def get_plot_by_name(self, name):
+        for o in self.json_arr:
+            if(PlotSpecHandler(o).get_name() == name):
+                return PlotSpecHandler(o)
+        return   
     
     def get_plot_names(self):
         names = []
