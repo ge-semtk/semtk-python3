@@ -16,7 +16,6 @@
 #
 import semtk3
 import logging
-import plotly
 
 #
 # Not done yet
