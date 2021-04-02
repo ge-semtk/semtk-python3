@@ -33,7 +33,7 @@ class UtilityClient(semtkclient.SemTkClient):
         
         simple = self.post_to_simple("processPlotSpec", payload)
         plotJson = self.get_simple_field(simple, "plot")
-        return plotshandler.PlotlyPlotSpecHandler(plotJson)
+        return plotshandler.PlotSpecHandler(plotJson)
         
             
     

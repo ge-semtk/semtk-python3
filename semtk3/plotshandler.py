@@ -28,16 +28,18 @@ class PlotsHandler:
         return len(self.json_arr)
 
     def get_plot(self, index):
-        # TODO check if type is Plotly first - error if not
-        return PlotlyPlotSpecHandler(self.json_arr[index])
+        return PlotSpecHandler(self.json_arr[index])
     
-    # TODO add get_plot_names
-
+    def get_plot_names(self):
+        names = []
+        for o in self.json_arr:
+            names.append(PlotSpecHandler(o).get_name())
+        return names
         
 #
-# Encapsulate a JSON object containing a Plotly plot spec (name, type, spec)
+# Encapsulate a JSON object containing a plot spec (name, type, spec)
 #
-class PlotlyPlotSpecHandler:
+class PlotSpecHandler:
     
     def __init__(self, json):
         self.json = json
@@ -45,8 +47,13 @@ class PlotlyPlotSpecHandler:
     def to_json_str(self):
         return json.dumps(self.json)   
         
+    def get_name(self):
+        return self.json["name"]    
+        
+    def get_type(self):
+        return self.json["type"]
+        
     def get_spec(self):
         return self.json["spec"]
-
         
     

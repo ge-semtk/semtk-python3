@@ -45,7 +45,7 @@ app.layout = html.Div(children=[
     Input(component_id='nodegroup-dropdown', component_property='value')
 )
 def update_figure(input_value):
-    return semtk3.select_plot_by_id(input_value)
+    return semtk3.select_plot_by_id(input_value, 0)
     
 
 if __name__ == '__main__':
