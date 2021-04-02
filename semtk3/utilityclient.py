@@ -14,8 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import json
 from . import semtkclient
+from . import plotshandler
 
 class UtilityClient(semtkclient.SemTkClient):
    
@@ -28,11 +28,12 @@ class UtilityClient(semtkclient.SemTkClient):
     def exec_process_plot_spec(self, plotSpec, table):
 
         payload = {}
-        payload["plotSpecJson"] = json.dumps(plotSpec);
+        payload["plotSpecJson"] = plotSpec.to_json_str();
         payload["tableJson"] = table.to_json_str();
         
         simple = self.post_to_simple("processPlotSpec", payload)
-        return self.get_simple_field(simple, "plot")
+        plotJson = self.get_simple_field(simple, "plot")
+        return plotshandler.PlotlyPlotSpecHandler(plotJson)
         
             
     
