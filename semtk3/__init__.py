@@ -186,14 +186,15 @@ def select_by_id(nodegroup_id, limit_override=0, offset_override=0, runtime_cons
     return table
 
 
-def select_plot_by_id(nodegroup_id):
+def select_plot_by_id(nodegroup_id, plot_index):
     '''
     Create a plot for a given nodegroup id
     '''
-    tableJsonStr = select_by_id(nodegroup_id).to_json_str()                                     # get results table
-    sg_json = sparqlgraphjson.SparqlGraphJson(get_nodegroup_by_id(nodegroup_id))                
-    plotSpecJsonStr = json.dumps(sg_json.get_plots()[0])                                        # get 0th plot spec
-    plot = __get_utility_client().exec_process_plot_spec(plotSpecJsonStr, tableJsonStr)         # populate plot spec with data
+    table = select_by_id(nodegroup_id)                                       # get results table
+    nodegroupStr = get_nodegroup_by_id(nodegroup_id)                         # get nodegroup string
+    sg_json = sparqlgraphjson.SparqlGraphJson(json.loads(nodegroupStr))       
+    plotSpec = sg_json.get_plots_handler().get_plot(plot_index)              # get plot spec
+    plot = __get_utility_client().exec_process_plot_spec(plotSpec, table)    # populate plot spec with data
     return plotly.graph_objects.Figure(plot["spec"])
 
 

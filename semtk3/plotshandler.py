@@ -14,25 +14,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import json
-from . import semtkclient
 
-class UtilityClient(semtkclient.SemTkClient):
-   
-    def __init__(self, serverURL):
-        ''' serverURL string - e.g. http://machine:8099
-        '''
-        semtkclient.SemTkClient.__init__(self, serverURL, "utility")
-
+#
+# Encapsulate JSON containing a set of plot specifications
+#
+class PlotsHandler:
+    NAME = "name"
     
-    def exec_process_plot_spec(self, plotSpec, table):
+    def __init__(self, json_arr):
+        self.json_arr = json_arr
+        
+    def get_num_plots(self):
+        return len(self.json_arr)
 
-        payload = {}
-        payload["plotSpecJson"] = json.dumps(plotSpec);
-        payload["tableJson"] = table.to_json_str();
+    def get_plot(self, index):
+        return self.json_arr[index]
         
-        simple = self.post_to_simple("processPlotSpec", payload)
-        return self.get_simple_field(simple, "plot")
+    # TODO add get_plot_names
+
         
-            
     

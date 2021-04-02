@@ -14,24 +14,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import json
+from . import plotshandler
 
 #
 # Encapsulate the JSON format of a nodegroup
 #
 class SparqlGraphJson:
     
-    def __init__(self, json_str):
-        self.json = json.loads(json_str)
-        
-    def get_conn(self):
-        return self.json["sparqlConn"]    
-        
-    def get_nodegroup(self):
-        return self.json["sNodeGroup"]
-    
-    def get_plots(self):
-        return self.json["plots"]  
-
-        
-    
+    def __init__(self, json):
+        self.json = json
+        self.plots_handler = plotshandler.PlotsHandler(json["plots"])
+   
+    def get_plots_handler(self):
+        return self.plots_handler
