@@ -143,7 +143,7 @@ def clear_graph(conn_json_str, model_or_data, index):
     :return: message
     :rtype: string
     '''
-    sparql_conn = sparqlconnection.SparqlConnection(conn_json_str)
+    sparql_conn = sparqlconnection.SparqlConnection(json.loads(conn_json_str))
     nge_client = __get_nge_client()
    
     table = nge_client.exec_dispatch_clear_graph(sparql_conn, model_or_data, index)
@@ -533,7 +533,7 @@ def __get_nge_client():
     return nodegroupexecclient.NodegroupExecClient(__build_client_url(NODEGROUP_EXEC_HOST, NODEGROUP_EXEC_PORT), status_client, results_client)
 
 def __get_query_client(conn_json_str, user_name=None, password=None):
-    conn = sparqlconnection.SparqlConnection(conn_json_str, user_name, password)
+    conn = sparqlconnection.SparqlConnection(json.loads(conn_json_str), user_name, password)
     return queryclient.QueryClient( __build_client_url(QUERY_HOST, QUERY_PORT), conn)
 
 def __get_status_client():

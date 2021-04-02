@@ -14,7 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import json
 
 #
 # Encapsulate the JSON format of SparqlConnection objects
@@ -23,8 +22,8 @@ class SparqlConnection:
     MODEL = "model"
     DATA = "data"
     
-    def __init__(self, conn_json_str, user_name = None, password = None):
-        self.conn_json = json.loads(conn_json_str)
+    def __init__(self, conn_json, user_name = None, password = None):
+        self.conn_json = conn_json
         self.user_name = user_name
         self.password = password
         
