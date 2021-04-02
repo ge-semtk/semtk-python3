@@ -8,7 +8,7 @@ import dash_html_components as html
 import semtk3
 from dash.dependencies import Input, Output
 
-external_stylesheets = []
+external_stylesheets = []  #  (automatically uses css files from /assets directory)
 
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
