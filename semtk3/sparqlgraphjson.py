@@ -25,5 +25,5 @@ class SparqlGraphJson:
         self.json = json
         self.plot_specs_handler = plotspecshandler.PlotSpecsHandler(json["plotSpecs"])
    
-    def get_plots_handler(self):
+    def get_plot_specs_handler(self):
         return self.plot_specs_handler
