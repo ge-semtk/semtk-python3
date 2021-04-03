@@ -32,6 +32,13 @@ app.layout = html.Div(children=[
         style={'width': '50%'}
     ),
     
+    html.Label('Select a plot:'),
+    html.Br(),
+    dcc.Dropdown(
+        id='plot-dropdown',
+        style={'width': '50%'}
+    ),
+    
     html.Br(),
     dcc.Graph(
         id='figure2',
@@ -41,12 +48,21 @@ app.layout = html.Div(children=[
 
 
 @app.callback(
-    Output(component_id='figure2', component_property='figure'),
+    Output(component_id='plot-dropdown', component_property='options'),
     Input(component_id='nodegroup-dropdown', component_property='value')
 )
-def update_figure(input_value):
-    return semtk3.select_plot_by_id(input_value, 0)
+def update_plot_list(nodegroup_id):
+    names = semtk3.get_plot_spec_names_by_id(nodegroup_id)
+    return [{'label': i, 'value': i} for i in names]
+  
     
+@app.callback(
+    Output(component_id='figure2', component_property='figure'),
+    Input(component_id='nodegroup-dropdown', component_property='value'),
+    Input(component_id='plot-dropdown', component_property='value')
+)
+def update_figure(nodegroup_id, plot_name):
+    return semtk3.select_plot_by_id(nodegroup_id, plot_name)    
 
 if __name__ == '__main__':
     app.run_server(debug=True)

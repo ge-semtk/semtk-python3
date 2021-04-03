@@ -192,7 +192,7 @@ def get_plot_spec_names_by_id(nodegroup_id):
     '''
     nodegroupStr = get_nodegroup_by_id(nodegroup_id)
     sg_json = sparqlgraphjson.SparqlGraphJson(json.loads(nodegroupStr))       
-    return sg_json.get_plot_specs_handler().get_plot_names()
+    return sg_json.get_plot_specs_handler().get_plot_spec_names()
 
 
 def select_plot_by_id(nodegroup_id, plot_name):
