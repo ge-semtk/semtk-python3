@@ -5,6 +5,7 @@
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
+import plotly.graph_objects as go
 import semtk3
 from dash.dependencies import Input, Output
 
@@ -18,7 +19,7 @@ semtk3.override_ports(utility_port="5900")
 app.layout = html.Div(children=[
     
     html.H1(children='Template UI'),
-    html.Br(),
+    html.H4(children='Use this as a starting point for a custom web app!'),
     
     html.Label('Select a nodegroup:'),
     html.Br(),
@@ -31,7 +32,8 @@ app.layout = html.Div(children=[
         value='demoNodegroupPlotting-JWW1',
         style={'width': '50%'}
     ),
-    
+    html.Br(),
+        
     html.Label('Select a plot:'),
     html.Br(),
     dcc.Dropdown(
@@ -41,28 +43,35 @@ app.layout = html.Div(children=[
     
     html.Br(),
     dcc.Graph(
-        id='figure2',
+        id='figure',
         style={'width': '40%'}
     )
 ])
 
 
+# if user selects nodegroup, update the plot dropdown
 @app.callback(
     Output(component_id='plot-dropdown', component_property='options'),
     Input(component_id='nodegroup-dropdown', component_property='value')
 )
-def update_plot_list(nodegroup_id):
+def update_plot_dropdown(nodegroup_id):
     names = semtk3.get_plot_spec_names_by_id(nodegroup_id)
     return [{'label': i, 'value': i} for i in names]
   
-    
+  
+# if user selects plot, update the graph    
 @app.callback(
-    Output(component_id='figure2', component_property='figure'),
-    Input(component_id='nodegroup-dropdown', component_property='value'),
-    Input(component_id='plot-dropdown', component_property='value')
+    Output(component_id='figure', component_property='figure'),
+    Input(component_id='plot-dropdown', component_property='value'),
+    state=[Input(component_id='nodegroup-dropdown', component_property='value')]
 )
-def update_figure(nodegroup_id, plot_name):
-    return semtk3.select_plot_by_id(nodegroup_id, plot_name)    
+def update_figure(plot_name, nodegroup_id):
+    #print("update_figure: nodegroup",nodegroup_id,"plot_name '",plot_name,"'")
+    if plot_name is not None:
+        return semtk3.select_plot_by_id(nodegroup_id, plot_name)
+    else:
+        return go.Figure()  # blank figure
+        
 
 if __name__ == '__main__':
     app.run_server(debug=True)
