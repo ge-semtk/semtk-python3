@@ -55,8 +55,11 @@ app.layout = html.Div(children=[
     Input(component_id='nodegroup-dropdown', component_property='value')
 )
 def update_plot_dropdown(nodegroup_id):
-    names = semtk3.get_plot_spec_names_by_id(nodegroup_id)
-    return [{'label': i, 'value': i} for i in names]
+    if nodegroup_id is not None:
+        names = semtk3.get_plot_spec_names_by_id(nodegroup_id)
+        return [{'label': i, 'value': i} for i in names]
+    else:
+        return dash.no_update
   
   
 # if user selects plot, update the graph    
@@ -70,7 +73,7 @@ def update_figure(plot_name, nodegroup_id):
     if plot_name is not None:
         return semtk3.select_plot_by_id(nodegroup_id, plot_name)
     else:
-        return go.Figure()  # blank figure
+        return go.Figure()  # set blank figure
         
 
 if __name__ == '__main__':
