@@ -49,21 +49,21 @@ class QueryClient(SemTkClient):
         return res
     
      #
-    # Upload owl.
+    # Upload turtle.
     # Default to model[0] graph in the connection
     #
-    def exec_upload_turtle(self, owl_file_path, model_or_data=sparqlconnection.SparqlConnection.MODEL, index=0):
+    def exec_upload_turtle(self, turtle_file_path, model_or_data=sparqlconnection.SparqlConnection.MODEL, index=0):
         
         payload = {
             "serverAndPort": self.conn.get_server_and_port(model_or_data, index),
             "serverType":    self.conn.get_server_type(model_or_data, index),
-            "dataset":       self.conn.get_graph(model_or_data, index),
+            "graph":         self.conn.get_graph(model_or_data, index),
             "user":          self.conn.get_user_name(),
             "password":      self.conn.get_password()
         }
         
         files = {
-            "owlFile": (os.path.basename(owl_file_path), open(owl_file_path, 'rb'))
+            "ttlFile": (os.path.basename(turtle_file_path), open(turtle_file_path, 'rb'))
         }
 
         res = self.post_to_status("uploadTurtle", payload, files)
