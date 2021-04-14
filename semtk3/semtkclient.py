@@ -64,11 +64,12 @@ class SemTkClient(restclient.RestClient):
             self.raise_exception("Rest service table does not contain @table")
     
     def _check_record_process(self, content):
-        ''' perform all checks on content through checking for table 
+        ''' checking for recordProcess table 
         '''
-        self._check_status(content)
 
         if  "recordProcessResults" not in content.keys():
+            self._check_status(content)
+            
             self.raise_exception("Rest service did not record process results")
     
     
@@ -148,16 +149,30 @@ class SemTkClient(restclient.RestClient):
     
     def post_to_record_process(self, endpoint, dataObj={}, files=None):
         ''' 
-            returns dict - the table 
-            raises RestException
+            returns records processed successfully
+            raises RestException unless failuresEncountered = 0
         '''
         content = self.post(endpoint, dataObj=dataObj, files=files)
         content = json.loads(content.decode("utf-8", errors='ignore'))
 
+        # throw exception if no recordProcessResults
         self._check_record_process(content)
         
         record_process = content["recordProcessResults"]
-        return record_process
+        if  "failuresEncountered" not in record_process.keys():
+            raise Exception("Results did not contain recordProcessResults.failuresEncountered: \n" + content)
+        
+        if record_process["failuresEncountered"] != 0:
+            if "errorTable" in record_process:
+                t = semtktable.SemtkTable(record_process["errorTable"])
+                raise Exception("Encountered failures: \n" + t.get_csv_string())
+            else:
+                raise Exception("Encountered failures but no table given: \n" + content)
+            
+        if not ("recordsProcessed" in record_process):
+            raise Exception("Results did not contain recordProcessResults.recordsProcessed: \n" + content)
+
+        return record_process["recordsProcessed"]
     
     def post_to_jobid(self, endpoint, dataObj={}):
         ''' 

@@ -24,6 +24,7 @@ import io
 import json
 from dateutil import parser      # python-dateutil and six
 import re
+from ase.db import row
 
 JSON_KEY_COL_NAMES = "col_names"
 JSON_KEY_COL_TYPES = "col_type"
@@ -64,6 +65,16 @@ class SemtkTable():
     def get_num_columns(self):
         return self.dict[JSON_KEY_COL_COUNT]
     
+    def get_pandas_data(self):
+        data = {}
+        for c in range(self.get_num_columns()):
+            row = [];
+            for r in range(self.get_num_rows()):
+                row.append(self.get_cell_typed(r,c))
+            data[self.get_column_names()[c]] = row
+        
+        return data
+        
     def get_column_names(self):
         return self.dict[JSON_KEY_COL_NAMES]
     
@@ -129,15 +140,13 @@ class SemtkTable():
             Full types list :    especially Time
             (see list in ImportSpecHandler.java)
         '''
-        if (self.get_column_types()[col] == "http://www.w3.org/2001/XMLSchema#int"):
+        if self.get_column_types()[col].endswith("int"):
             return self.get_cell_as_int(row, col)
         
-        elif (self.get_column_types()[col] == "http://www.w3.org/2001/XMLSchema#float" or 
-              self.get_column_types()[col] == "http://www.w3.org/2001/XMLSchema#double"):
+        elif self.get_column_types()[col].endswith("float") or self.get_column_types()[col].endswith("double"):
             return self.get_cell_as_float(row, col)
         
-        elif (self.get_column_types()[col] == "http://www.w3.org/2001/XMLSchema#date" or 
-              self.get_column_types()[col] == "http://www.w3.org/2001/XMLSchema#dateTime"):            
+        elif self.get_column_types()[col].endswith("date") or self.get_column_types()[col].endswith("dateTime"):            
             return self.get_cell_as_date(row, col)
         
         else:
