@@ -20,10 +20,13 @@ from . import plotspecs
 # Encapsulate the JSON format of a nodegroup
 #
 class SparqlGraphJson:
-    
+        
     def __init__(self, json):
         self.json = json
-        self.plot_specs = plotspecs.PlotSpecs(json["plotSpecs"])
+        if "plotSpecs" in json:
+            self.plot_specs = plotspecs.PlotSpecs(json["plotSpecs"])
+        else:
+            self.plot_specs = plotspecs.PlotSpecs([])            
    
     def get_plot_specs(self):
         return self.plot_specs
