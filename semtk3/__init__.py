@@ -294,10 +294,10 @@ def upload_owl(owl_file_path, conn_json_str, user_name, password, model_or_data=
     query_client = __get_query_client(conn_json_str, user_name, password)
     return query_client.exec_upload_owl(owl_file_path, model_or_data, conn_index)
 
-def upload_turtle(turtle_file_path, conn_json_str, user_name, password, model_or_data=SEMTK3_CONN_MODEL, conn_index=0):
+def upload_turtle(ttl_file_path, conn_json_str, user_name, password, model_or_data=SEMTK3_CONN_MODEL, conn_index=0):
     '''
-    Upload a turtle file
-    :param turtle_file_path: path to the file
+    Upload an turtle file
+    :param ttl_file_path: path to the file
     :param conn_json_str: connection json string
     :param user_name: optional user name
     :param password: optional password
@@ -307,7 +307,7 @@ def upload_turtle(turtle_file_path, conn_json_str, user_name, password, model_or
     :rettype: string
     '''
     query_client = __get_query_client(conn_json_str, user_name, password)
-    return query_client.exec_upload_turtle(turtle_file_path, model_or_data, conn_index)
+    return query_client.exec_upload_turtle(ttl_file_path, model_or_data, conn_index)
 
 def query(query, conn_json_str, model_or_data=SEMTK3_CONN_DATA, conn_index=0):
     '''
