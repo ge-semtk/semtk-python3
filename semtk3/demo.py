@@ -30,7 +30,23 @@ if __name__ == '__main__':
     
     #semtk3.print_wait_dots(3)
     table = semtk3.select_by_id("DeleteMe")
+    
+    # Sample pandas code (without adding the dependency)
+    #
+    # import pandas as pd
+    # df = pd.DataFrame(table.get_pandas_data())
+    
     print(table.get_rows())
+    
+    #
+    # Column manipulation
+    #
+    if table.has_column("my_col"):
+        c = table.get_column_index("my_col")
+        col_data = table.get_column(c)
+        print("my_col: " + col_data)
+    else:
+        print("my_col doesn't exist in this table")
      
     plot = semtk3.select_plot_by_id("DeleteMe", "plot name")
     plot.show() 
