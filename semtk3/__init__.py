@@ -400,11 +400,13 @@ def store_nodegroups(folder_path):
                 store_nodegroup(nodegroup_id, row["comments"], row["creator"], nodegroup_json_str)
             
 
-def retrieve_from_store(regex_str, folder_path):
+def retrieve_from_store_ex(folder_path, id=None, creator=None, comments=None):
     '''
-    Retrieve all nodegroups matching a pattern, create store_data.csv
-    :param regex_str: pattern to match on nodegroup id's
+    Retrieve all nodegroups matching a patterns, create store_data.csv
     :param folder_path: target folder
+    :param id: pattern to match on nodegroup id
+    :param creator: pattern to match on nodegroup creator
+    :param comments: pattern to match on nodegroup comments
     '''
     
     # open the output and write the header
@@ -413,13 +415,22 @@ def retrieve_from_store(regex_str, folder_path):
         store_writer.writerow(['ID', 'comments', 'creator', 'jsonFile'])
         
         # get store data
-        regex = re.compile(regex_str)
+        id_regex = re.compile(id) if id is not None else None
+        creator_regex = re.compile(creator) if creator is not None else None
+        comments_regex = re.compile(comments) if comments is not None else None
         store_table = get_nodegroup_store_data()
-        
+
         for i in range(store_table.get_num_rows()):
-            
+
+            def match(regex, column):
+                return regex is None or regex.search(store_table.get_cell(i,column))
+
+            match_id = match(id_regex, "ID")
+            match_creator = match(creator_regex, "creator")
+            match_comments = match(comments_regex, "comments")
+
             # for rows matching regex
-            if (regex.search(store_table.get_cell(i,"ID"))):
+            if match_id and match_creator and match_comments:
                 nodegroup_id = store_table.get_cell(i, "ID")
                 comments = store_table.get_cell(i, "comments")
                 creator = store_table.get_cell(i, "creator")
@@ -438,7 +449,15 @@ def retrieve_from_store(regex_str, folder_path):
                 
                 # add row to file 
                 store_writer.writerow([nodegroup_id, comments, creator, filename])
-                
+
+def retrieve_from_store(regex_str, folder_path):
+    '''
+    Retrieve all nodegroups matching a pattern, create store_data.csv
+    :param regex_str: pattern to match on nodegroup id's
+    :param folder_path: target folder
+    '''
+    return retrieve_from_store_ex(folder_path, id=regex_str)
+
 def delete_nodegroups_from_store(regex_str):
     '''
     Delete matching nodegroups from store
