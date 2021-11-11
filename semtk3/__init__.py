@@ -37,6 +37,7 @@ from . import sparqlconnection
 from . import semtkasyncclient
 from . import semtktable
 from . import sparqlgraphjson
+from . import predicatestats
 
 import csv
 import json
@@ -166,8 +167,32 @@ def check_services():
     
     return b1 and b2 and b3 and b4 and b5 and b6 and b7 and b8
     
+ 
+
+def query_by_id(nodegroup_id, limit_override=0, offset_override=0, runtime_constraints=None, edc_constraints=None, flags=None ):
+    '''
+    Execute the default query type for a given nodegroup id
+    
+    Check results for type(result) is 
+        dict - json ld results
+        semtk3.semtktable.SemtkTable
+            A count query will be a SemtkTable with colum nname "count"
+            A confirm query will be a SemtkTable with column name "@message"
+    
+    :param nodegroup_id: id of nodegroup in the store
+    :param limit_override: optional override of LIMIT clause
+    :param offset_override: optional override of OFFSET clause
+    :param runtime_constraints: optional runtime constraints built by build_constraint()
+    :param edc_constraints: optional edc constraints
+    :param flags: optional query flags
+    :return: results  : dict or semtk3.semtktable.SemtkTable
+    :rtype: semtktable
+    '''
+    nge_client = __get_nge_client()
    
-     
+    res = nge_client.exec_async_dispatch_query_by_id(nodegroup_id, SEMTK3_CONN_OVERRIDE, limit_override, offset_override, runtime_constraints, edc_constraints, flags)
+    return res
+    
 def select_by_id(nodegroup_id, limit_override=0, offset_override=0, runtime_constraints=None, edc_constraints=None, flags=None ):
     '''
     Execute a select query for a given nodegroup id
@@ -455,7 +480,7 @@ def delete_nodegroups_from_store(regex_str):
    
     
     
-def get_oinfo_uri_label_table(conn_json_str):
+def get_oinfo_uri_label_table(conn_json_str=SEMTK3_CONN_OVERRIDE):
     '''
     Get a table describing the ontology model
     :param conn_json_str: connection string of graph(s) holding the model
@@ -463,6 +488,16 @@ def get_oinfo_uri_label_table(conn_json_str):
     '''
     oinfo_client = __get_oinfo_client(conn_json_str)
     return oinfo_client.exec_get_uri_label_table()
+
+def get_oinfo_predicate_stats():
+    '''
+    Get a table describing the ontology model
+    :param conn_json_str: connection string of graph(s) holding the model
+    :rettype: semtktable
+    '''
+    oinfo_client = __get_oinfo_client(SEMTK3_CONN_OVERRIDE)
+    j = oinfo_client.exec_get_predicate_stats()
+    return predicatestats.PredicateStats(j)
 
 def get_table(jobid):
     '''
@@ -473,6 +508,7 @@ def get_table(jobid):
     async_client = semtkasyncclient.SemTkAsyncClient("http://nothing");
     async_client.poll_until_success(jobid);
     return async_client.post_get_table_results(jobid);
+
 
 def fdc_cache_bootstrap_table(conn_json_str, spec_id, bootstrap_table, recache_after_sec):
     '''
@@ -583,7 +619,9 @@ def __get_results_client():
     return resultsclient.ResultsClient(__build_client_url(RESULTS_HOST, RESULTS_PORT))
 
 def __get_oinfo_client(conn_json_str):
-    return oinfoclient.OInfoClient( __build_client_url(OINFO_HOST, OINFO_PORT), conn_json_str)
+    status_client = statusclient.StatusClient(__build_client_url(STATUS_HOST, STATUS_PORT))
+    results_client = resultsclient.ResultsClient(__build_client_url(RESULTS_HOST, RESULTS_PORT))
+    return oinfoclient.OInfoClient( __build_client_url(OINFO_HOST, OINFO_PORT), conn_json_str, status_client, results_client)
 
 def __get_nodegroup_store_client():
     return nodegroupstoreclient.NodegroupStoreClient( __build_client_url(NODEGROUP_STORE_HOST, NODEGROUP_STORE_PORT))

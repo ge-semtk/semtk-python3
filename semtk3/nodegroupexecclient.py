@@ -71,6 +71,34 @@ class NodegroupExecClient(semtkasyncclient.SemTkAsyncClient):
         
         return table
     
+    def exec_async_dispatch_query_by_id(self, nodegroup_id, override_conn_json=None, limit_override=None, offset_override=None, runtime_constraints=None, edc_constraints=None, flags=None ):
+        ''' execute default query type nodegroup id
+            returns: One of: table, json, integer
+            thorws: exception otherwise
+        '''
+        payload = {}
+        payload["externalDataConnectionConstraints"] = ""
+        payload["flags"] = ""
+        if (limit_override):  payload["limitOverride"] = limit_override
+        if (offset_override): payload["offsetOverride"] = offset_override
+        payload["nodeGroupId"] = nodegroup_id
+        payload["runtimeConstraints"] = ""
+        payload["sparqlConnection"] = override_conn_json if override_conn_json else self.USE_NODEGROUP_CONN
+        if (flags):  payload["flags"] = flags
+        if (runtime_constraints): payload["runtimeConstraints"] = self.to_json_array(runtime_constraints)
+        if (edc_constraints): payload["externalDataConnectionConstraints"] = edc_constraints
+        
+
+        simple_res = self.post_to_simple("dispatchQueryById", payload)
+        result_type = self.get_simple_field(simple_res, self.RESULT_TYPE_KEY)
+        jobid = self.get_simple_field(simple_res, self.JOB_ID_KEY)
+        self.poll_until_success(jobid)
+        
+        if (result_type == "GRAPH_JSONLD"):
+            return self.post_get_json_blob_results(jobid);
+        else:
+            return self.post_get_table_results(jobid);
+    
     def exec_async_dispatch_count_by_id(self, nodegroup_id, override_conn_json=None, limit_override=None, offset_override=None, runtime_constraints=None, edc_constraints=None, flags=None ):
         ''' execute a count by nodegroup id
             returns: the table

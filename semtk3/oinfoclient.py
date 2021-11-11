@@ -14,15 +14,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from . import semtkclient
+from . import semtkasyncclient
 
 
-class OInfoClient(semtkclient.SemTkClient):
+class OInfoClient(semtkasyncclient.SemTkAsyncClient):
     
-    def __init__(self, serverURL, conn_json_str):
+    def __init__(self, serverURL, conn_json_str, status_client=None, results_client=None):
         ''' servierURL string - e.g. http://machine:12050
         '''
-        super(OInfoClient, self).__init__(serverURL, "ontologyinfo")
+        super(OInfoClient, self).__init__(serverURL, "ontologyinfo", status_client, results_client)
         self.conn_json_str = conn_json_str
     
     #
@@ -36,5 +36,17 @@ class OInfoClient(semtkclient.SemTkClient):
         }
 
         res = self.post_to_table("getUriLabelTable", payload)
+        return res
+    
+    #
+    # Get predicate stats
+    #
+    def exec_get_predicate_stats(self):
+        
+        payload = {
+            "conn": self.conn_json_str
+        }
+
+        res = self.post_async_to_json_blob("getPredicateStats", payload)
         return res
     

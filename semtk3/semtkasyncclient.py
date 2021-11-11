@@ -117,6 +117,17 @@ class SemTkAsyncClient(semtkclient.SemTkClient):
         self.poll_until_success(jobid)
         table = self.post_get_table_results(jobid)
         return table
+    
+    def post_async_to_json_blob(self, endpoint, dataObj={}):
+        ''' 
+            returns SemTkTable
+            raises errors otherwise
+        '''
+        jobid = self.post_to_jobid(endpoint, dataObj)
+        semtk3_logger.debug("jobid:  " + jobid)
+        self.poll_until_success(jobid)
+        ret = self.post_get_json_blob_results(jobid)
+        return ret
         
     def poll_until_success(self, jobid):
         ''' poll for percent complete and return if SUCCESS
@@ -163,6 +174,13 @@ class SemTkAsyncClient(semtkclient.SemTkClient):
             return self.results_client.exec_get_table_results(jobid)
         else:
             return self.exec_get_results_table(jobid)
+        
+    def post_get_json_blob_results(self, jobid):
+        ''' get table results using results, otherwise using self
+        '''
+        
+        return self.results_client.exec_get_json_blob_results(jobid)
+
     
     def post_get_percent_complete(self, jobid):
         ''' get percent complete using status, otherwise using self

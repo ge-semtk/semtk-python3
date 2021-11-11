@@ -28,6 +28,18 @@ import logging
 if __name__ == '__main__':
     semtk3.set_host("http://localhost")
     
+    # res = semtk3.query_by_id("test_select")
+    # type(res) is semtk3.semtktable.SemtkTable
+    #
+    # res = semtk3.query_by_id("test_construct")
+    # type(res) is dict
+    #
+    # res = semtk3.query_by_id("test_count")
+    # res is table with one col "count" and one cell
+    #
+    # res = semtk3.query_by_id("tes_delete")
+    # res is table with one col "@message" and one cell
+    
     #semtk3.print_wait_dots(3)
     table = semtk3.select_by_id("DeleteMe")
     
@@ -41,14 +53,16 @@ if __name__ == '__main__':
     #
     # Column manipulation
     #
-    if table.has_column("my_col"):
-        c = table.get_column_index("my_col")
+    col = "identifier"
+    if table.has_column(col):
+        c = table.get_column_index(col)
         col_data = table.get_column(c)
-        print("my_col: " + col_data)
+        print(col+": ")
+        print(col_data)
     else:
-        print("my_col doesn't exist in this table")
+        print(col + " doesn't exist in this table")
      
-    plot = semtk3.select_plot_by_id("DeleteMe", "plot name")
+    plot = semtk3.select_plot_by_id("DeleteMe", "hist")
     plot.show() 
      
     #

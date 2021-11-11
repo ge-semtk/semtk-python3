@@ -107,6 +107,10 @@ class SemtkTable():
             ret.append(row[c])
         return ret     
          
+    def set_cell(self, row, col, val):
+        c = self.get_column_index(col) if isinstance(col, str) else col
+        self.dict[JSON_KEY_ROWS][row][c] = str(val)
+    
     def get_cell(self, row, col):
         c = self.get_column_index(col) if isinstance(col, str) else col
         return self.dict[JSON_KEY_ROWS][row][c]
@@ -175,6 +179,9 @@ class SemtkTable():
             ret.append(row)
                   
         return ret
+    
+    def to_dict(self):
+        return self.dict
     
     def to_json_str(self):
         return json.dumps(self.dict, indent=4, sort_keys=True)

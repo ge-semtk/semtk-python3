@@ -31,6 +31,8 @@ semtk3_logger = logging.getLogger("semtk3")
 
 
 class SemTkClient(restclient.RestClient):
+    JOB_ID_KEY = "JobId"
+    RESULT_TYPE_KEY = "resultType"
     
     def _check_status(self, content):
         ''' check content is a dict, has status=="success"
@@ -180,4 +182,4 @@ class SemTkClient(restclient.RestClient):
             raises errors otherwise
         '''
         simple_res = self.post_to_simple(endpoint, dataObj)
-        return self.get_simple_field_str(simple_res, "JobId")
+        return self.get_simple_field_str(simple_res, SemTkClient.JOB_ID_KEY)
