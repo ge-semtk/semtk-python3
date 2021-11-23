@@ -30,6 +30,7 @@ from . import queryclient
 from . import restclient
 from . import hiveclient
 from . import resultsclient
+from . import semtk
 from . import statusclient
 from . import utilityclient
 from . import runtimeconstraint
@@ -66,16 +67,16 @@ NODEGROUP_PORT = "12059"
 UTILITY_PORT = "12060"
 FDCCACHE_PORT = "12068"
 
-QUERY_HOST = "<unset>"
-STATUS_HOST = "<unset>"
-RESULTS_HOST = "<unset>"
-HIVE_HOST = "<unset>"
-NODEGROUP_STORE_HOST = "<unset>"
-OINFO_HOST = "<unset>"
-NODEGROUP_EXEC_HOST = "<unset>"
-NODEGROUP_HOST = "<unset>"
-UTILITY_HOST = "<unset>"
-FDCCACHE_HOST = "<unset>"
+QUERY_HOST = "http://localhost"
+STATUS_HOST = "http://localhost"
+RESULTS_HOST = "http://localhost"
+HIVE_HOST = "http://localhost"
+NODEGROUP_STORE_HOST = "http://localhost"
+OINFO_HOST = "http://localhost"
+NODEGROUP_EXEC_HOST = "http://localhost"
+NODEGROUP_HOST = "http://localhost"
+UTILITY_HOST = "http://localhost"
+FDCCACHE_HOST = "http://localhost"
 
 OP_MATCHES = runtimeconstraint.RuntimeConstraint.OP_MATCHES
 OP_REGEX = runtimeconstraint.RuntimeConstraint.OP_REGEX
@@ -156,8 +157,10 @@ def check_services():
     :return: did all pings succeed
     :rtype: boolean
     '''
-    b1 = __get_fdc_cache_client().ping()
-    b2 = __get_hive_client("server", "host", "db").ping()
+    # these are not used right now
+    b1 = True  # __get_fdc_cache_client().ping()
+    b2 = True  #__get_hive_client("server", "host", "db").ping()
+    
     b3 = __get_nge_client().ping() 
     b4 = __get_nodegroup_client().ping()
     b5 = __get_oinfo_client("{}").ping()
@@ -304,7 +307,7 @@ def ingest_by_id(nodegroup_id, csv_str, override_conn_json_str=None):
     table = nge_client.exec_async_ingest_from_csv(nodegroup_id, csv_str, override_conn_json_str)
     return table
 
-def upload_owl(owl_file_path, conn_json_str, user_name, password, model_or_data=SEMTK3_CONN_MODEL, conn_index=0):
+def upload_owl(owl_file_path, conn_json_str, user_name="noone", password="nopass", model_or_data=SEMTK3_CONN_MODEL, conn_index=0):
     '''
     Upload an owl file
     :param owl_file_path: path to the file
@@ -648,3 +651,7 @@ def __build_client_url(base_url, port):
     except:
         sep = ""
     return base_url + sep + port
+
+def main():
+    semtk.main()
+

@@ -29,6 +29,7 @@ setuptools.setup(
     #long_description_content_type="text/markdown",
     url="https://github.build.ge.com/semtk",
     packages=setuptools.find_packages(),
+    include_package_data=True,
     classifiers=[
         "Programming Language :: Python :: 3",
         #"License :: OSI Approved :: MIT License",
@@ -39,4 +40,9 @@ setuptools.setup(
         'python-dateutil'
     ],
     python_requires='>=3.6',
+     entry_points={
+        'console_scripts': [
+            'semtk = semtk3:main',
+        ]
+    }
 )
