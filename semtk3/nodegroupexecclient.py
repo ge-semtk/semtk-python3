@@ -26,7 +26,7 @@ class NodegroupExecClient(semtkasyncclient.SemTkAsyncClient):
         '''
         super(NodegroupExecClient, self).__init__(serverURL, "nodeGroupExecution", status_client, results_client)
     
-    def exec_async_dispatch_filter_by_id(self, nodegroup_id, target_obj_sparql_id, override_conn_json=None, limit_override=None, offset_override=None, runtime_constraints=None, edc_constraints=None, flags=None ):
+    def exec_async_dispatch_filter_by_id(self, nodegroup_id, target_obj_sparql_id, override_conn_json_str=None, limit_override=None, offset_override=None, runtime_constraints=None, edc_constraints=None, flags=None ):
         ''' execute a select by nodegroup id
             returns: the table
             thorws: exception otherwise
@@ -38,7 +38,7 @@ class NodegroupExecClient(semtkasyncclient.SemTkAsyncClient):
         if (offset_override): payload["offsetOverride"] = offset_override
         payload["nodeGroupId"] = nodegroup_id
         payload["runtimeConstraints"] = ""
-        payload["sparqlConnection"] = override_conn_json if override_conn_json else self.USE_NODEGROUP_CONN
+        payload["sparqlConnection"] = override_conn_json_str if override_conn_json_str else self.USE_NODEGROUP_CONN
         payload["targetObjectSparqlId"] = target_obj_sparql_id
         if (flags):  payload["flags"] = flags
         if (runtime_constraints): payload["runtimeConstraints"] = self.to_json_array(runtime_constraints)
@@ -49,7 +49,7 @@ class NodegroupExecClient(semtkasyncclient.SemTkAsyncClient):
         
         return table
     
-    def exec_async_dispatch_select_by_id(self, nodegroup_id, override_conn_json=None, limit_override=None, offset_override=None, runtime_constraints=None, edc_constraints=None, flags=None ):
+    def exec_async_dispatch_select_by_id(self, nodegroup_id, override_conn_json_str=None, limit_override=None, offset_override=None, runtime_constraints=None, edc_constraints=None, flags=None ):
         ''' execute a select by nodegroup id
             returns: the table
             thorws: exception otherwise
@@ -61,7 +61,7 @@ class NodegroupExecClient(semtkasyncclient.SemTkAsyncClient):
         if (offset_override): payload["offsetOverride"] = offset_override
         payload["nodeGroupId"] = nodegroup_id
         payload["runtimeConstraints"] = ""
-        payload["sparqlConnection"] = override_conn_json if override_conn_json else self.USE_NODEGROUP_CONN
+        payload["sparqlConnection"] = override_conn_json_str if override_conn_json_str else self.USE_NODEGROUP_CONN
         if (flags):  payload["flags"] = flags
         if (runtime_constraints): payload["runtimeConstraints"] = self.to_json_array(runtime_constraints)
         if (edc_constraints): payload["externalDataConnectionConstraints"] = edc_constraints
@@ -71,35 +71,63 @@ class NodegroupExecClient(semtkasyncclient.SemTkAsyncClient):
         
         return table
     
-    def exec_async_dispatch_query_by_id(self, nodegroup_id, override_conn_json=None, limit_override=None, offset_override=None, runtime_constraints=None, edc_constraints=None, flags=None ):
+    def exec_async_dispatch_query_by_id(self, nodegroup_id, override_conn_json_str=None, limit_override=None, offset_override=None, runtime_constraints=None, edc_constraints=None, flags=None, query_type=None, result_type=None ):
         ''' execute default query type nodegroup id
             returns: One of: table, json, integer
             thorws: exception otherwise
         '''
         payload = {}
-        payload["externalDataConnectionConstraints"] = ""
-        payload["flags"] = ""
         if (limit_override):  payload["limitOverride"] = limit_override
         if (offset_override): payload["offsetOverride"] = offset_override
         payload["nodeGroupId"] = nodegroup_id
         payload["runtimeConstraints"] = ""
-        payload["sparqlConnection"] = override_conn_json if override_conn_json else self.USE_NODEGROUP_CONN
+        payload["sparqlConnection"] = override_conn_json_str if override_conn_json_str else self.USE_NODEGROUP_CONN
         if (flags):  payload["flags"] = flags
         if (runtime_constraints): payload["runtimeConstraints"] = self.to_json_array(runtime_constraints)
         if (edc_constraints): payload["externalDataConnectionConstraints"] = edc_constraints
+        if (query_type): payload["queryType"] = query_type
+        if (result_type): payload["resultType"] = result_type
         
-
+    
         simple_res = self.post_to_simple("dispatchQueryById", payload)
         result_type = self.get_simple_field(simple_res, self.RESULT_TYPE_KEY)
         jobid = self.get_simple_field(simple_res, self.JOB_ID_KEY)
         self.poll_until_success(jobid)
+        
+        return self.__get_result_type_based_result(simple_res, jobid)
+        
+    def exec_async_dispatch_query_from_nodegroup(self, nodegroup_str, override_conn_json_str=None, runtime_constraints=None, edc_constraints=None, flags=None, query_type=None, result_type=None ):
+        ''' execute default query type nodegroup id
+            returns: One of: table, json, integer
+            thorws: exception otherwise
+        '''
+        payload = {}
+        payload["jsonRenderedNodeGroup"] = nodegroup_str
+        payload["sparqlConnection"] = override_conn_json_str if override_conn_json_str else self.USE_NODEGROUP_CONN
+        
+        if (runtime_constraints): payload["runtimeConstraints"] = self.to_json_array(runtime_constraints)
+        if (edc_constraints): payload["externalDataConnectionConstraintsJson"] = edc_constraints
+        if (flags):  payload["flags"] = flags
+        if (query_type): payload["queryType"] = query_type
+        if (result_type): payload["resultType"] = result_type
+        
+        simple_res = self.post_to_simple("dispatchQueryFromNodegroup", payload)
+        result_type = self.get_simple_field(simple_res, self.RESULT_TYPE_KEY)
+        jobid = self.get_simple_field(simple_res, self.JOB_ID_KEY)
+        self.poll_until_success(jobid)
+        
+        return self.__get_result_type_based_result(simple_res, jobid)
+        
+    
+    def __get_result_type_based_result(self, simple_res, jobid):
+        result_type = self.get_simple_field(simple_res, self.RESULT_TYPE_KEY)
         
         if (result_type == "GRAPH_JSONLD"):
             return self.post_get_json_blob_results(jobid);
         else:
             return self.post_get_table_results(jobid);
     
-    def exec_async_dispatch_count_by_id(self, nodegroup_id, override_conn_json=None, limit_override=None, offset_override=None, runtime_constraints=None, edc_constraints=None, flags=None ):
+    def exec_async_dispatch_count_by_id(self, nodegroup_id, override_conn_json_str=None, limit_override=None, offset_override=None, runtime_constraints=None, edc_constraints=None, flags=None ):
         ''' execute a count by nodegroup id
             returns: the table
             thorws: exception otherwise
@@ -111,7 +139,7 @@ class NodegroupExecClient(semtkasyncclient.SemTkAsyncClient):
         if (offset_override): payload["offsetOverride"] = offset_override
         payload["nodeGroupId"] = nodegroup_id
         payload["runtimeConstraints"] = ""
-        payload["sparqlConnection"] = override_conn_json if override_conn_json else self.USE_NODEGROUP_CONN
+        payload["sparqlConnection"] = override_conn_json_str if override_conn_json_str else self.USE_NODEGROUP_CONN
         if (flags):  payload["flags"] = flags
         if (runtime_constraints): payload["runtimeConstraints"] = self.to_json_array(runtime_constraints)
         if (edc_constraints): payload["externalDataConnectionConstraints"] = edc_constraints
@@ -120,14 +148,14 @@ class NodegroupExecClient(semtkasyncclient.SemTkAsyncClient):
         table = self.post_async_to_table("dispatchCountById", payload)
         
         return table
-    def exec_async_dispatch_raw_sparql(self, sparql, override_conn_json=None):
+    def exec_async_dispatch_raw_sparql(self, sparql, override_conn_json_str=None):
         ''' execute a select by nodegroup id
             returns: the table
             thorws: exception otherwise
         '''
         payload = {}
         payload["sparql"] = sparql
-        payload["sparqlConnection"] = override_conn_json if override_conn_json else self.USE_NODEGROUP_CONN
+        payload["sparqlConnection"] = override_conn_json_str if override_conn_json_str else self.USE_NODEGROUP_CONN
         
         table = self.post_async_to_table("dispatchRawSparql", payload)
         
@@ -158,15 +186,15 @@ class NodegroupExecClient(semtkasyncclient.SemTkAsyncClient):
 
         return self.post_async_to_table("dispatchClearGraph", payload)   
     
-    def exec_async_ingest_from_csv(self, nodegroup_id, csv_str, override_conn_json=None):
+    def exec_async_ingest_from_csv(self, nodegroup_id, csv_str, override_conn_json_str=None):
         ''' nodegroup_id - from nodegroup store
             csv_str - data, e.g. from:  open('data.csv', 'r').read()
-            override_conn_json - string with json of a different connection
+            override_conn_json_str - string with json of a different connection
         '''
         payload = {}
         payload["templateId"] = nodegroup_id
         payload["csvContent"] = csv_str
-        payload["sparqlConnection"] = override_conn_json if override_conn_json else self.USE_NODEGROUP_CONN
+        payload["sparqlConnection"] = override_conn_json_str if override_conn_json_str else self.USE_NODEGROUP_CONN
         '''payload["sparqlConnection"] = ""
         '''
         res = self.post_to_record_process("ingestFromCsvStringsById", payload)

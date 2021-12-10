@@ -29,6 +29,7 @@ from . import oinfoclient
 from . import queryclient
 from . import restclient
 from . import hiveclient
+from . import ingestionclient
 from . import resultsclient
 from . import semtk
 from . import statusclient
@@ -56,6 +57,19 @@ SEMTK3_CONN_OVERRIDE=None
 SEMTK3_CONN_MODEL = sparqlconnection.SparqlConnection.MODEL
 SEMTK3_CONN_DATA = sparqlconnection.SparqlConnection.DATA
 
+QUERY_TYPE_SELECT_DISTINCT = "SELECT_DISTINCT"
+QUERY_TYPE_FILTER_CONSTRAINT = "FILTER_CONSTRAINT"
+QUERY_TYPE_COUNT = "COUNT"
+QUERY_TYPE_CONSTRUCT = "CONSTRUCT"
+QUERY_TYPE_ASK = "ASK"
+QUERY_TYPE_DELETE = "DELETE"
+
+RESULT_TYPE_TABLE = "TABLE"           
+RESULT_TYPE_GRAPH_JSONLD = "GRAPH_JSONLD"     
+RESULT_TYPE_CONFIRM = "CONFIRM"  
+RESULT_TYPE_RDF = "RDF"  
+RESULT_TYPE_HTML = "HTML"
+
 QUERY_PORT = "12050"
 STATUS_PORT = "12051"
 RESULTS_PORT = "12052"
@@ -66,6 +80,7 @@ NODEGROUP_EXEC_PORT = "12058"
 NODEGROUP_PORT = "12059"
 UTILITY_PORT = "12060"
 FDCCACHE_PORT = "12068"
+INGESTION_PORT="12091"
 
 QUERY_HOST = "http://localhost"
 STATUS_HOST = "http://localhost"
@@ -77,6 +92,7 @@ NODEGROUP_EXEC_HOST = "http://localhost"
 NODEGROUP_HOST = "http://localhost"
 UTILITY_HOST = "http://localhost"
 FDCCACHE_HOST = "http://localhost"
+INGESTION_HOST = "http://localhost"
 
 OP_MATCHES = runtimeconstraint.RuntimeConstraint.OP_MATCHES
 OP_REGEX = runtimeconstraint.RuntimeConstraint.OP_REGEX
@@ -108,7 +124,7 @@ for depend in ['requests']:
 ###########################
 
 def set_host(hostUrl):
-    global QUERY_HOST, STATUS_HOST, RESULTS_HOST, HIVE_HOST, NODEGROUP_STORE_HOST, OINFO_HOST, NODEGROUP_EXEC_HOST, NODEGROUP_HOST, UTILITY_HOST, FDCCACHE_HOST
+    global QUERY_HOST, STATUS_HOST, RESULTS_HOST, HIVE_HOST, NODEGROUP_STORE_HOST, OINFO_HOST, NODEGROUP_EXEC_HOST, NODEGROUP_HOST, UTILITY_HOST, FDCCACHE_HOST, INGESTION_HOST
         
     QUERY_HOST = hostUrl
     STATUS_HOST = hostUrl
@@ -120,6 +136,7 @@ def set_host(hostUrl):
     NODEGROUP_HOST = hostUrl
     UTILITY_HOST = hostUrl
     FDCCACHE_HOST = hostUrl
+    INGESTION_HOST = hostUrl
 
 #
 # can't understand why this is needed
@@ -167,12 +184,13 @@ def check_services():
     b6 = __get_query_client("{}").ping()
     b7 = __get_status_client().ping()
     b8 = __get_results_client().ping()
+    b9 = __get_ingestion_client().ping()
     
-    return b1 and b2 and b3 and b4 and b5 and b6 and b7 and b8
+    return b1 and b2 and b3 and b4 and b5 and b6 and b7 and b8 and b9
     
  
 
-def query_by_id(nodegroup_id, limit_override=0, offset_override=0, runtime_constraints=None, edc_constraints=None, flags=None ):
+def query_by_id(nodegroup_id, limit_override=0, offset_override=0, runtime_constraints=None, edc_constraints=None, flags=None, query_type=None, result_type=None):
     '''
     Execute the default query type for a given nodegroup id
     
@@ -189,11 +207,33 @@ def query_by_id(nodegroup_id, limit_override=0, offset_override=0, runtime_const
     :param edc_constraints: optional edc constraints
     :param flags: optional query flags
     :return: results  : dict or semtk3.semtktable.SemtkTable
-    :rtype: semtktable
+    :rtype: semtktable or JSON
     '''
     nge_client = __get_nge_client()
    
-    res = nge_client.exec_async_dispatch_query_by_id(nodegroup_id, SEMTK3_CONN_OVERRIDE, limit_override, offset_override, runtime_constraints, edc_constraints, flags)
+    res = nge_client.exec_async_dispatch_query_by_id(nodegroup_id, SEMTK3_CONN_OVERRIDE, limit_override, offset_override, runtime_constraints, edc_constraints, flags, query_type, result_type)
+    return res
+
+def query_by_nodegroup(nodegroup_str, runtime_constraints=None, edc_constraints=None, flags=None, query_type=None, result_type=None):
+    '''
+    Execute the default query type for a given nodegroup id
+    
+    Check results for type(result) is 
+        dict - json ld results
+        semtk3.semtktable.SemtkTable
+            A count query will be a SemtkTable with colum nname "count"
+            A confirm query will be a SemtkTable with column name "@message"
+    
+    :param nodegroup_str: nodegroup 
+    :param runtime_constraints: optional runtime constraints built by build_constraint()
+    :param edc_constraints: optional edc constraints
+    :param flags: optional query flags
+    :return: results  : dict or semtk3.semtktable.SemtkTable
+    :rtype: semtktable or JSON
+    '''
+    nge_client = __get_nge_client()
+   
+    res = nge_client.exec_async_dispatch_query_from_nodegroup(nodegroup_str, SEMTK3_CONN_OVERRIDE, runtime_constraints, edc_constraints, flags, query_type, result_type)
     return res
     
 def select_by_id(nodegroup_id, limit_override=0, offset_override=0, runtime_constraints=None, edc_constraints=None, flags=None ):
@@ -307,6 +347,35 @@ def ingest_by_id(nodegroup_id, csv_str, override_conn_json_str=None):
     table = nge_client.exec_async_ingest_from_csv(nodegroup_id, csv_str, override_conn_json_str)
     return table
 
+def ingest_using_class_template(class_uri, csv_str, conn_json_str, id_regex="identifier"):
+    '''
+    Ingest using class template
+    :param class_uri : the class whose template should be used for ingestion
+    :param csv_str: string csv data
+    :param id_regex: regex matching properties that should be used for lookups
+    :conn_json_str: connection
+    '''
+    ingest_client = __get_ingestion_client()
+    return ingest_client.exec_from_csv_using_class_template(class_uri, csv_str, conn_json_str, id_regex)
+
+def get_class_template_csv(class_uri, conn_json_str, id_regex):
+    '''
+    Get sample CSV that will work with  class template
+    :param class_uri : the class whose template should be used for ingestion
+    :conn_json_str: connection
+    '''
+    ingest_client = __get_ingestion_client()
+    return ingest_client.exec_get_class_template_csv(class_uri, conn_json_str, id_regex)
+
+def get_class_template(class_uri, conn_json_str, id_regex):
+    '''
+    Get class template nodegroup
+    :param class_uri : the class whose template should be used for ingestion
+    :conn_json_str: connection
+    '''
+    ingest_client = __get_ingestion_client()
+    return ingest_client.exec_get_class_template(class_uri, conn_json_str, id_regex)
+    
 def upload_owl(owl_file_path, conn_json_str, user_name="noone", password="nopass", model_or_data=SEMTK3_CONN_MODEL, conn_index=0):
     '''
     Upload an owl file
@@ -342,7 +411,7 @@ def query(query, conn_json_str, model_or_data=SEMTK3_CONN_DATA, conn_index=0):
     Run a raw SPARQL query
     :param query: SPARQL
     :param conn_json_str: connection json string
-    :param model_or_data: optional "model" or "data" specifying which endpoint in the sparql connection, defaults to "model"
+    :param model_or_data: optional "model" or "data" specifying which endpoint in the sparql connection, defaults to "data"
     :param conn_index: index specifying which of the model or data endpoints in the sparql connection, defaults to 0
     :return: results
     :rettype: semtktable
@@ -538,7 +607,7 @@ def create_nodegroup(conn_json_str, class_uri, sparql_id=None):
     ret = ng_client.exec_create_nodegroup(conn_json_str, class_uri, sparql_id)
     return ret 
 
-def override_ports(query_port=None, status_port=None, results_port=None, hive_port=None, oinfo_port=None, nodegroup_exec_port=None, nodegroup_port=None, utility_port=None, fdcache_port=None):
+def override_ports(query_port=None, status_port=None, results_port=None, hive_port=None, oinfo_port=None, nodegroup_exec_port=None, nodegroup_port=None, utility_port=None, fdcache_port=None, ingestion_port=None):
     '''
     Override the default port(s) for Semtk service(s).  
     Ports may be numbers (port will be appended with colon), e.g. 80 or "80"
@@ -551,6 +620,7 @@ def override_ports(query_port=None, status_port=None, results_port=None, hive_po
     :param nodegroup_exec_port: optional
     :param nodegroup_port: optional
     :param fdcache_port: optional
+    :param ingestion_port: optional
     '''
     global QUERY_PORT, STATUS_PORT, RESULTS_PORT, HIVE_PORT, OINFO_PORT, NODEGROUP_EXEC_PORT, NODEGROUP_PORT, UTILITY_PORT, FDCCACHE_PORT
     if query_port: QUERY_PORT = query_port
@@ -562,8 +632,9 @@ def override_ports(query_port=None, status_port=None, results_port=None, hive_po
     if nodegroup_port: NODEGROUP_PORT = nodegroup_port
     if utility_port: UTILITY_PORT = utility_port
     if fdcache_port: FDCCACHE_PORT = fdcache_port 
+    if ingestion_port: INGESTION_PORT = ingestion_port
 
-def override_hosts(query_host=None, status_host=None, results_host=None, hive_host=None, oinfo_host=None, nodegroup_exec_host=None, nodegroup_host=None, utility_host=None, fdcache_host=None):
+def override_hosts(query_host=None, status_host=None, results_host=None, hive_host=None, oinfo_host=None, nodegroup_exec_host=None, nodegroup_host=None, utility_host=None, fdcache_host=None, ingestion_host=None):
     '''
     Override the default host(s) for Semtk service(s).  
     
@@ -575,6 +646,7 @@ def override_hosts(query_host=None, status_host=None, results_host=None, hive_ho
     :param nodegroup_exec_host: optional
     :param nodegroup_host: optional
     :param fdcache_host: optional
+    :param ingestion_host: optional
     '''
     global QUERY_HOST, STATUS_HOST, RESULTS_HOST, HIVE_HOST, NODEGROUP_STORE_HOST, OINFO_HOST, NODEGROUP_EXEC_HOST, NODEGROUP_HOST, UTILITY_HOST, FDCCACHE_HOST
     if query_host: QUERY_HOST = query_host
@@ -586,6 +658,7 @@ def override_hosts(query_host=None, status_host=None, results_host=None, hive_ho
     if nodegroup_host: NODEGROUP_HOST = nodegroup_host
     if utility_host: UTILITY_HOST = utility_host
     if fdcache_host: FDCCACHE_HOST = fdcache_host 
+    if ingestion_host: INGESTION_HOST = ingestion_host
 
 def query_hive(hiveserver_host, hiveserver_port, hiveserver_database, query):
     '''
@@ -641,6 +714,11 @@ def __get_hive_client(hiveserver_host, hiveserver_port, hiveserver_database):
 
 def __get_utility_client():
     return utilityclient.UtilityClient( __build_client_url(UTILITY_HOST, UTILITY_PORT))
+
+def __get_ingestion_client():
+    status_client = statusclient.StatusClient(__build_client_url(STATUS_HOST, STATUS_PORT))
+    results_client = resultsclient.ResultsClient(__build_client_url(RESULTS_HOST, RESULTS_PORT))
+    return ingestionclient.IngestionClient( __build_client_url(INGESTION_HOST, INGESTION_PORT), status_client, results_client)
 
 # build a url using a ":" if the port is a number, otherwise just appending it
 def __build_client_url(base_url, port):

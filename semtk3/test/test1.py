@@ -30,10 +30,15 @@ class TestSemtk3(unittest.TestCase):
         if not response.ok:
             raise Exception("Problem connecting to triplestore url: " + triplestore + '\n' + str(response.content))
         
+        
+        
+    def clear_graph(self): 
         # clear graph
         semtk3.clear_graph(TestSemtk3.conn_str, 'model', 0)
         semtk3.clear_graph(TestSemtk3.conn_str, 'data', 0)
         
+
+    def load_cats_and_dogs(self):
         # load some owl
         with importlib.resources.path(TestSemtk3.PACKAGE, "AnimalSubProps.owl") as owl_path:
             semtk3.upload_owl(owl_path, TestSemtk3.conn_str)
@@ -55,6 +60,9 @@ class TestSemtk3(unittest.TestCase):
         semtk3.ingest_by_id("semtk_test_animalSubPropsDogs", csv_str, TestSemtk3.conn_str)
         
     def test_query_by_id(self):
+        self.clear_graph()
+        self.load_cats_and_dogs()
+        
         # untyped query : should be table
         res = semtk3.query_by_id("semtk_test_animalSubPropsDogs")
         self.assertEqual(type(res), semtk3.semtktable.SemtkTable, "query_by_id() did not return a Table")
@@ -78,15 +86,45 @@ class TestSemtk3(unittest.TestCase):
         res = semtk3.query_by_id("semtk_test_animalSubPropsDogs_CONSTRUCT")
         self.assertEqual(type(res), dict, "query_by_id(semtk_test_animalSubPropsDogs_CONSTRUCT) did not return a dict")
         self.assertEqual(len(res['@graph']), 3, "query_by_id(semtk_test_animalSubPropsDogs_CONSTRUCT) returned incorrect dict")
-       
-        #
-        # res = semtk3.query_by_id("tes_delete")
-        # res is table with one col "@message" and one cell
-    
-        self.assertEqual("t", 't')
         
-    def test_two(self):
-        self.assertEqual("t", 't')
+        # Override CONSTRUCT with table
+        res = semtk3.query_by_id("semtk_test_animalSubPropsDogs_CONSTRUCT", query_type=semtk3.QUERY_TYPE_SELECT_DISTINCT, result_type=semtk3.RESULT_TYPE_TABLE);
+        self.assertEqual(type(res), semtk3.semtktable.SemtkTable, "query_by_id(semtk_test_animalSubPropsDogs_SELECT_DISTINCT) did not return a Table")
+        self.assertEqual(res.get_num_rows(), 2, "query_by_id(semtk_test_animalSubPropsDogs_SELECT_DISTINCT) returned wrong number of table rows")
+        
+        # TODO: all manor of combinations of query_type and result_type overrides could be tested here
+        # TODO: DELETE query could be tested here
+    
+        
+    def test_class_templates(self):
+        
+        # load AnimalSubProps owl
+        self.clear_graph()
+        with importlib.resources.path(TestSemtk3.PACKAGE, "AnimalSubProps.owl") as owl_path:
+            semtk3.upload_owl(owl_path, TestSemtk3.conn_str)
+          
+        # retrieve the csv
+        csv = semtk3.get_class_template_csv("http://AnimalSubProps#Cat", TestSemtk3.conn_str, "name"); 
+        self.assertTrue("name" in csv)
+        self.assertTrue("Kitties_name" in csv)
+        self.assertTrue("Child_name" in csv)
+        self.assertTrue("Demons_name" in csv)
+        
+        # retrieve the nodegroup
+        ng = semtk3.get_class_template("http://AnimalSubProps#Cat", TestSemtk3.conn_str, "name");  
+        
+        # ingest
+        msg = semtk3.ingest_using_class_template("http://AnimalSubProps#Cat", "name,Kitties_name\nkitty,null\nmom,kitty\n", TestSemtk3.conn_str, "name")
+        self.assertTrue(msg.find("2"))  # inserted 2 records
+        
+        # run the nodegroup as SELECT
+        tab = semtk3.query_by_nodegroup(ng, query_type=semtk3.QUERY_TYPE_SELECT_DISTINCT, result_type=semtk3.RESULT_TYPE_TABLE)
+        self.assertEquals(2, tab.get_num_rows(), "Incorrect number of rows")
+        self.assertEquals(4, tab.get_num_columns(), "Incorrect number of columns")
+        
+        # ingest
+        msg = semtk3.ingest_using_class_template("http://AnimalSubProps#Cat", "name,Kitties_name\nkitty,lookupFailure\n", TestSemtk3.conn_str, "name")
+        self.assertTrue(msg and "2" in msg)  # inserted 2 records
 
 
 if __name__ == '__main__':

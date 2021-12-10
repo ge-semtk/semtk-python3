@@ -16,6 +16,7 @@
 #
 from . import semtkclient
 import logging
+import sys
 
 semtk3_logger = logging.getLogger("semtk3")
 
@@ -128,7 +129,27 @@ class SemTkAsyncClient(semtkclient.SemTkClient):
         self.poll_until_success(jobid)
         ret = self.post_get_json_blob_results(jobid)
         return ret
+    
+    
+    def post_async_to_record_process(self, endpoint, dataObj={}):
+        ''' 
+            returns success message
+            raises errors including error table
+        '''
+        jobid = self.post_to_jobid(endpoint, dataObj)
+        semtk3_logger.debug("jobid:  " + jobid)
         
+        try:
+            self.poll_until_success(jobid)
+            return self.post_get_status_message(jobid)
+        except:
+            # failure occurred in ingestion:  tack on the error table
+            table = self.post_get_table_results(jobid)
+            raise Exception("Failures encountered:\n" + table.get_csv_string()) from None
+         
+        
+        
+      
     def poll_until_success(self, jobid):
         ''' poll for percent complete and return if SUCCESS
             raises RestException including if status="failure"
