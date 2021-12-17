@@ -1,0 +1,45 @@
+{
+    "title": "Test Animal Report",
+    "sections": [
+        {
+            "header": "Cardinality",
+            "special": {
+                "id": "cardinality"
+            }
+        },
+        {
+            "header": "Count by animal type",
+            "count": {
+                "nodegroup": "semtk_test_animalCountByType",
+                "ranges": [
+                    {
+                        "format": "random range",
+                        "gte": 0,
+                        "status": "success",
+                        "sections": [
+                            {
+                                "header": "same nodegroup again",
+                                "table": {
+                                    "nodegroup": "semtk_test_animalCountByType"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "format": "Another impossible range",
+                        "lte": -1,
+                        "status": "failure",
+                        "sections": [
+                            {
+                                "header": "another nodegroup",
+                                "table": {
+                                    "nodegroup": "semtk_test_animalSubPropsCats"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    ]
+}

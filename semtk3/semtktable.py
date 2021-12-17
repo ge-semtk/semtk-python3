@@ -57,8 +57,16 @@ class SemtkTable():
         d[JSON_KEY_COL_TYPES] = col_types
         d[JSON_KEY_ROWS] = rows
         return d
+      
+    def delete_column(self, col_name):
+        i = self.get_column_index(col_name)
+        self.dict[JSON_KEY_COL_COUNT] -= 1
         
-        
+        del self.dict[JSON_KEY_COL_NAMES][i]
+        del self.dict[JSON_KEY_COL_TYPES][i]
+        for r in range(self.get_num_rows()):
+            del self.dict[JSON_KEY_ROWS][r][i] 
+            
     def get_num_rows(self):
         return self.dict[JSON_KEY_ROW_COUNT]
     
@@ -180,6 +188,32 @@ class SemtkTable():
                   
         return ret
     
+    def get_matching_rows(self, col_name, regex_str):
+        # get store data
+        regex = re.compile(regex_str)
+        ret = []
+        for r in range(self.get_num_rows()):
+            if (regex.search(self.get_cell(r,col_name))):
+                row = []
+                for c in range(self.get_num_columns()):
+                    row.append(self.get_cell_typed(r, c))
+                ret.append(row)
+                
+        return ret
+    
+    def get_matching_row_nums(self, col_name, regex_str):
+        # get store data
+        regex = re.compile(regex_str)
+        ret = []
+        for r in range(self.get_num_rows()):
+            if (regex.search(self.get_cell(r,col_name))):
+                row = []
+                for c in range(self.get_num_columns()):
+                    row.append(self.get_cell_typed(r, c))
+                ret.append(r)
+                
+        return ret
+                
     def to_dict(self):
         return self.dict
     

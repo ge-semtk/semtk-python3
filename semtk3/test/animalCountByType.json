@@ -1,0 +1,80 @@
+{
+	"version": 3,
+	"sparqlConn": {
+		"name": "Junit Semtk python",
+		"domain": "",
+		"enableOwlImports": false,
+		"model": [
+			{
+				"type": "fuseki",
+				"url": "http://localhost:3030/DATASET",
+				"graph": "http://semtk-python-test/model"
+			}
+		],
+		"data": [
+			{
+				"type": "fuseki",
+				"url": "http://localhost:3030/DATASET",
+				"graph": "http://semtk-python-test/data"
+			}
+		]
+	},
+	"sNodeGroup": {
+		"version": 15,
+		"limit": 0,
+		"offset": 0,
+		"sNodeList": [
+			{
+				"propList": [
+					{
+						"ValueType": "string",
+						"relationship": "http://www.w3.org/2001/XMLSchema#string",
+						"UriRelationship": "http://AnimalSubProps#name",
+						"Constraints": "",
+						"SparqlID": "?name",
+						"isReturned": false,
+						"optMinus": 0,
+						"isRuntimeConstrained": false,
+						"instanceValues": [],
+						"isMarkedForDeletion": false,
+						"functions": [
+							"COUNT"
+						]
+					}
+				],
+				"nodeList": [],
+				"fullURIName": "http://AnimalSubProps#Animal",
+				"SparqlID": "?Animal",
+				"isReturned": false,
+				"isRuntimeConstrained": false,
+				"valueConstraint": "",
+				"instanceValue": null,
+				"deletionMode": "NO_DELETE",
+				"isTypeReturned": true
+			}
+		],
+		"orderBy": [],
+		"groupBy": [
+			"?Animal_type"
+		],
+		"unionHash": {},
+		"queryType": "CONSTRUCT"
+	},
+	"importSpec": {
+		"version": "1",
+		"baseURI": "",
+		"columns": [],
+		"dataValidator": [],
+		"texts": [],
+		"transforms": [],
+		"nodes": [
+			{
+				"sparqlID": "?Animal",
+				"type": "http://AnimalSubProps#Animal",
+				"mapping": [],
+				"props": []
+			}
+		]
+	},
+	"plotSpecs": null
+}

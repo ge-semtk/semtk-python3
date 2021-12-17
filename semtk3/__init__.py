@@ -28,12 +28,12 @@ from . import nodegroupstoreclient
 from . import oinfoclient
 from . import queryclient
 from . import restclient
-from . import hiveclient
 from . import ingestionclient
 from . import resultsclient
 from . import semtk
 from . import statusclient
 from . import utilityclient
+from . import report
 from . import runtimeconstraint
 from . import sparqlconnection
 from . import semtkasyncclient
@@ -48,6 +48,8 @@ import re
 import sys
 import logging
 import plotly
+import requests
+
 from semtk3.oinfoclient import OInfoClient
 
 # pip install requests
@@ -70,10 +72,13 @@ RESULT_TYPE_CONFIRM = "CONFIRM"
 RESULT_TYPE_RDF = "RDF"  
 RESULT_TYPE_HTML = "HTML"
 
+STORE_ITEM_TYPE_NODEGROUP = "PrefabNodeGroup"
+STORE_ITEM_TYPE_REPORT = "Report"
+STORE_ITEM_TYPE_ALL = "StoredItem"
+
 QUERY_PORT = "12050"
 STATUS_PORT = "12051"
 RESULTS_PORT = "12052"
-HIVE_PORT = "12055"
 NODEGROUP_STORE_PORT = "12056"
 OINFO_PORT = "12057"
 NODEGROUP_EXEC_PORT = "12058"
@@ -85,7 +90,6 @@ INGESTION_PORT="12091"
 QUERY_HOST = "http://localhost"
 STATUS_HOST = "http://localhost"
 RESULTS_HOST = "http://localhost"
-HIVE_HOST = "http://localhost"
 NODEGROUP_STORE_HOST = "http://localhost"
 OINFO_HOST = "http://localhost"
 NODEGROUP_EXEC_HOST = "http://localhost"
@@ -124,12 +128,11 @@ for depend in ['requests']:
 ###########################
 
 def set_host(hostUrl):
-    global QUERY_HOST, STATUS_HOST, RESULTS_HOST, HIVE_HOST, NODEGROUP_STORE_HOST, OINFO_HOST, NODEGROUP_EXEC_HOST, NODEGROUP_HOST, UTILITY_HOST, FDCCACHE_HOST, INGESTION_HOST
+    global QUERY_HOST, STATUS_HOST, RESULTS_HOST, NODEGROUP_STORE_HOST, OINFO_HOST, NODEGROUP_EXEC_HOST, NODEGROUP_HOST, UTILITY_HOST, FDCCACHE_HOST, INGESTION_HOST
         
     QUERY_HOST = hostUrl
     STATUS_HOST = hostUrl
     RESULTS_HOST = hostUrl
-    HIVE_HOST = hostUrl
     NODEGROUP_STORE_HOST = hostUrl
     OINFO_HOST = hostUrl
     NODEGROUP_EXEC_HOST = hostUrl
@@ -153,6 +156,25 @@ def print_wait_dots(seconds):
 def get_logger():
     return logging.getLogger("semtk3")
 
+def set_connection_override(conn_str):
+    ''' 
+    Set a connection string to be used in all nodegroups
+    :param conn_str - a SemTK connection json string
+    '''
+    global SEMTK3_CONN_OVERRIDE
+    SEMTK3_CONN_OVERRIDE = conn_str
+    
+def check_connection_up(conn_str):
+    ''' 
+    Throw exception if connection triplestore(s) don't respond OK to http GET
+    :param conn_str - a SemTK connection json string
+    '''
+    conn = sparqlconnection.SparqlConnection(json.loads(conn_str))
+    for url in conn.get_all_triplestore_urls():
+        response = requests.request("GET", url)
+        if not response.ok:
+            raise Exception("Problem connecting to triplestore url: " + url + '\n' + str(response.content))
+        
 def clear_graph(conn_json_str, model_or_data, index):
     '''
     Clear a graph
@@ -427,30 +449,50 @@ def get_nodegroup_by_id(nodegroup_id):
     :return: a nodegroup
     :rettype: json string
     '''
+    return get_store_item(nodegroup_id, STORE_ITEM_TYPE_NODEGROUP)
+
+def get_store_item(item_id, item_type):
     
     store_client = __get_nodegroup_store_client()
-    table = store_client.exec_get_nodegroup_by_id(nodegroup_id)
+    table = store_client.exec_get_stored_item_by_id(item_id, item_type)
     if table.get_num_rows() < 1:
-        raise Exception("Could not find nodegroup with id: " + nodegroup_id)
+        raise Exception("Could not find store item with id: " + item_id + " and type: " + item_type)
     
-    return table.get_cell(0, table.get_column_index("NodeGroup"))
+    return table.get_cell(0, table.get_column_index("item"))
  
 def get_nodegroup_store_data():
     '''
-    Get list of everything in the nodegroup store
-    :return: SemtkTable with columns 'ID', 'comments', 'creationDate', 'creator'
+    Get list of nodegroups in the nodegroup store
+    :return: SemtkTable with columns 'ID', 'comments', 'creationDate', 'creator', 'itemType'
+    :rettype: semtktable
+    '''
+    return get_store_table(STORE_ITEM_TYPE_NODEGROUP)
+
+def get_store_table(item_type=STORE_ITEM_TYPE_ALL):
+    '''
+    Get list of everything in the store
+    :param item_type: one of the STORE_ITEM_TYPE constants
+    :return: SemtkTable with columns 'ID', 'comments', 'creationDate', 'creator', 'itemType'
     :rettype: semtktable
     '''
     store_client = __get_nodegroup_store_client()
-    return store_client.exec_get_nodegroup_metadata()
+    return store_client.exec_get_stored_items_metadata(item_type)
 
 def delete_nodegroup_from_store(nodegroup_id):
     '''
     Delete nodegroup_id from the store
     :param nodegroup_id: the id
     '''
+    return delete_item_from_store(nodegroup_id, STORE_ITEM_TYPE_NODEGROUP)
+
+def delete_item_from_store(item_id, item_type):
+    '''
+    Delete item from the store if it exists.
+    :param item_id: the id
+    :param item_type: one of STORE_ITEM_TYPE_
+    '''
     store_client = __get_nodegroup_store_client()
-    store_client.exec_delete_stored_nodegroup(nodegroup_id)
+    store_client.exec_delete_stored_item(item_id, item_type)
     return
 
 def store_nodegroup(nodegroup_id, comments, creator, nodegroup_json_str):
@@ -463,13 +505,30 @@ def store_nodegroup(nodegroup_id, comments, creator, nodegroup_json_str):
     :return: status
     :rettype: string
     '''
+    return store_item(nodegroup_id, comments, creator, nodegroup_json_str, STORE_ITEM_TYPE_NODEGROUP)
+
+def store_item(item_id, comments, creator, item_json_str, item_type):
+    '''
+    Saves a single nodegroup to the store, fails if nodegroup_id already exists
+    :param item_id: the id
+    :param comments: comment string
+    :param creator: creator string
+    :param item_json_str: json string of NODEGROUP or REPORT, etc.
+    :param item_type: one of the STORE_ITEM_TYPE constants
+    :return: status
+    :rettype: string
+    '''
     store_client = __get_nodegroup_store_client()
-    return store_client.exec_store_nodegroup(nodegroup_id, comments, creator, nodegroup_json_str)
+    return store_client.exec_store_item(item_id, comments, creator, item_json_str, item_type)
+
 
 def store_nodegroups(folder_path):
+    store_folder(folder_path)
+
+def store_folder(folder_path):
     '''
     Reads a file of the standard "store_data.csv" format
-        ID,comments,creator,jsonfile
+        ID,comments,creator,jsonfile, optional: type
         id27,Test comments,200001111,file.json
     
     ...and saves the specified nodegroups to the store.
@@ -477,78 +536,162 @@ def store_nodegroups(folder_path):
     :param folder_path: target folder
     '''
     
-    # get current store data
-    id_list = get_nodegroup_store_data().get_column("ID")
-    
+    # get current store data: id and type columns
+    table = get_store_table(STORE_ITEM_TYPE_ALL)
+    id_list = table.get_column("ID")
+    type_list = table.get_column("itemType")
+        
     filename = os.path.join(folder_path, "store_data.csv")
     with open(filename, mode='r') as csv_file:
         csv_reader = csv.DictReader(csv_file)
         for row in csv_reader:
-            nodegroup_id = row["ID"]
+            item_id = row["ID"]
+            if "itemType" in row.keys():
+                item_type = row["itemType"]
+                if "nodegroup" in item_type.lower():
+                    item_type = STORE_ITEM_TYPE_NODEGROUP 
+            else:
+                item_type = STORE_ITEM_TYPE_NODEGROUP
             
-            # delete if already exists
-            if nodegroup_id in id_list:
-                delete_nodegroup_from_store(nodegroup_id)
+            # delete if already exists of the same type
+            if item_id in id_list:
+                i = id_list.index(item_id)
+                if (type_list[i] == item_type):
+                    delete_item_from_store(item_id, item_type)
 
             # read the json and store the nodegroup       
             json_path = os.path.join(folder_path, row["jsonFile"])
             with open(json_path,'r') as json_file:   
                 nodegroup_json_str = json_file.read()
-                store_nodegroup(nodegroup_id, row["comments"], row["creator"], nodegroup_json_str)
+                store_item(item_id, row["comments"], row["creator"], nodegroup_json_str, item_type)
             
-
 def retrieve_from_store(regex_str, folder_path):
+    print("retrieve_from_store() is deprecated.  Use retrieve_nodegroups_from_store() or retrieve_items_from_store()")
+    return retrieve_nodegroups_from_store(regex_str, folder_path)
+
+def retrieve_nodegroups_from_store(regex_str, folder_path): 
+    return retrieve_items_from_store(regex_str, folder_path, STORE_ITEM_TYPE_NODEGROUP)
+
+def retrieve_items_from_store(regex_str, folder_path, item_type=STORE_ITEM_TYPE_ALL): 
     '''
-    Retrieve all nodegroups matching a pattern, create store_data.csv
+    Retrieve all items matching a pattern, create store_data.csv
     :param regex_str: pattern to match on nodegroup id's
     :param folder_path: target folder
     '''
     
     # open the output and write the header
     with open(os.path.join(folder_path, "store_data.csv"), "w") as store_data:
-        store_writer = csv.writer(store_data, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL,lineterminator='\n')
-        store_writer.writerow(['ID', 'comments', 'creator', 'jsonFile'])
+        store_writer = _init_store_data_csv(store_data)
         
         # get store data
         regex = re.compile(regex_str)
-        store_table = get_nodegroup_store_data()
+        store_table = get_store_table(item_type)
         
         for i in range(store_table.get_num_rows()):
             
             # for rows matching regex
             if (regex.search(store_table.get_cell(i,"ID"))):
-                nodegroup_id = store_table.get_cell(i, "ID")
+                item_id = store_table.get_cell(i, "ID")
                 comments = store_table.get_cell(i, "comments")
                 creator = store_table.get_cell(i, "creator")
+                if (store_table.has_column("itemType")):
+                    item_type = store_table.get_cell(i, "itemType").split("#")[1]
+                else:
+                    item_type = STORE_ITEM_TYPE_NODEGROUP
                
-                # get nodegroup and write it
-                filename = nodegroup_id +".json"
-                filepath = os.path.join(folder_path, filename)
-                json_str = get_nodegroup_by_id(nodegroup_id)
-                
-                # format the json nicely
-                j = json.loads(json_str)
-                json_str = json.dumps(j,  indent=4, sort_keys=True)
-                
-                with open(filepath, "w") as f:
-                    f.write(json_str)
-                
-                # add row to file 
-                store_writer.writerow([nodegroup_id, comments, creator, filename])
-                
+                _write_item_file(item_id, item_type, get_store_item(item_id, item_type), folder_path)
+                _add_to_store_data_csv(store_writer, item_id, comments, creator, item_type)
+
+
+def retrieve_reports_from_store(regex_str, folder_path): 
+    '''
+    Retrieve all items matching a pattern, create store_data.csv
+    Retrieves reports and any nodegroups they use
+    :param regex_str: pattern to match on nodegroup id's
+    :param folder_path: target folder
+    '''
+    written_ng = []
+    
+    # open the output and write the header
+    with open(os.path.join(folder_path, "store_data.csv"), "w") as store_data:
+        store_writer = _init_store_data_csv(store_data)
+        
+        # get nodegroup data
+        ng_table = get_store_table(STORE_ITEM_TYPE_NODEGROUP)
+        
+        # get report data
+        report_table = get_store_table(STORE_ITEM_TYPE_REPORT)
+        report_row_nums = report_table.get_matching_row_nums("ID", regex_str)
+        
+        for i in report_row_nums:
+            report_id = report_table.get_cell(i, "ID")
+            comments = report_table.get_cell(i, "comments")
+            creator = report_table.get_cell(i, "creator")
+            item_type = STORE_ITEM_TYPE_REPORT
+            
+            report_json_str = get_store_item(report_id, item_type)
+            report_obj = report.Report(report_json_str)
+            _write_item_file(report_id, item_type, report_json_str, folder_path)
+            _add_to_store_data_csv(store_writer, report_id, comments, creator, item_type)
+            
+            nodegroup_id_list = report_obj.get_nodegroup_ids()
+            
+            for ng_id in nodegroup_id_list:
+                if not (ng_id in written_ng):
+                    rows = ng_table.get_matching_row_nums("ID", "^"+ng_id+"$")
+                    if len(rows) > 1:
+                        raise Exception("Found more than one nodegroup with id: " + ng_id)
+                    elif len(rows) == 0:
+                        raise Exception("Could not find nodegroup with id: " + ng_id + " for report: " + report_id)
+                    else:
+                        ng_id = ng_table.get_cell(rows[0], "ID")
+                        comments = ng_table.get_cell(rows[0], "comments")
+                        creator = ng_table.get_cell(rows[0], "creator")
+                        item_type = STORE_ITEM_TYPE_NODEGROUP
+                        
+                        ng_json_str = get_store_item(ng_id, item_type)
+                        _write_item_file(ng_id, item_type, ng_json_str, folder_path)
+                        _add_to_store_data_csv(store_writer, ng_id, comments, creator, item_type)
+
+def _init_store_data_csv(f):
+    store_writer = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL,lineterminator='\n')
+    headers = ['ID', 'comments', 'creator', 'jsonFile', 'itemType']
+    store_writer.writerow(headers)
+    return store_writer
+
+def _add_to_store_data_csv(store_writer, item_id, comments, creator, item_type):
+    filename = item_id +".json"
+    store_writer.writerow([item_id, comments, creator, filename, item_type])     
+        
+def _write_item_file(item_id, item_type, json_str, folder_path):
+    # get nodegroup and write it
+    filename = item_id +".json"
+    filepath = os.path.join(folder_path, filename)
+    
+    # format the json nicely
+    j = json.loads(json_str)
+    json_str = json.dumps(j,  indent=4, sort_keys=True)
+    
+    with open(filepath, "w") as f:
+        f.write(json_str)
+                 
 def delete_nodegroups_from_store(regex_str):
+    delete_items_from_store(regex_str, STORE_ITEM_TYPE_NODEGROUP)
+    
+def delete_items_from_store(regex_str, item_type=STORE_ITEM_TYPE_ALL):
     '''
     Delete matching nodegroups from store
-    :param regex_str: pattern to match on nodegroup id's
+    :param regex_str: pattern to search() on nodegroup id's (any match in id)
+    :param item_type: only delete items of this type
 
     '''
-    store_table = get_nodegroup_store_data()
+    store_table = get_store_table(item_type)
     regex = re.compile(regex_str)
 
     for i in range(store_table.get_num_rows()):
-        nodegroup_id = store_table.get_cell(i, "ID")
-        if (regex.search(nodegroup_id)):  
-            delete_nodegroup_from_store(nodegroup_id)
+        item_id = store_table.get_cell(i, "ID")
+        if (regex.search(item_id)):  
+            delete_item_from_store(item_id, store_table.get_cell(i, "itemType").split("#")[1])
    
     
     
@@ -615,7 +758,7 @@ def override_ports(query_port=None, status_port=None, results_port=None, hive_po
     :param query_port: optional
     :param status_port: optional
     :param results_port: optional
-    :param hive_port: optional
+    :param hive_port: deprecated
     :param oinfo_port: optional
     :param nodegroup_exec_port: optional
     :param nodegroup_port: optional
@@ -626,7 +769,6 @@ def override_ports(query_port=None, status_port=None, results_port=None, hive_po
     if query_port: QUERY_PORT = query_port
     if status_port: STATUS_PORT = status_port
     if results_port: RESULTS_PORT = results_port
-    if hive_port: HIVE_PORT = hive_port
     if oinfo_port: OINFO_PORT = oinfo_port
     if nodegroup_exec_port: NODEGROUP_EXEC_PORT = nodegroup_exec_port
     if nodegroup_port: NODEGROUP_PORT = nodegroup_port
@@ -641,7 +783,7 @@ def override_hosts(query_host=None, status_host=None, results_host=None, hive_ho
     :param query_host: optional
     :param status_host: optional
     :param results_host: optional
-    :param hive_host: optional
+    :param hive_host: deprecated
     :param oinfo_host: optional
     :param nodegroup_exec_host: optional
     :param nodegroup_host: optional
@@ -652,7 +794,6 @@ def override_hosts(query_host=None, status_host=None, results_host=None, hive_ho
     if query_host: QUERY_HOST = query_host
     if status_host: STATUS_HOST = status_host
     if results_host: RESULTS_HOST = results_host
-    if hive_host: HIVE_HOST = hive_host
     if oinfo_host: OINFO_HOST = oinfo_host
     if nodegroup_exec_host: NODEGROUP_EXEC_HOST = nodegroup_exec_host
     if nodegroup_host: NODEGROUP_HOST = nodegroup_host
@@ -661,17 +802,7 @@ def override_hosts(query_host=None, status_host=None, results_host=None, hive_ho
     if ingestion_host: INGESTION_HOST = ingestion_host
 
 def query_hive(hiveserver_host, hiveserver_port, hiveserver_database, query):
-    '''
-    Execute a hive quiery
-    :param hiveserver_host: hive host
-    :param hiveserver_port: hive port
-    :param hiveserver_database: hive database
-    :param query: sql
-    :return: SemtkTable with columns 'ID', 'comments', 'creationDate', 'creator'
-    :rettype: semtktable
-    '''
-    hive_client = __get_hive_client(hiveserver_host, hiveserver_port, hiveserver_database)
-    return hive_client.exec_query_hive(query)
+    raise Exception("Hive is no longer supported")
 
 ##############################
 def __get_fdc_cache_client():
@@ -706,11 +837,6 @@ def __get_nodegroup_client():
     status_client = statusclient.StatusClient(__build_client_url(STATUS_HOST, STATUS_PORT))
     results_client = resultsclient.ResultsClient(__build_client_url(RESULTS_HOST, RESULTS_PORT))
     return nodegroupclient.NodegroupClient(__build_client_url(NODEGROUP_HOST, NODEGROUP_PORT), status_client, results_client)
-
-def __get_hive_client(hiveserver_host, hiveserver_port, hiveserver_database):
-    status_client = statusclient.StatusClient(__build_client_url(STATUS_HOST, STATUS_PORT))
-    results_client = resultsclient.ResultsClient(__build_client_url(RESULTS_HOST, RESULTS_PORT))
-    return hiveclient.HiveClient( __build_client_url(HIVE_HOST,HIVE_PORT), hiveserver_host, hiveserver_port, hiveserver_database, status_client, results_client)    
 
 def __get_utility_client():
     return utilityclient.UtilityClient( __build_client_url(UTILITY_HOST, UTILITY_PORT))

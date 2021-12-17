@@ -16,6 +16,7 @@
 #
 
 from . import semtkclient
+from . import semtk
 
 class NodegroupStoreClient(semtkclient.SemTkClient):
    
@@ -25,37 +26,41 @@ class NodegroupStoreClient(semtkclient.SemTkClient):
         
         semtkclient.SemTkClient.__init__(self, serverURL, "nodeGroupStore")
     
-    def exec_get_nodegroup_metadata(self):
+    def exec_get_stored_items_metadata(self, item_type):
 
         payload = {}
+        payload["itemType"] = item_type
         
-        return self.post_to_table("getNodeGroupMetadata", payload)
+        return self.post_to_table("getStoredItemsMetadata", payload)
     
     
-    def exec_get_nodegroup_by_id(self, nodegroup_id):
+    def exec_get_stored_item_by_id(self, item_id, item_type):
 
         payload = {}
-        payload["id"] = nodegroup_id;
+        payload["id"] = item_id
+        payload["itemType"] = item_type
         
-        return self.post_to_table("getNodeGroupById", payload)
+        return self.post_to_table("getStoredItemById", payload)
     
-    def exec_delete_stored_nodegroup(self, nodegroup_id):
+    def exec_delete_stored_item(self, item_id, item_type):
 
         payload = {}
-        payload["id"] = nodegroup_id;
+        payload["id"] = item_id
+        payload["itemType"] = item_type
         
-        self.post_to_status("deleteStoredNodeGroup", payload)
+        self.post_to_status("deleteStoredItem", payload)
         return
     
-    def exec_store_nodegroup(self, nodegroup_id, comments, creator, jsonRenderedNodegroup):
+    def exec_store_item(self, item_id, comments, creator, item_json_str, item_type):
 
         payload = {}
-        payload["name"] = nodegroup_id;
-        payload["comments"] = comments;
-        payload["creator"] = creator;
-        payload["jsonRenderedNodeGroup"] = jsonRenderedNodegroup;
+        payload["name"] = item_id
+        payload["comments"] = comments
+        payload["creator"] = creator
+        payload["item"] = item_json_str
+        payload["itemType"] = item_type
         
-        self.post_to_status("storeNodeGroup", payload)
+        self.post_to_status("storeItem", payload)
         return
             
     

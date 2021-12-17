@@ -41,5 +41,13 @@ class SparqlConnection:
     
     def get_password(self):
         return self.password
+    
+    def get_all_triplestore_urls(self):
+        ret = []
+        for sei in (self.conn_json[self.MODEL] + self.conn_json[self.DATA]):
+            if not (sei["url"] in ret):
+                ret.append(sei["url"])
+        return ret
+            
         
     
