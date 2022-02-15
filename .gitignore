@@ -3,3 +3,5 @@
 *.pyc
 build/
 semtk_python3.egg-info
+ImplicitModel/Sadl*.sadl
+OwlModels/ont-policy.rdf
