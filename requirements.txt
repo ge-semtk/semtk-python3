@@ -85,8 +85,8 @@ pyparsing==2.4.7
 pyrsistent==0.17.3
 python-dateutil==2.8.1
 pytz==2021.1
-pywin32==301
-pywinpty==0.5.7
+pywin32==301; platform_system == "Windows"
+pywinpty==0.5.7; platform_system == "Windows"
 pyzmq==22.0.3
 qtconsole==5.0.3
 QtPy==1.9.0
