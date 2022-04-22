@@ -556,7 +556,7 @@ def store_folder(folder_path):
             # delete if already exists of the same type
             if item_id in id_list:
                 i = id_list.index(item_id)
-                if (type_list[i] == item_type):
+                if (type_list[i].endswith(item_type)):
                     delete_item_from_store(item_id, item_type)
 
             # read the json and store the nodegroup       
