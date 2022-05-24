@@ -47,7 +47,6 @@ import os.path
 import re
 import sys
 import logging
-import plotly
 import requests
 
 from semtk3.oinfoclient import OInfoClient
@@ -283,17 +282,6 @@ def get_plot_spec_names_by_id(nodegroup_id):
     sg_json = sparqlgraphjson.SparqlGraphJson(json.loads(nodegroupStr))       
     return sg_json.get_plot_specs().get_plot_spec_names()
 
-
-def select_plot_by_id(nodegroup_id, plot_name):
-    '''
-    Create a plot for a given nodegroup id
-    '''
-    table = select_by_id(nodegroup_id)                                       # get results table
-    nodegroupStr = get_nodegroup_by_id(nodegroup_id)                         # get nodegroup string
-    sg_json = sparqlgraphjson.SparqlGraphJson(json.loads(nodegroupStr))       
-    plot_spec = sg_json.get_plot_specs().get_plot_spec_by_name(plot_name)                    # get plot spec
-    plot_spec_processed = __get_utility_client().exec_process_plot_spec(plot_spec, table)    # populate plot spec with data
-    return plotly.graph_objects.Figure(plot_spec_processed.get_spec())
 
 def count_by_id(nodegroup_id, limit_override=0, offset_override=0, runtime_constraints=None, edc_constraints=None, flags=None ):
     '''

@@ -36,9 +36,7 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     install_requires=[
-        'ase',
         'requests',
-        'plotly',
         'python-dateutil'
     ],
     python_requires='>=3.6',

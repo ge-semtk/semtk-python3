@@ -61,9 +61,27 @@ if __name__ == '__main__':
         print(col_data)
     else:
         print(col + " doesn't exist in this table")
-     
-    plot = semtk3.select_plot_by_id("DeleteMe", "hist")
-    plot.show() 
+
+    #
+    # Plotting data (if plotly package is available)
+    #
+
+    try:
+        import plotly
+        nodegroup_id = "DeleteMe"
+        plot_name = "hist"
+        table = select_by_id(nodegroup_id) # get results table
+        nodegroupStr = get_nodegroup_by_id(nodegroup_id) # get nodegroup string
+        sg_json = sparqlgraphjson.SparqlGraphJson(json.loads(nodegroupStr))
+        plot_spec = sg_json.get_plot_specs().get_plot_spec_by_name(plot_name)
+        # populate plot spec with data
+        plot_spec_processed = __get_utility_client().exec_process_plot_spec(plot_spec, table)
+        # generate and show plotted data
+        import plotly
+        plot = plotly.graph_objects.Figure(plot_spec_processed.get_spec())
+        plot.show()
+    except ImportError:
+        print 'Install plotly to view the data plotting demo'
      
     #
     # configure logging:   http://docs.python.org/3/howto/logging.html
