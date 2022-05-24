@@ -24,7 +24,6 @@ import io
 import json
 from dateutil import parser      # python-dateutil and six
 import re
-from ase.db import row
 
 JSON_KEY_COL_NAMES = "col_names"
 JSON_KEY_COL_TYPES = "col_type"
@@ -219,4 +218,3 @@ class SemtkTable():
     
     def to_json_str(self):
         return json.dumps(self.dict, indent=4, sort_keys=True)
-    
