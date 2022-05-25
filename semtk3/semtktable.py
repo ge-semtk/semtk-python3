@@ -151,15 +151,13 @@ class SemtkTable():
             Full types list :    especially Time
             (see list in ImportSpecHandler.java)
         '''
-        cname = self.get_column_types()[col]
-
-        if cname.endswith("XMLSchema#int"):
+        if self.get_column_types()[col].endswith("int"):
             return self.get_cell_as_int(row, col)
         
-        elif cname.endswith("XMLSchema#float") or cname.endswith("XMLSchema#double"):
+        elif self.get_column_types()[col].endswith("float") or self.get_column_types()[col].endswith("double"):
             return self.get_cell_as_float(row, col)
         
-        elif cname.endswith("XMLSchema#date") or cname.endswith("XMLSchema#dateTime"):
+        elif self.get_column_types()[col].endswith("date") or self.get_column_types()[col].endswith("dateTime"):            
             return self.get_cell_as_date(row, col)
         
         else:
