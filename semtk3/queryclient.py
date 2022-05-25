@@ -22,7 +22,7 @@ from semtk3.semtkclient import SemTkClient
 class QueryClient(SemTkClient):
     
     def __init__(self, serverURL, conn_obj):
-        ''' servierURL string - e.g. http://machine:12050
+        ''' serverURL string - e.g. http://machine:12050
         '''
         super(QueryClient, self).__init__(serverURL, "sparqlQueryService")
         self.conn = conn_obj

@@ -20,7 +20,7 @@ class NodegroupClient(semtkasyncclient.SemTkAsyncClient):
     USE_NODEGROUP_CONN = "{\"name\": \"%NODEGROUP%\",\"domain\": \"%NODEGROUP%\",\"model\": [],\"data\": []}"
     
     def __init__(self, serverURL, status_client, results_client):
-        ''' servierURL string - e.g. http://machine:8099
+        ''' serverURL string - e.g. http://machine:8099
             status_client 
             results_client 
         '''
@@ -28,7 +28,7 @@ class NodegroupClient(semtkasyncclient.SemTkAsyncClient):
     
     def exec_create_nodegroup(self, conn_json_str, class_uri, sparql_id=None):
         ''' execute a create_nodegroup
-            thorws: exception otherwise
+            throws: exception otherwise
         '''
         payload = {}
         payload["conn"] = conn_json_str
