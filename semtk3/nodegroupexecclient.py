@@ -200,3 +200,21 @@ class NodegroupExecClient(semtkasyncclient.SemTkAsyncClient):
         res = self.post_to_record_process("ingestFromCsvStringsById", payload)
         
         return res
+
+    def exec_dispatch_combine_entities(self, class_uri, target_uri, duplicate_uri, delete_predicates_from_target=None, delete_predicates_from_duplicate=None, conn_json_str=None):
+        payload = {}
+        payload["conn"] = conn_json_str
+        payload["classUri"] = class_uri
+        payload["targetUri"] = target_uri
+        payload["duplicateUri"] = duplicate_uri
+        
+        
+        if delete_predicates_from_target:
+            payload["deletePredicatesFromTarget"] = delete_predicates_from_target
+        if delete_predicates_from_duplicate:
+            payload["deletePredicatesFromDuplicate"] = delete_predicates_from_duplicate
+        
+        # error unless res is success info
+        status = self.post_async_to_status("dispatchCombineEntities", payload)
+    
+        return status

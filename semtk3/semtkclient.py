@@ -118,7 +118,8 @@ class SemTkClient(restclient.RestClient):
         
     def post_to_status(self, endpoint, dataObj={}, files=None):
         ''' 
-            returns dict - the simple results
+            throws error if status is not success
+            returns dict - the simple results,
                            which can be used as a regular dict, or with error-handling get_simple_field*() methods
         '''
         content = self.post(endpoint, dataObj=dataObj, files=files)

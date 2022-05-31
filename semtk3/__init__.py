@@ -275,6 +275,19 @@ def select_by_id(nodegroup_id, limit_override=0, offset_override=0, runtime_cons
     table = nge_client.exec_async_dispatch_select_by_id(nodegroup_id, SEMTK3_CONN_OVERRIDE, limit_override, offset_override, runtime_constraints, edc_constraints, flags)
     return table
 
+def combine_entities(class_uri, target_uri, duplicate_uri, delete_predicates_from_target=None, delete_predicates_from_duplicate=None):
+    '''
+    Combine two entities.  Exception on failure.
+    :param class_uri: class of entities to be combined
+    :param target_uri: target instance to be combined INTO
+    :param duplicate_uri: duplicate instance to be combined then removed
+    :param delete_predicates_from_target: list of predicate URIs to be deleted from target
+    :param delete_predicates_from_duplicate: list of predicate URIs to be deleted from duplicate
+    '''
+    nge_client = __get_nge_client()
+   
+    nge_client.exec_dispatch_combine_entities(class_uri, target_uri, duplicate_uri, delete_predicates_from_target, delete_predicates_from_duplicate, SEMTK3_CONN_OVERRIDE)
+
 def get_plot_spec_names_by_id(nodegroup_id):
     '''
     Get available plot names for a given nodegroup id
@@ -480,14 +493,14 @@ def get_store_table(item_type=STORE_ITEM_TYPE_ALL):
 
 def delete_nodegroup_from_store(nodegroup_id):
     '''
-    Delete nodegroup_id from the store
+    Delete nodegroup_id from the store error if it doesn't exist.
     :param nodegroup_id: the id
     '''
     return delete_item_from_store(nodegroup_id, STORE_ITEM_TYPE_NODEGROUP)
 
 def delete_item_from_store(item_id, item_type):
     '''
-    Delete item from the store if it exists.
+    Delete item from the store, error if it doesn't exist.
     :param item_id: the id
     :param item_type: one of STORE_ITEM_TYPE_
     '''
@@ -495,9 +508,9 @@ def delete_item_from_store(item_id, item_type):
     store_client.exec_delete_stored_item(item_id, item_type)
     return
 
-def store_nodegroup(nodegroup_id, comments, creator, nodegroup_json_str):
+def store_nodegroup(nodegroup_id, comments, creator, nodegroup_json_str, overwrite_flag=False):
     '''
-    Saves a single nodegroup to the store, fails if nodegroup_id already exists
+    Saves a single nodegroup to the store, fails if nodegroup_id already exists unless overwrite_flag
     :param nodegroup_id: the id
     :param comments: comment string
     :param creator: creator string
@@ -505,19 +518,27 @@ def store_nodegroup(nodegroup_id, comments, creator, nodegroup_json_str):
     :return: status
     :rettype: string
     '''
-    return store_item(nodegroup_id, comments, creator, nodegroup_json_str, STORE_ITEM_TYPE_NODEGROUP)
+    return store_item(nodegroup_id, comments, creator, nodegroup_json_str, STORE_ITEM_TYPE_NODEGROUP, overwrite_flag)
 
-def store_item(item_id, comments, creator, item_json_str, item_type):
+def store_item(item_id, comments, creator, item_json_str, item_type, overwrite_flag=False):
     '''
-    Saves a single nodegroup to the store, fails if nodegroup_id already exists
+    Saves a single item to the store, fails if nodegroup_id already exists unless overwrite_flag
     :param item_id: the id
     :param comments: comment string
     :param creator: creator string
     :param item_json_str: json string of NODEGROUP or REPORT, etc.
     :param item_type: one of the STORE_ITEM_TYPE constants
+    :param overwrite_flag: if true then silently overwrite existing item with the same name
     :return: status
     :rettype: string
     '''
+    if overwrite_flag:
+        try:
+            delete_item_from_store(item_id, item_type)
+        except Exception as e: 
+            if "No stored item exists with id" not in str(e):
+                raise e
+        
     store_client = __get_nodegroup_store_client()
     return store_client.exec_store_item(item_id, comments, creator, item_json_str, item_type)
 
@@ -531,7 +552,7 @@ def store_folder(folder_path):
         ID,comments,creator,jsonfile, optional: type
         id27,Test comments,200001111,file.json
     
-    ...and saves the specified nodegroups to the store.
+    ...and saves the specified nodegroups to the store, overwriting existing if needed
     
     :param folder_path: target folder
     '''
@@ -564,7 +585,9 @@ def store_folder(folder_path):
             json_path = os.path.join(folder_path, row["jsonFile"])
             with open(json_path,'r') as json_file:   
                 nodegroup_json_str = json_file.read()
-                store_item(item_id, row["comments"], row["creator"], nodegroup_json_str, item_type)
+                # store item.  
+                # Overwriting is already handled more effciently above, so overwrite_flag=False
+                store_item(item_id, row["comments"], row["creator"], nodegroup_json_str, item_type, False)
             
 def retrieve_from_store(regex_str, folder_path):
     print("retrieve_from_store() is deprecated.  Use retrieve_nodegroups_from_store() or retrieve_items_from_store()")

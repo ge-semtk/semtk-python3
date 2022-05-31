@@ -160,6 +160,18 @@ class TestSemtk3(unittest.TestCase):
         #setup
         self.store_two_ng_one_report()
         
+        # store again with overwrite error
+        no_rt_ng = importlib.resources.read_text(TestSemtk3.PACKAGE, "animalSubPropsCats.json")
+        try:
+            semtk3.store_item(self.NO_RT_ID, "testing", "PyUnit", no_rt_ng, STORE_ITEM_TYPE_NODEGROUP)
+            self.assertTrue(False, "Missing overwrite exception")
+        except:
+            pass
+        
+        # store again with overwrite_flag = True
+        semtk3.store_item(self.NO_RT_ID, "testing", "PyUnit", no_rt_ng, STORE_ITEM_TYPE_NODEGROUP, overwrite_flag=True)
+            
+        
         # retrieve nodegroup data and count
         table = semtk3.get_nodegroup_store_data()
         self.assertEqual(2, len(table.get_matching_rows("ID", "^semtk_test")), "Wrong number of nodegroups returned from store")
@@ -321,6 +333,25 @@ class TestSemtk3(unittest.TestCase):
         except Exception as e: 
             self.assertTrue(" not find " in str(e))
           
+    def test_combine_entities(self):
+        # Basic test of REST endpoint
+        # Real testing is don
+        self.clear_graph()
+        
+        with importlib.resources.path(TestSemtk3.PACKAGE, "AnimalSubProps.owl") as owl_path:
+            semtk3.upload_owl(owl_path, TestSemtk3.conn_str)
+        
+        with importlib.resources.path(TestSemtk3.PACKAGE, "AnimalsToCombineData.owl") as owl_path:
+            semtk3.upload_owl(owl_path, TestSemtk3.conn_str, model_or_data="data")
+        
+        semtk3.combine_entities("http://AnimalSubProps#Tiger", "http://AnimalsToCombineData#auntyEm", "http://AnimalsToCombineData#auntyEmDuplicate", None, ["http://AnimalSubProps#name"])
+   
+        nodegroup_json_str =  importlib.resources.read_text(TestSemtk3.PACKAGE, "animalsToCombineTigerTree.json")
+        semtk3.store_nodegroup("semtk_test_animalToCombineTigerTree", "comments", "semtk python test", nodegroup_json_str, True)
+        
+        tab = semtk3.select_by_id("semtk_test_animalToCombineTigerTree")
+        self.assertEqual(tab.get_num_rows(), 16, "Wrong number of rows returned")
+        self.assertTrue("AUNTY_EM" not in tab.get_csv_string(), "Duplicate name was not removed")
         
 if __name__ == '__main__':
     unittest.main()
