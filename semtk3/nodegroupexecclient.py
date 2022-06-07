@@ -201,10 +201,9 @@ class NodegroupExecClient(semtkasyncclient.SemTkAsyncClient):
         
         return res
 
-    def exec_dispatch_combine_entities(self, class_uri, target_uri, duplicate_uri, delete_predicates_from_target=None, delete_predicates_from_duplicate=None, conn_json_str=None):
+    def exec_dispatch_combine_entities(self, target_uri, duplicate_uri, delete_predicates_from_target, delete_predicates_from_duplicate, conn_json_str):
         payload = {}
         payload["conn"] = conn_json_str
-        payload["classUri"] = class_uri
         payload["targetUri"] = target_uri
         payload["duplicateUri"] = duplicate_uri
         

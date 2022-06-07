@@ -344,8 +344,8 @@ class TestSemtk3(unittest.TestCase):
         with importlib.resources.path(TestSemtk3.PACKAGE, "AnimalsToCombineData.owl") as owl_path:
             semtk3.upload_owl(owl_path, TestSemtk3.conn_str, model_or_data="data")
         
-        semtk3.combine_entities("http://AnimalSubProps#Tiger", "http://AnimalsToCombineData#auntyEm", "http://AnimalsToCombineData#auntyEmDuplicate", None, ["http://AnimalSubProps#name"])
-   
+        semtk3.combine_entities("http://AnimalsToCombineData#auntyEm", "http://AnimalsToCombineData#auntyEmDuplicate", None, ["http://AnimalSubProps#name"])
+        
         nodegroup_json_str =  importlib.resources.read_text(TestSemtk3.PACKAGE, "animalsToCombineTigerTree.json")
         semtk3.store_nodegroup("semtk_test_animalToCombineTigerTree", "comments", "semtk python test", nodegroup_json_str, True)
         

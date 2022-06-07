@@ -209,8 +209,6 @@ def check_services():
     b9 = __get_ingestion_client().ping()
     
     return b1 and b2 and b3 and b4 and b5 and b6 and b7 and b8 and b9
-    
- 
 
 def query_by_id(nodegroup_id, limit_override=0, offset_override=0, runtime_constraints=None, edc_constraints=None, flags=None, query_type=None, result_type=None):
     '''
@@ -275,7 +273,7 @@ def select_by_id(nodegroup_id, limit_override=0, offset_override=0, runtime_cons
     table = nge_client.exec_async_dispatch_select_by_id(nodegroup_id, SEMTK3_CONN_OVERRIDE, limit_override, offset_override, runtime_constraints, edc_constraints, flags)
     return table
 
-def combine_entities(class_uri, target_uri, duplicate_uri, delete_predicates_from_target=None, delete_predicates_from_duplicate=None):
+def combine_entities(target_uri, duplicate_uri, delete_predicates_from_target=None, delete_predicates_from_duplicate=None, conn=None):
     '''
     Combine two entities.  Exception on failure.
     :param class_uri: class of entities to be combined
@@ -284,9 +282,14 @@ def combine_entities(class_uri, target_uri, duplicate_uri, delete_predicates_fro
     :param delete_predicates_from_target: list of predicate URIs to be deleted from target
     :param delete_predicates_from_duplicate: list of predicate URIs to be deleted from duplicate
     '''
+    
+    my_conn = conn or SEMTK3_CONN_OVERRIDE
+    if not my_conn:
+        raise Exception("No connection specified.  Use conn param or set_connection_override() function")
+    
     nge_client = __get_nge_client()
    
-    nge_client.exec_dispatch_combine_entities(class_uri, target_uri, duplicate_uri, delete_predicates_from_target, delete_predicates_from_duplicate, SEMTK3_CONN_OVERRIDE)
+    nge_client.exec_dispatch_combine_entities(target_uri, duplicate_uri, delete_predicates_from_target, delete_predicates_from_duplicate, my_conn)
 
 def get_plot_spec_names_by_id(nodegroup_id):
     '''
