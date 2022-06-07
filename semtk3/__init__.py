@@ -276,11 +276,11 @@ def select_by_id(nodegroup_id, limit_override=0, offset_override=0, runtime_cons
 def combine_entities(target_uri, duplicate_uri, delete_predicates_from_target=None, delete_predicates_from_duplicate=None, conn=None):
     '''
     Combine two entities.  Exception on failure.
-    :param class_uri: class of entities to be combined
     :param target_uri: target instance to be combined INTO
     :param duplicate_uri: duplicate instance to be combined then removed
     :param delete_predicates_from_target: list of predicate URIs to be deleted from target
     :param delete_predicates_from_duplicate: list of predicate URIs to be deleted from duplicate
+    :param conn: connection (can also be set with set_connection_override())
     '''
     
     my_conn = conn or SEMTK3_CONN_OVERRIDE
