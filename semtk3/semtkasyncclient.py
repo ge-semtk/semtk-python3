@@ -16,12 +16,12 @@
 #
 from . import semtkclient
 import logging
-import sys
+
 
 semtk3_logger = logging.getLogger("semtk3")
 
 class SemTkAsyncClient(semtkclient.SemTkClient):
-    
+    WARNING_TEXT="Ingestion Warnings:"
     PRINT_DOTS = False
     WAIT_MSEC = 5000
     PERCENT_INCREMENT = 20
@@ -130,22 +130,24 @@ class SemTkAsyncClient(semtkclient.SemTkClient):
         ret = self.post_get_json_blob_results(jobid)
         return ret
     
-    
     def post_async_to_record_process(self, endpoint, dataObj={}):
         ''' 
-            returns success message
+            returns success message, which may include warnings
             raises errors including error table
         '''
-        jobid = self.post_to_jobid(endpoint, dataObj)
+        jobid, warnings = self.post_to_jobid_warnings(endpoint, dataObj)
         semtk3_logger.debug("jobid:  " + jobid)
-        
+        warningText = ""
+        if warnings:
+            warningText = "\n\n" + SemTkAsyncClient.WARNING_TEXT + "\n" + "\n - ".join(warnings)
+                
         try:
             self.poll_until_success(jobid)
-            return self.post_get_status_message(jobid)
+            return self.post_get_status_message(jobid) + warningText
         except:
             # failure occurred in ingestion:  tack on the error table
             table = self.post_get_table_results(jobid)
-            raise Exception("Failures encountered:\n" + table.get_csv_string()) from None
+            raise Exception("Failures encountered:\n" + table.get_csv_string() + warningText) from None
          
     def post_async_to_status(self, endpoint, dataObj={}):
         ''' 

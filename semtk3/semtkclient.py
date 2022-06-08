@@ -32,6 +32,7 @@ semtk3_logger = logging.getLogger("semtk3")
 
 class SemTkClient(restclient.RestClient):
     JOB_ID_KEY = "JobId"
+    WARNINGS_KEY = "warnings"
     RESULT_TYPE_KEY = "resultType"
     
     def _check_status(self, content):
@@ -184,3 +185,19 @@ class SemTkClient(restclient.RestClient):
         '''
         simple_res = self.post_to_simple(endpoint, dataObj)
         return self.get_simple_field_str(simple_res, SemTkClient.JOB_ID_KEY)
+    
+    def post_to_jobid_warnings(self, endpoint, dataObj={}):
+        ''' 
+            for ingestion jobs which return warnings at the initial call
+            returns string jobid, ["warning1", "warning2"]   (where warnings can be None)
+            raises errors otherwise
+        '''
+        simple_res = self.post_to_simple(endpoint, dataObj)
+        job_id = self.get_simple_field_str(simple_res, SemTkClient.JOB_ID_KEY)
+        warnings = None
+        try:
+            # look for optional field 
+            warnings = self.get_simple_field(simple_res, SemTkClient.WARNINGS_KEY)
+        except:
+            pass
+        return job_id, warnings

@@ -197,7 +197,7 @@ class NodegroupExecClient(semtkasyncclient.SemTkAsyncClient):
         payload["sparqlConnection"] = override_conn_json_str if override_conn_json_str else self.USE_NODEGROUP_CONN
         '''payload["sparqlConnection"] = ""
         '''
-        res = self.post_to_record_process("ingestFromCsvStringsById", payload)
+        res = self.post_async_to_record_process("ingestFromCsvStringsByIdAsync", payload)
         
         return res
 

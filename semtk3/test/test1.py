@@ -62,6 +62,38 @@ class TestSemtk3(unittest.TestCase):
         
         csv_str =  importlib.resources.read_text(TestSemtk3.PACKAGE, "animalSubPropsDogs.csv")
         semtk3.ingest_by_id("semtk_test_animalSubPropsDogs", csv_str, TestSemtk3.conn_str)
+    
+    def test_ingest_warnings(self):
+        self.clear_graph()
+         # load some owl
+        with importlib.resources.path(TestSemtk3.PACKAGE, "AnimalSubProps.owl") as owl_path:
+            semtk3.upload_owl(owl_path, TestSemtk3.conn_str)
+            
+        # load nodegroups
+        nodegroup_json_str =  importlib.resources.read_text(TestSemtk3.PACKAGE, "animalSubPropsDogs.json")
+        semtk3.store_nodegroup("semtk_test_animalSubPropsDogs", "comments", "semtk python test", nodegroup_json_str, True)
+        nodegroup_json_str =  importlib.resources.read_text(TestSemtk3.PACKAGE, "animalSubPropsDogs.json")
+        semtk3.store_nodegroup("semtk_test_animalSubPropsDogs", "comments", "semtk python test", nodegroup_json_str, True)
+        
+        # load data with no warnings
+        csv_str =  importlib.resources.read_text(TestSemtk3.PACKAGE, "animalSubPropsCats.csv")
+        msg = semtk3.ingest_by_id("semtk_test_animalSubPropsCats", csv_str, TestSemtk3.conn_str)
+        self.assertFalse(semtk3.message_contains_warnings(msg), "Unexpected ingestion warning was generated")
+        
+        # load data with extra columns
+        csv_str =  importlib.resources.read_text(TestSemtk3.PACKAGE, "animalSubPropsDogs.csv")
+        msg = semtk3.ingest_by_id("semtk_test_animalSubPropsDogs", csv_str, TestSemtk3.conn_str)
+        self.assertTrue(semtk3.message_contains_warnings(msg), "No ingestion warning was generated for extra column")
+        
+        # try template
+        msg = semtk3.ingest_using_class_template("http://AnimalSubProps#Cat", "name,Kitties_name\nkitty,null\nmom,kitty\n", TestSemtk3.conn_str, "name")
+        self.assertFalse(semtk3.message_contains_warnings(msg), "Unexpected ingestion warning was generated")
+        
+        msg = semtk3.ingest_using_class_template("http://AnimalSubProps#Cat", "name,Kitties_XXXX\nkitty,null\nmom,kitty\n", TestSemtk3.conn_str, "name")
+        self.assertTrue(semtk3.message_contains_warnings(msg), "No ingestion warning was generated for misspelled column")
+        self.assertTrue("Kitties_XXXX" in msg, "Warning did not contain name of extra column")
+        self.assertTrue("Kitties_name" in msg, "Warning did not contain name of missing column")
+        
         
     def test_query_by_id(self):
         self.clear_graph()

@@ -51,6 +51,7 @@ import plotly
 import requests
 
 from semtk3.oinfoclient import OInfoClient
+from semtk3.semtkasyncclient import SemTkAsyncClient
 
 # pip install requests
 
@@ -106,6 +107,7 @@ OP_LESSTHAN = runtimeconstraint.RuntimeConstraint.OP_LESSTHAN
 OP_LESSTHANOREQUALS = runtimeconstraint.RuntimeConstraint.OP_LESSTHANOREQUALS
 OP_VALUEBETWEEN = runtimeconstraint.RuntimeConstraint.OP_VALUEBETWEEN
 OP_VALUEBETWEENUNINCLUSIVE = runtimeconstraint.RuntimeConstraint.OP_VALUEBETWEENUNINCLUSIVE
+
 
 #   This is the main setup for semtk3
 #   
@@ -371,30 +373,36 @@ def build_constraint(sparql_id, operator, operand_list):
     ret = runtimeconstraint.RuntimeConstraint(sparql_id, operator, operand_list)
     return ret
 
+def message_contains_warnings(msg):
+        return SemTkAsyncClient.WARNING_TEXT in msg
+    
 def ingest_by_id(nodegroup_id, csv_str, override_conn_json_str=None):
     '''
-    Perform data ingestion
+    Perform data ingestion, throwing exception on failure
     :param nodegroup_id: nodegroup with ingestion template
     :param csv_str: string csv data
     :param override_conn_json_str: optional override connection
-    :return: table of errors
-    :rettype: semtktable
+    :return: success message, possibly containing warnings
+    :rettype: string
     '''
     nge_client = __get_nge_client()
    
-    table = nge_client.exec_async_ingest_from_csv(nodegroup_id, csv_str, override_conn_json_str)
-    return table
+    message = nge_client.exec_async_ingest_from_csv(nodegroup_id, csv_str, override_conn_json_str)
+    return message
 
 def ingest_using_class_template(class_uri, csv_str, conn_json_str, id_regex="identifier"):
     '''
-    Ingest using class template
+    Ingest using class template, throwing exception on failure
     :param class_uri : the class whose template should be used for ingestion
     :param csv_str: string csv data
     :param id_regex: regex matching properties that should be used for lookups
     :conn_json_str: connection
+    :return: success message, possibly containing warnings
+    :rettype: string
     '''
     ingest_client = __get_ingestion_client()
-    return ingest_client.exec_from_csv_using_class_template(class_uri, csv_str, conn_json_str, id_regex)
+    message = ingest_client.exec_from_csv_using_class_template(class_uri, csv_str, conn_json_str, id_regex)
+    return message
 
 def get_class_template_csv(class_uri, conn_json_str, id_regex):
     '''
