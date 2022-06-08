@@ -139,7 +139,7 @@ class SemTkAsyncClient(semtkclient.SemTkClient):
         semtk3_logger.debug("jobid:  " + jobid)
         warningText = ""
         if warnings:
-            warningText = "\n\n" + SemTkAsyncClient.WARNING_TEXT + "\n" + "\n - ".join(warnings)
+            warningText = "\n\n" + SemTkAsyncClient.WARNING_TEXT + "\n - " + "\n - ".join(warnings)
                 
         try:
             self.poll_until_success(jobid)
