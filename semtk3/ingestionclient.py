@@ -28,7 +28,9 @@ class IngestionClient(semtkasyncclient.SemTkAsyncClient):
     
     def exec_from_csv_using_class_template(self, class_uri, csv_str, conn_json_str,  id_regex=None):
         ''' execute a create_nodegroup
-            thorws: exception otherwise
+            throws: exception otherwise
+            returns status,warnings  where status is always a string and warnings might be ""
+
         '''
         payload = {}
         payload["connection"] = conn_json_str
@@ -37,10 +39,9 @@ class IngestionClient(semtkasyncclient.SemTkAsyncClient):
         if id_regex:
             payload["idRegex"] = id_regex
     
-     
-        res = self.post_async_to_record_process("fromCsvUsingClassTemplate", payload)
-        
-        return res
+        # return is:  status, warnings
+        statusMsg, warnMsg = self.post_async_to_record_process("fromCsvUsingClassTemplate", payload)
+        return statusMsg, warnMsg
     
     def exec_get_class_template_csv(self, class_uri, conn_json_str, id_regex=None):
         ''' execute a create_nodegroup

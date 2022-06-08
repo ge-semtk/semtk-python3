@@ -190,16 +190,17 @@ class NodegroupExecClient(semtkasyncclient.SemTkAsyncClient):
         ''' nodegroup_id - from nodegroup store
             csv_str - data, e.g. from:  open('data.csv', 'r').read()
             override_conn_json_str - string with json of a different connection
+            
+            returns status,warnings  where status is always a string and warnings might be ""
         '''
         payload = {}
         payload["templateId"] = nodegroup_id
         payload["csvContent"] = csv_str
         payload["sparqlConnection"] = override_conn_json_str if override_conn_json_str else self.USE_NODEGROUP_CONN
-        '''payload["sparqlConnection"] = ""
-        '''
-        res = self.post_async_to_record_process("ingestFromCsvStringsByIdAsync", payload)
-        
-        return res
+
+        # return is:  status, warnings      
+        statusMsg, warnMsg = self.post_async_to_record_process("ingestFromCsvStringsByIdAsync", payload)
+        return statusMsg, warnMsg
 
     def exec_dispatch_combine_entities(self, target_uri, duplicate_uri, delete_predicates_from_target, delete_predicates_from_duplicate, conn_json_str):
         payload = {}

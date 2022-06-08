@@ -372,9 +372,6 @@ def build_constraint(sparql_id, operator, operand_list):
     '''
     ret = runtimeconstraint.RuntimeConstraint(sparql_id, operator, operand_list)
     return ret
-
-def message_contains_warnings(msg):
-        return SemTkAsyncClient.WARNING_TEXT in msg
     
 def ingest_by_id(nodegroup_id, csv_str, override_conn_json_str=None):
     '''
@@ -382,13 +379,13 @@ def ingest_by_id(nodegroup_id, csv_str, override_conn_json_str=None):
     :param nodegroup_id: nodegroup with ingestion template
     :param csv_str: string csv data
     :param override_conn_json_str: optional override connection
-    :return: success message, possibly containing warnings
-    :rettype: string
+    :return: (statusMsg, warnMsg)   where warnMsg is often ''
+    :rettype: string tuple
     '''
     nge_client = __get_nge_client()
    
-    message = nge_client.exec_async_ingest_from_csv(nodegroup_id, csv_str, override_conn_json_str)
-    return message
+    (statusMsg, warnMsg) = nge_client.exec_async_ingest_from_csv(nodegroup_id, csv_str, override_conn_json_str)
+    return (statusMsg, warnMsg)
 
 def ingest_using_class_template(class_uri, csv_str, conn_json_str, id_regex="identifier"):
     '''
@@ -397,12 +394,12 @@ def ingest_using_class_template(class_uri, csv_str, conn_json_str, id_regex="ide
     :param csv_str: string csv data
     :param id_regex: regex matching properties that should be used for lookups
     :conn_json_str: connection
-    :return: success message, possibly containing warnings
-    :rettype: string
+    :return: (statusMsg, warnMsg)   where warnMsg is often ''
+    :rettype: string tuple
     '''
     ingest_client = __get_ingestion_client()
-    message = ingest_client.exec_from_csv_using_class_template(class_uri, csv_str, conn_json_str, id_regex)
-    return message
+    (statusMsg, warnMsg) = ingest_client.exec_from_csv_using_class_template(class_uri, csv_str, conn_json_str, id_regex)
+    return (statusMsg, warnMsg)
 
 def get_class_template_csv(class_uri, conn_json_str, id_regex):
     '''
