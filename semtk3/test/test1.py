@@ -150,7 +150,7 @@ class TestSemtk3(unittest.TestCase):
         ng = semtk3.get_class_template("http://AnimalSubProps#Cat", TestSemtk3.conn_str, "name");  
         
         # ingest
-        msg = semtk3.ingest_using_class_template("http://AnimalSubProps#Cat", "name,Kitties_name\nkitty,null\nmom,kitty\n", TestSemtk3.conn_str, "name")
+        (msg,warn) = semtk3.ingest_using_class_template("http://AnimalSubProps#Cat", "name,Kitties_name\nkitty,null\nmom,kitty\n", TestSemtk3.conn_str, "name")
         self.assertTrue(msg.find("2"))  # inserted 2 records
         
         # run the nodegroup as SELECT
