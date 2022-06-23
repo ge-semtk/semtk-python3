@@ -62,7 +62,7 @@ class TestSemtk3(unittest.TestCase):
         
         csv_str =  importlib.resources.read_text(TestSemtk3.PACKAGE, "animalSubPropsDogs.csv")
         semtk3.ingest_by_id("semtk_test_animalSubPropsDogs", csv_str, TestSemtk3.conn_str)
-    
+       
     def test_ingest_warnings(self):
         self.clear_graph()
          # load some owl
@@ -384,6 +384,40 @@ class TestSemtk3(unittest.TestCase):
         tab = semtk3.select_by_id("semtk_test_animalToCombineTigerTree")
         self.assertEqual(tab.get_num_rows(), 16, "Wrong number of rows returned")
         self.assertTrue("AUNTY_EM" not in tab.get_csv_string(), "Duplicate name was not removed")
+    
+    def test_get_oinfo(self):
+        oinfo = semtk3.get_oinfo()  
+        class_list = oinfo.get_class_list()
+        self.assertEqual(len(class_list), 4, "Wrong number of classes returned")
+        for c in ['http://AnimalSubProps#Animal', 'http://AnimalSubProps#Cat', 'http://AnimalSubProps#Dog', 'http://AnimalSubProps#Tiger']:
+            self.assertTrue(c in class_list, "Did not find class " + c )
+         
+    def test_classes_and_templates(self):
+        # get all classes
+        classes = semtk3.get_class_names()
+        
+        # should be 4, with Animal in position [0]
+        self.assertEqual(len(classes), 4)   
+        self.assertEqual(classes[0], 'http://AnimalSubProps#Animal')
+        
+        # get Animal's template information
+        (ng, col_names, col_types) = semtk3.get_class_template_and_csv(classes[0], id_regex="name")
+        
+        # make sure nodegroup runs without error
+        semtk3.query_by_nodegroup(ng)
+        
+        # column names are comma separated with \n on the end.  split into a list
+        col_name_list = col_names.strip().split(",")
+        self.assertEqual(col_name_list[0], "name")
+        self.assertEqual(col_name_list[1], "Child_name")
+        
+        # column types are comma separated with \n on the end. split into a list
+        col_type_list = col_types.strip().split(",")
+        # check that first column type is a simple type.  If it weren't you might need to expect "string"
+        self.assertEqual(len(col_type_list[0].split(" ")), 1, "First column's type is complex, expected 'string' " + col_type_list[0]);
+        self.assertEqual(col_type_list[0], "string")
+        
+        
         
 if __name__ == '__main__':
     unittest.main()

@@ -29,6 +29,7 @@ from . import oinfoclient
 from . import queryclient
 from . import restclient
 from . import ingestionclient
+from . import ontologyinfo
 from . import resultsclient
 from . import semtk
 from . import statusclient
@@ -387,7 +388,7 @@ def ingest_by_id(nodegroup_id, csv_str, override_conn_json_str=None):
     (statusMsg, warnMsg) = nge_client.exec_async_ingest_from_csv(nodegroup_id, csv_str, override_conn_json_str)
     return (statusMsg, warnMsg)
 
-def ingest_using_class_template(class_uri, csv_str, conn_json_str, id_regex="identifier"):
+def ingest_using_class_template(class_uri, csv_str, conn_json_str=None, id_regex="identifier"):
     '''
     Ingest using class template, throwing exception on failure
     :param class_uri : the class whose template should be used for ingestion
@@ -398,27 +399,56 @@ def ingest_using_class_template(class_uri, csv_str, conn_json_str, id_regex="ide
     :rettype: string tuple
     '''
     ingest_client = __get_ingestion_client()
-    (statusMsg, warnMsg) = ingest_client.exec_from_csv_using_class_template(class_uri, csv_str, conn_json_str, id_regex)
+    (statusMsg, warnMsg) = ingest_client.exec_from_csv_using_class_template(class_uri, csv_str, conn_json_str if conn_json_str else SEMTK3_CONN_OVERRIDE, id_regex)
     return (statusMsg, warnMsg)
 
-def get_class_template_csv(class_uri, conn_json_str, id_regex):
+def get_class_template_csv(class_uri, conn_json_str=None, id_regex="identifier"):
     '''
     Get sample CSV that will work with  class template
     :param class_uri : the class whose template should be used for ingestion
-    :conn_json_str: connection
+    :param conn_json_str : optional conenction json string defaults to override
+    :param id_regex : optional regex to identify the key data properties of classes which are the object of object properties
+    :returns "colname1, colname2, colname3"
     '''
     ingest_client = __get_ingestion_client()
-    return ingest_client.exec_get_class_template_csv(class_uri, conn_json_str, id_regex)
+    (ng_json_str, csv_header, csv_types) =  ingest_client.exec_get_class_template_and_csv(class_uri, conn_json_str if conn_json_str else SEMTK3_CONN_OVERRIDE, id_regex)
+    return csv_header
 
-def get_class_template(class_uri, conn_json_str, id_regex):
+def get_class_template(class_uri, conn_json_str=None, id_regex="identifier"):
     '''
     Get class template nodegroup
     :param class_uri : the class whose template should be used for ingestion
-    :conn_json_str: connection
+    :param conn_json_str : optional conenction json string defaults to override
+    :param id_regex : optional regex to identify the key data properties of classes which are the object of object properties
+    :returns nodegroup json string
     '''
     ingest_client = __get_ingestion_client()
-    return ingest_client.exec_get_class_template(class_uri, conn_json_str, id_regex)
-    
+    (ng_json_str, csv_header, csv_types) =  ingest_client.exec_get_class_template_and_csv(class_uri, conn_json_str if conn_json_str else SEMTK3_CONN_OVERRIDE, id_regex)
+    return ng_json_str
+
+def get_class_template_and_csv(class_uri, conn_json_str=None, id_regex="identifier"):
+    '''
+    Get class template nodegroup
+    :param class_uri : the class whose template should be used for ingestion
+    :param conn_json_str : optional conenction json string defaults to override
+    :param id_regex : optional regex to identify the key data properties of classes which are the object of object properties
+    :returns (ng_json_str, "col1, col2, col3\n", "string, int, dateTime\n")  note that types can be space-separated complex property types
+    '''
+    ingest_client = __get_ingestion_client()
+    (ng_json_str, csv_header, csv_types) =  ingest_client.exec_get_class_template_and_csv(class_uri, conn_json_str if conn_json_str else SEMTK3_CONN_OVERRIDE, id_regex)
+    return (ng_json_str, csv_header, csv_types)
+
+def get_class_names(conn_json_str=None):    
+    '''
+    Get a list of class names in the ontology
+    :param conn_json_str : optional conenction json string defaults to override
+    :returns list of full class URI's
+    ''' 
+    oinfo = get_oinfo(conn_json_str)  
+    class_list = oinfo.get_class_list()
+    return class_list
+ 
+
 def upload_owl(owl_file_path, conn_json_str, user_name="noone", password="nopass", model_or_data=SEMTK3_CONN_MODEL, conn_index=0):
     '''
     Upload an owl file
@@ -727,24 +757,34 @@ def delete_items_from_store(regex_str, item_type=STORE_ITEM_TYPE_ALL):
    
     
     
-def get_oinfo_uri_label_table(conn_json_str=SEMTK3_CONN_OVERRIDE):
+def get_oinfo_uri_label_table(conn_json_str=None):
     '''
     Get a table describing the ontology model
     :param conn_json_str: connection string of graph(s) holding the model
     :rettype: semtktable
     '''
-    oinfo_client = __get_oinfo_client(conn_json_str)
+    oinfo_client = __get_oinfo_client(conn_json_str if conn_json_str else SEMTK3_CONN_OVERRIDE)
     return oinfo_client.exec_get_uri_label_table()
 
-def get_oinfo_predicate_stats():
+def get_oinfo_predicate_stats(conn_json_str=None):
     '''
     Get a table describing the ontology model
     :param conn_json_str: connection string of graph(s) holding the model
     :rettype: semtktable
     '''
-    oinfo_client = __get_oinfo_client(SEMTK3_CONN_OVERRIDE)
+    oinfo_client = __get_oinfo_client(conn_json_str if conn_json_str else SEMTK3_CONN_OVERRIDE)
     j = oinfo_client.exec_get_predicate_stats()
     return predicatestats.PredicateStats(j)
+
+def get_oinfo(conn_json_str=None):
+    '''
+    Get a table describing the ontology model
+    :param conn_json_str: connection string of graph(s) holding the model
+    :rettype: semtktable
+    '''
+    oinfo_client = __get_oinfo_client(conn_json_str if conn_json_str else SEMTK3_CONN_OVERRIDE)
+    oinfo_json = oinfo_client.exec_get_ontology_info()
+    return ontologyinfo.OntologyInfo(oinfo_json)
 
 def get_table(jobid):
     '''

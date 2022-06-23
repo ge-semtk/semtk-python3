@@ -50,3 +50,15 @@ class OInfoClient(semtkasyncclient.SemTkAsyncClient):
         res = self.post_async_to_json_blob("getPredicateStats", payload)
         return res
     
+    #
+    # Get predicate stats
+    #
+    def exec_get_ontology_info(self):
+        
+        payload = {
+            "conn": self.conn_json_str
+        }
+
+        res = self.post_to_simple("getOntologyInfoJson", payload)
+        return self.get_simple_field(res, "ontologyInfo")
+    

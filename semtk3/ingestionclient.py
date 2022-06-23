@@ -43,29 +43,21 @@ class IngestionClient(semtkasyncclient.SemTkAsyncClient):
         statusMsg, warnMsg = self.post_async_to_record_process("fromCsvUsingClassTemplate", payload)
         return statusMsg, warnMsg
     
-    def exec_get_class_template_csv(self, class_uri, conn_json_str, id_regex=None):
-        ''' execute a create_nodegroup
-            thorws: exception otherwise
-        '''
-        payload = {}
-        payload["connection"] = conn_json_str
-        payload["classURI"] = class_uri
-        if id_regex:
-            payload["idRegex"] = id_regex
-        res = self.post_to_simple("getClassTemplateAndCsv", payload)
-        
-        return res["csv"]
     
-    def exec_get_class_template(self, class_uri, conn_json_str, id_regex=None):
-        ''' execute a create_nodegroup
-            thorws: exception otherwise
+    def exec_get_class_template_and_csv(self, class_uri, conn_json_str, id_regex=None):
+        ''' get class template csv and possibly types.  
+            throws: exception otherwise
+            :param class_uri : the class
+            :param conn_json_str : the connection json string
+            :param id_regex : regex to find key in object properties' data property names
+            :returns ("ng json str", "colname1, colname2", "int, string") where type may be space-separated types if property is complex.
         '''
         payload = {}
         payload["connection"] = conn_json_str
         payload["classURI"] = class_uri
         if id_regex:
             payload["idRegex"] = id_regex
-            
         res = self.post_to_simple("getClassTemplateAndCsv", payload)
         
-        return json.dumps(res["sgjson"])
+        return (json.dumps(res["sgjson"]), res["csv"], res["csvTypes"])
+    
