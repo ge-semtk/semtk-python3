@@ -417,6 +417,27 @@ class TestSemtk3(unittest.TestCase):
         self.assertEqual(len(col_type_list[0].split(" ")), 1, "First column's type is complex, expected 'string' " + col_type_list[0]);
         self.assertEqual(col_type_list[0], "string")
         
+    def test_copy_graph(self):
+        # load a fresh graph
+        self.clear_graph()
+        self.load_cats_and_dogs()
+        
+        # dump the DATA graph
+        semtk3.download_owl("/tmp/whatever.owl", TestSemtk3.conn_str, model_or_data=semtk3.SEMTK3_CONN_DATA, conn_index = 0)   
+        
+        # clear and upload to DATA-COPY graph
+        conn2_str = TestSemtk3.conn_str.replace("http://semtk-python-test/data", "http://semtk-python-test/data-copy")
+        semtk3.clear_graph(conn2_str, model_or_data=semtk3.SEMTK3_CONN_DATA, index=0)
+        semtk3.upload_owl("/tmp/whatever.owl", conn2_str, model_or_data=semtk3.SEMTK3_CONN_DATA, conn_index=0)
+        
+        # query the new graph
+        semtk3.set_connection_override(conn2_str)
+        res = semtk3.query_by_id("semtk_test_animalSubPropsDogs")
+        self.assertEqual(type(res), semtk3.semtktable.SemtkTable, "query_by_id() on copied graph did not return a Table")
+        self.assertEqual(res.get_num_rows(), 2, "query_by_id() on copied graph returned wrong number of table rows")
+        
+        # reset the default graph for other tests
+        semtk3.set_connection_override(TestSemtk3.conn_str)
         
         
 if __name__ == '__main__':

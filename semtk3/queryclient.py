@@ -28,6 +28,26 @@ class QueryClient(SemTkClient):
         self.conn = conn_obj
     
     #
+    # Download owl to a file
+    # Default to data[0] graph in the connection
+    # Raises exception on error
+    # No return
+    def exec_download_owl(self, owl_file_path, model_or_data=sparqlconnection.SparqlConnection.MODEL, index=0):
+        
+        payload = {
+            "serverAndPort": self.conn.get_server_and_port(model_or_data, index),
+            "serverType":    self.conn.get_server_type(model_or_data, index),
+            "graph":       self.conn.get_graph(model_or_data, index),
+            "user":          self.conn.get_user_name(),
+            "password":      self.conn.get_password()
+        }
+
+        first_line = self.post_to_file("downloadOwl", payload, owl_file_path)
+        if not "<rdf:RDF" in first_line:
+            raise Exception("No rdf was returned.  e.g.: " + first_line)
+        
+            
+    #
     # Upload owl.
     # Default to model[0] graph in the connection
     #
@@ -48,7 +68,7 @@ class QueryClient(SemTkClient):
         res = self.post_to_status("uploadOwl", payload, files)
         return res
     
-     #
+    #
     # Upload turtle.
     # Default to model[0] graph in the connection
     #

@@ -107,4 +107,21 @@ class RestClient(object):
             return response.content
         else:
             self.raise_exception("failed with reason: " + response.text)
-            
+    
+    #
+    # Post, saving results into a file
+    # Returns the first line as string (which you may be able to use to check for errors)
+    #       
+    def post_to_file(self, endpoint, dataObj, filename):
+        self.lastURL = self.baseURL + endpoint
+        s = requests.Session()
+        first_line = None
+        with open(filename,"wb") as fp:
+            with s.post(self.lastURL, json=dataObj, headers=None, stream=True) as resp:
+                for line in resp.iter_lines():
+                    if line:
+                        fp.write(line)
+                        if (first_line==None):
+                            first_line = line
+                            
+        return first_line.decode()
