@@ -56,7 +56,7 @@ MarkupSafe==1.1.1
 matplotlib==3.3.4
 mdf-forge==0.7.6
 mdf-toolbox==0.5.7
-mistune==0.8.4
+mistune==2.0.3
 monty==2021.3.3
 mpmath==1.2.1
 nbclient==0.5.3
