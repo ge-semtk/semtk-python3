@@ -119,9 +119,8 @@ class RestClient(object):
         with open(filename,"wb") as fp:
             with s.post(self.lastURL, json=dataObj, headers=None, stream=True) as resp:
                 for line in resp.iter_lines():
-                    if line:
-                        fp.write(line)
-                        if (first_line==None):
-                            first_line = line
+                    fp.write(line)
+                    if (first_line==None):
+                        first_line = line
                             
         return first_line.decode()

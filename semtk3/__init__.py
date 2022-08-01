@@ -806,7 +806,7 @@ def get_table(jobid):
     :param jobid: the job id
     :rettype: semtktable
     '''
-    async_client = semtkasyncclient.SemTkAsyncClient("http://nothing");
+    async_client = semtkasyncclient.SemTkAsyncClient("http://nothing", status_client=__get_status_client(), results_client=__get_results_client());
     async_client.poll_until_success(jobid);
     return async_client.post_get_table_results(jobid);
 
