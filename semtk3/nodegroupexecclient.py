@@ -194,7 +194,7 @@ class NodegroupExecClient(semtkasyncclient.SemTkAsyncClient):
             returns status,warnings  where status is always a string and warnings might be ""
         '''
         payload = {}
-        payload["templateId"] = nodegroup_id
+        payload["nodegroupId"] = nodegroup_id
         payload["csvContent"] = csv_str
         payload["sparqlConnection"] = override_conn_json_str if override_conn_json_str else self.USE_NODEGROUP_CONN
 
