@@ -18,11 +18,9 @@ import semtk3
 import logging
 
 #
-# Not done yet
-#   - override connections
-#   - date runtime constraints
-#   - range runtime constraints
-#   - ingest
+# This file is deprecated in favor of the test*.py files in the sub-package "test"
+#
+# It still has some older useful examples, so it remains.
 #
 
 if __name__ == '__main__':

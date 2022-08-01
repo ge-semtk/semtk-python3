@@ -72,8 +72,8 @@ class TestSemtk3(unittest.TestCase):
         # load nodegroups
         nodegroup_json_str =  importlib.resources.read_text(TestSemtk3.PACKAGE, "animalSubPropsDogs.json")
         semtk3.store_nodegroup("semtk_test_animalSubPropsDogs", "comments", "semtk python test", nodegroup_json_str, True)
-        nodegroup_json_str =  importlib.resources.read_text(TestSemtk3.PACKAGE, "animalSubPropsDogs.json")
-        semtk3.store_nodegroup("semtk_test_animalSubPropsDogs", "comments", "semtk python test", nodegroup_json_str, True)
+        nodegroup_json_str =  importlib.resources.read_text(TestSemtk3.PACKAGE, "animalSubPropsCats.json")
+        semtk3.store_nodegroup("semtk_test_animalSubPropsCats", "comments", "semtk python test", nodegroup_json_str, True)
         
         # load data with no warnings
         csv_str =  importlib.resources.read_text(TestSemtk3.PACKAGE, "animalSubPropsCats.csv")
@@ -127,6 +127,29 @@ class TestSemtk3(unittest.TestCase):
         res = semtk3.query_by_id("semtk_test_animalSubPropsDogs_CONSTRUCT", query_type=semtk3.QUERY_TYPE_SELECT_DISTINCT, result_type=semtk3.RESULT_TYPE_TABLE);
         self.assertEqual(type(res), semtk3.semtktable.SemtkTable, "query_by_id(semtk_test_animalSubPropsDogs_SELECT_DISTINCT) did not return a Table")
         self.assertEqual(res.get_num_rows(), 2, "query_by_id(semtk_test_animalSubPropsDogs_SELECT_DISTINCT) returned wrong number of table rows")
+        
+        ##### Repeat with empty to make sure we get empty results, not errors #####
+        semtk3.clear_graph(TestSemtk3.conn_str, 'data', 0)
+        
+        # SELECT_DISTINCT : should be table
+        res = semtk3.query_by_id("semtk_test_animalSubPropsDogs_SELECT_DISTINCT")
+        self.assertEqual(type(res), semtk3.semtktable.SemtkTable, "query_by_id(semtk_test_animalSubPropsDogs_SELECT_DISTINCT) did not return a Table")
+        self.assertEqual(res.get_num_rows(), 0, "query_by_id(semtk_test_animalSubPropsDogs_SELECT_DISTINCT) with no data did not return 0 rows")
+        
+        # COUNT : should be table
+        res = semtk3.query_by_id("semtk_test_animalSubPropsDogs_COUNT")
+        self.assertEqual(type(res), semtk3.semtktable.SemtkTable, "query_by_id(semtk_test_animalSubPropsDogs_COUNT) did not return a Table")
+        self.assertEqual(res.get_cell_as_int(0,0), 0, "query_by_id(semtk_test_animalSubPropsDogs_COUNT) with no data did not return 0 count")
+        
+        # CONSTRUCT : should be json
+        res = semtk3.query_by_id("semtk_test_animalSubPropsDogs_CONSTRUCT")
+        self.assertEqual(type(res), dict, "query_by_id(semtk_test_animalSubPropsDogs_CONSTRUCT) did not return a dict")
+        self.assertEqual(res, {}, "query_by_id(semtk_test_animalSubPropsDogs_CONSTRUCT) with no data did not return empty dict")
+        
+        # Override CONSTRUCT with table
+        res = semtk3.query_by_id("semtk_test_animalSubPropsDogs_CONSTRUCT", query_type=semtk3.QUERY_TYPE_SELECT_DISTINCT, result_type=semtk3.RESULT_TYPE_TABLE);
+        self.assertEqual(type(res), semtk3.semtktable.SemtkTable, "query_by_id(semtk_test_animalSubPropsDogs_SELECT_DISTINCT) did not return a Table")
+        self.assertEqual(res.get_num_rows(), 0, "query_by_id(semtk_test_animalSubPropsDogs, SELECT_DISTINCT) with no data did no return 0 rows")
         
         # TODO: all manor of combinations of query_type and result_type overrides could be tested here
         # TODO: DELETE query could be tested here
@@ -185,6 +208,25 @@ class TestSemtk3(unittest.TestCase):
         # store a report
         report = importlib.resources.read_text(TestSemtk3.PACKAGE, "animalTestReport.json")
         semtk3.store_item(self.REPORT_ID, "testing", "PyUnit", report, STORE_ITEM_TYPE_REPORT)
+        
+    def test_runtime_constraints(self):
+        self.load_cats_and_dogs()
+        
+        # get name and uri of a random cat
+        nodegroup_json_str =  importlib.resources.read_text(TestSemtk3.PACKAGE, "animalSubPropsCatsConstrained.json")
+        tab = semtk3.query_by_nodegroup(nodegroup_json_str)
+        cat = tab.get_cell(0, "Cat")
+        cat_name = tab.get_cell(0, "catName")
+        
+        constraint = semtk3.build_constraint("Cat", semtk3.OP_MATCHES, [cat] )
+        tab = semtk3.query_by_nodegroup(nodegroup_json_str, runtime_constraints= [constraint])
+        self.assertEqual(1, tab.get_num_rows(), "Runtime constraint URI query did not return expected row")
+        
+        constraint = semtk3.build_constraint("catName", semtk3.OP_MATCHES, [cat_name] )
+        tab = semtk3.query_by_nodegroup(nodegroup_json_str, runtime_constraints= [constraint])
+        self.assertEqual(1, tab.get_num_rows(), "Runtime constraint string query did not return expected row")
+        
+        
         
     def test_store(self):
         # test functions for directly storing and retrieving items
