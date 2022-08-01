@@ -19,7 +19,14 @@ or just get the latest:
 ```
 pip install git+https://github.com/ge-semtk/semtk-python3@master
 ```
-
+In **requirements.txt** it could look like:
+```
+semtk-python3 @ git+https://github.com/ge-semtk/semtk-python3@d44a45941d06ec6466bbe61bfd81cd667d6a5137
+```
+or
+```
+semtk-python3 @ git+https://github.com/ge-semtk/semtk-python3@master
+```
 ## Build whl file
 ```
 pip install wheel
