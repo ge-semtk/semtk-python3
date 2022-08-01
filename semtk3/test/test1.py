@@ -144,7 +144,7 @@ class TestSemtk3(unittest.TestCase):
         # CONSTRUCT : should be json
         res = semtk3.query_by_id("semtk_test_animalSubPropsDogs_CONSTRUCT")
         self.assertEqual(type(res), dict, "query_by_id(semtk_test_animalSubPropsDogs_CONSTRUCT) did not return a dict")
-        self.assertTrue(not '@graph' in res or len(res['@graph']) == 0, {}, "query_by_id(semtk_test_animalSubPropsDogs_CONSTRUCT) with no data did not return empty dict")
+        self.assertTrue(not '@graph' in res or len(res['@graph']) == 0, "query_by_id(semtk_test_animalSubPropsDogs_CONSTRUCT) with no data did not return empty dict")
         
         # Override CONSTRUCT with table
         res = semtk3.query_by_id("semtk_test_animalSubPropsDogs_CONSTRUCT", query_type=semtk3.QUERY_TYPE_SELECT_DISTINCT, result_type=semtk3.RESULT_TYPE_TABLE);
