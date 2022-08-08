@@ -4,7 +4,7 @@ import os
 import shutil
 
 import semtk3
-
+import json
 from semtk3 import STORE_ITEM_TYPE_REPORT, STORE_ITEM_TYPE_ALL, STORE_ITEM_TYPE_NODEGROUP
 
 class TestSemtk3(unittest.TestCase):
@@ -227,6 +227,39 @@ class TestSemtk3(unittest.TestCase):
         self.assertEqual(1, tab.get_num_rows(), "Runtime constraint string query did not return expected row")
         
         
+    def test_build_connection_str(self):
+        
+        
+        # cheating, but pull things out of the current conn_str to demonstrate
+        conn_dict = json.loads(TestSemtk3.conn_str)
+        name = conn_dict["name"]
+        triple_store_type = conn_dict["model"][0]["type"]
+        triple_store_url = conn_dict["model"][0]["url"]
+        model_graph_list = [sei["graph"] for sei in conn_dict["model"]]
+        data_graph = conn_dict["data"][0]["graph"]
+        data_graph_list = [sei["graph"] for sei in conn_dict["data"][1:]]
+        
+        # use values to test build_connection_str()
+        new_conn_str = semtk3.build_connection_str(
+            name,
+            triple_store_type,
+            triple_store_url,
+            model_graph_list,
+            data_graph,
+            data_graph_list
+            )
+        
+        # mess up current connection
+        semtk3.set_connection_override(TestSemtk3.conn_str.replace("http:", "junk:"))
+        
+        # use the new build_connection() version
+        semtk3.set_connection_override(new_conn_str)
+        
+        # make sure a basic query still works
+        self.clear_graph()
+        self.load_cats_and_dogs()
+        res = semtk3.query_by_id("semtk_test_animalSubPropsDogs") 
+        self.assertTrue("No rows returned from query with new connection", res.get_num_rows() > 0)
         
     def test_store(self):
         # test functions for directly storing and retrieving items

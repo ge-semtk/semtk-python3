@@ -172,12 +172,26 @@ def check_connection_up(conn_str):
     Throw exception if connection triplestore(s) don't respond OK to http GET
     :param conn_str - a SemTK connection json string
     '''
-    conn = sparqlconnection.SparqlConnection(json.loads(conn_str))
+    conn = sparqlconnection.SparqlConnection(conn_str)
     for url in conn.get_all_triplestore_urls():
         response = requests.request("GET", url)
         if not response.ok:
             raise Exception("Problem connecting to triplestore url: " + url + '\n' + str(response.content))
-        
+
+def build_connection_str(name, triple_store_type, triple_store, model_graphs, data_graph, extra_data_graphs=[]):
+    '''
+    build a connection
+    @param name : name is for display only
+    @param triple_store_type : "fuseki" "neptune" "virtuoso", etc.
+    @param triple_store : the URL e.g. "http://localhost:3030/DATASET"
+    @model_graphs : list of model graphs e.g. ["uri://my_graph", "http://my/other#graph"]
+    @data_graph : default ingestion data graph e.g. "uri://my_graph"
+    @extra_data_graphs : list of data graphs with  ["uri://my_graph", "http://my/other#graph"]
+    '''
+    conn = sparqlconnection.SparqlConnection()
+    conn.build(name, triple_store_type, triple_store, model_graphs, data_graph, extra_data_graphs)
+    return conn.to_conn_str()
+
 def clear_graph(conn_json_str, model_or_data, index):
     '''
     Clear a graph
@@ -187,7 +201,7 @@ def clear_graph(conn_json_str, model_or_data, index):
     :return: message
     :rtype: string
     '''
-    sparql_conn = sparqlconnection.SparqlConnection(json.loads(conn_json_str))
+    sparql_conn = sparqlconnection.SparqlConnection(conn_json_str)
     nge_client = __get_nge_client()
    
     table = nge_client.exec_dispatch_clear_graph(sparql_conn, model_or_data, index)
@@ -902,7 +916,7 @@ def __get_nge_client():
     return nodegroupexecclient.NodegroupExecClient(__build_client_url(NODEGROUP_EXEC_HOST, NODEGROUP_EXEC_PORT), status_client, results_client)
 
 def __get_query_client(conn_json_str, user_name=None, password=None):
-    conn = sparqlconnection.SparqlConnection(json.loads(conn_json_str), user_name, password)
+    conn = sparqlconnection.SparqlConnection(conn_json_str, user_name, password)
     return queryclient.QueryClient( __build_client_url(QUERY_HOST, QUERY_PORT), conn)
 
 def __get_status_client():
