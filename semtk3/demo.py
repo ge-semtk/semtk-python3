@@ -79,7 +79,7 @@ if __name__ == '__main__':
         plot = plotly.graph_objects.Figure(plot_spec_processed.get_spec())
         plot.show()
     except ImportError:
-        print 'Install plotly to view the data plotting demo'
+        print ('Install plotly to view the data plotting demo')
      
     #
     # configure logging:   http://docs.python.org/3/howto/logging.html
