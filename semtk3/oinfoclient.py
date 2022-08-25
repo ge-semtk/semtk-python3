@@ -51,6 +51,20 @@ class OInfoClient(semtkasyncclient.SemTkAsyncClient):
         return res
     
     #
+    # Get instance dictionary
+    #
+    def exec_get_instance_dictionary(self, max_words: int = 2, specificity_limit: int = 1):
+        
+        payload = {
+            "conn": self.conn_json_str,
+            "maxWords": max_words,
+            "specificityLimit": specificity_limit
+        }
+
+        res = self.post_async_to_table("getInstanceDictionary", payload)
+        return res
+    
+    #
     # Get predicate stats
     #
     def exec_get_ontology_info(self):

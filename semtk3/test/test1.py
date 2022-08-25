@@ -514,6 +514,13 @@ class TestSemtk3(unittest.TestCase):
         # reset the default graph for other tests
         semtk3.set_connection_override(TestSemtk3.conn_str)
         
+    def test_get_instance_dict(self):
+        # load a fresh graph
+        self.clear_graph()
+        self.load_cats_and_dogs()
+        
+        tab = semtk3.get_instance_dictionary(max_words=2, specificity_limit=2)
+        self.assertEqual(10, tab.get_num_rows(), "instance dict table has wrong number of rows")
         
 if __name__ == '__main__':
     unittest.main()

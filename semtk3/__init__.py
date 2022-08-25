@@ -53,6 +53,7 @@ import requests
 
 from semtk3.oinfoclient import OInfoClient
 from semtk3.semtkasyncclient import SemTkAsyncClient
+from semtk3.semtktable import SemtkTable
 
 # pip install requests
 
@@ -109,6 +110,7 @@ OP_LESSTHANOREQUALS = runtimeconstraint.RuntimeConstraint.OP_LESSTHANOREQUALS
 OP_VALUEBETWEEN = runtimeconstraint.RuntimeConstraint.OP_VALUEBETWEEN
 OP_VALUEBETWEENUNINCLUSIVE = runtimeconstraint.RuntimeConstraint.OP_VALUEBETWEENUNINCLUSIVE
 
+DEFAULT_GRAPH = "uri://DefaultGraph"
 
 #   This is the main setup for semtk3
 #   
@@ -191,6 +193,15 @@ def build_connection_str(name, triple_store_type, triple_store, model_graphs, da
     conn = sparqlconnection.SparqlConnection()
     conn.build(name, triple_store_type, triple_store, model_graphs, data_graph, extra_data_graphs)
     return conn.to_conn_str()
+
+def build_default_connection_str(name, triple_store_type, triple_store):
+    '''
+    build a connection to the default graph only
+    @param name : name is for display only
+    @param triple_store_type : "fuseki" "neptune" "virtuoso", etc.
+    @param triple_store : the URL e.g. "http://localhost:3030/DATASET"
+    '''
+    return build_connection_str(name, triple_store_type, triple_store, [DEFAULT_GRAPH], [DEFAULT_GRAPH])
 
 def clear_graph(conn_json_str, model_or_data, index):
     '''
@@ -814,6 +825,22 @@ def get_oinfo(conn_json_str=None):
     oinfo_json = oinfo_client.exec_get_ontology_info()
     return ontologyinfo.OntologyInfo(oinfo_json)
 
+def get_instance_dictionary(max_words: int = 2, specificity_limit: int = 1, conn_json_str: str = None) -> SemtkTable:
+    '''
+    Get a table describing the uris and their labels.  Columns: 
+     *   instance_uri - the URI
+     *   class_uris - instance belongs to one or more classes
+     *   label - label (or name) associated with the instance.  NOT UNIQUE: see label_specificity
+     *   label_specificity - how many uris have this label
+     *   property - what prop was used to associate label with instance_uri
+    :param max_words: the maximum number of words a string may have and be considered a label
+    :param specificity_limit: the maximum number of URI's one-hop from the label for it to be returned
+    :param conn_json_str: connection string of graph(s) holding the model
+    :rettype: semtktable
+    '''
+    oinfo_client = __get_oinfo_client(conn_json_str if conn_json_str else SEMTK3_CONN_OVERRIDE)
+    return oinfo_client.exec_get_instance_dictionary(max_words, specificity_limit)
+    
 def get_table(jobid):
     '''
     Get a table from an async job
