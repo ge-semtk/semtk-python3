@@ -6,7 +6,6 @@ import shutil
 import semtk3
 import json
 from semtk3 import STORE_ITEM_TYPE_REPORT, STORE_ITEM_TYPE_ALL, STORE_ITEM_TYPE_NODEGROUP
-from build.lib.semtk3 import runtimeconstraint
 
 class TestSemtk3(unittest.TestCase):
 
