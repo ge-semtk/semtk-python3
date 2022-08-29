@@ -6,6 +6,7 @@ import shutil
 import semtk3
 import json
 from semtk3 import STORE_ITEM_TYPE_REPORT, STORE_ITEM_TYPE_ALL, STORE_ITEM_TYPE_NODEGROUP
+from build.lib.semtk3 import runtimeconstraint
 
 class TestSemtk3(unittest.TestCase):
 
@@ -521,6 +522,38 @@ class TestSemtk3(unittest.TestCase):
         
         tab = semtk3.get_instance_dictionary(max_words=2, specificity_limit=2)
         self.assertEqual(10, tab.get_num_rows(), "instance dict table has wrong number of rows")
+        
+    def test_sparqlgraph_url(self):
+        self.clear_graph()
+        self.load_cats_and_dogs()
+        
+        # load the extra constraints nodegroup
+        nodegroup_json_str =  importlib.resources.read_text(TestSemtk3.PACKAGE, "animalSubPropsConstructConstrained.json")
+        CONSTRAINT_NG = "semtk_test_animalSubPropsConstructConstrained"
+        semtk3.store_nodegroup(CONSTRAINT_NG, "comments", "semtk python test", nodegroup_json_str)
+        
+        # generate some urls.
+        # you'll have to put them into a browser for full testing
+        
+        # plain URL
+        print(semtk3.get_sparqlgraph_url("http://localhost:8080"))
+        
+        # override connection
+        print(semtk3.get_sparqlgraph_url("http://localhost:8080", conn_json_str=TestSemtk3.conn_str))
+        
+        # run a nodegroup with override
+        print(semtk3.get_sparqlgraph_url("http://localhost:8080", conn_json_str=TestSemtk3.conn_str, nodegroup_id="semtk_test_animalSubPropsCats"))
+        
+        # load a nodegroup with override, but don't run it
+        print(semtk3.get_sparqlgraph_url("http://localhost:8080", conn_json_str=TestSemtk3.conn_str, nodegroup_id="semtk_test_animalSubPropsCats", run_flag="False"))
+        
+        # run a (construct) query with two constraints
+        rt_constraints=[
+            semtk3.build_constraint("catName", semtk3.OP_MATCHES, ["fluffymom"] ),
+            semtk3.build_constraint("demonName", semtk3.OP_MATCHES, ["beelz"]   )
+            ]
+        print(semtk3.get_sparqlgraph_url("http://localhost:8080", conn_json_str=TestSemtk3.conn_str, nodegroup_id=CONSTRAINT_NG, runtime_constraints=rt_constraints))
+
         
 if __name__ == '__main__':
     unittest.main()
