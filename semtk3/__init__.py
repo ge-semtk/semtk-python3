@@ -181,28 +181,35 @@ def check_connection_up(conn_str):
         if not response.ok:
             raise Exception("Problem connecting to triplestore url: " + url + '\n' + str(response.content))
 
-def build_connection_str(name, triple_store_type, triple_store, model_graphs, data_graph, extra_data_graphs=[]):
+def build_connection_str(name:str, triple_store_type:str, triple_store_url:str, model_graphs:[str], data_graph:str, extra_data_graphs:[str]=[]):
     '''
     build a connection
     @param name : name is for display only
     @param triple_store_type : "fuseki" "neptune" "virtuoso", etc.
-    @param triple_store : the URL e.g. "http://localhost:3030/DATASET"
+    @param triple_store_url : the URL e.g. "http://localhost:3030/DATASET"
     @model_graphs : list of model graphs e.g. ["uri://my_graph", "http://my/other#graph"]
     @data_graph : default ingestion data graph e.g. "uri://my_graph"
     @extra_data_graphs : list of data graphs with  ["uri://my_graph", "http://my/other#graph"]
     '''
+    
+    # single non-list data_graph is a little confusing so quietly fix it
+    if type(data_graph) == type(["list"]) and len(data_graph) == 1:
+        dg = data_graph[0]
+    else:
+        dg = data_graph
+        
     conn = sparqlconnection.SparqlConnection()
-    conn.build(name, triple_store_type, triple_store, model_graphs, data_graph, extra_data_graphs)
+    conn.build(name, triple_store_type, triple_store_url, model_graphs, dg, extra_data_graphs)
     return conn.to_conn_str()
 
-def build_default_connection_str(name, triple_store_type, triple_store):
+def build_default_connection_str(name, triple_store_type, triple_store_url):
     '''
     build a connection to the default graph only
     @param name : name is for display only
     @param triple_store_type : "fuseki" "neptune" "virtuoso", etc.
-    @param triple_store : the URL e.g. "http://localhost:3030/DATASET"
+    @param triple_store_url : the URL e.g. "http://localhost:3030/DATASET"
     '''
-    return build_connection_str(name, triple_store_type, triple_store, [DEFAULT_GRAPH], [DEFAULT_GRAPH])
+    return build_connection_str(name, triple_store_type, triple_store_url, [DEFAULT_GRAPH], DEFAULT_GRAPH)
 
 def clear_graph(conn_json_str, model_or_data, index):
     '''

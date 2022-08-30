@@ -540,6 +540,9 @@ class TestSemtk3(unittest.TestCase):
         # override connection
         print(semtk3.get_sparqlgraph_url("http://localhost:8080", conn_json_str=TestSemtk3.conn_str))
         
+        # default connection
+        print(semtk3.get_sparqlgraph_url("http://localhost:8080", conn_json_str=semtk3.build_default_connection_str("default", "fuseki", "http://localhost:3030/RACK")))
+
         # run a nodegroup with override
         print(semtk3.get_sparqlgraph_url("http://localhost:8080", conn_json_str=TestSemtk3.conn_str, nodegroup_id="semtk_test_animalSubPropsCats"))
         
