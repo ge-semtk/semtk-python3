@@ -1,0 +1,15 @@
+{
+	"name":"semtk3 test",
+	"domain":"",
+	"enableOwlImports":true,
+	"model":[{
+		"type":"fuseki",
+		"url":"http://localhost:3030/DATASET",
+		"graph":"http://semtk-python-test/merge"
+	}],
+	"data":[{
+		"type":"fuseki",
+		"url":"http://localhost:3030/DATASET",
+		"graph":"http://semtk-python-test/merge"
+	}]
+}

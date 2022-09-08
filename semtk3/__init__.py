@@ -55,6 +55,7 @@ import urllib
 from semtk3.oinfoclient import OInfoClient
 from semtk3.semtkasyncclient import SemTkAsyncClient
 from semtk3.semtktable import SemtkTable
+from ase.gui import status
 
 # pip install requests
 
@@ -225,6 +226,38 @@ def clear_graph(conn_json_str, model_or_data, index):
    
     table = nge_client.exec_dispatch_clear_graph(sparql_conn, model_or_data, index)
     return table.get_cell(0,0)
+
+def copy_graph(from_graph:str, to_graph:str, from_server:str=None, from_server_type:str=None, to_server:str=None, to_server_type:str=None, user_name="noone", password="nopass"):
+    '''
+    Copy one graph to another (merging into the destination)
+    So clear the "to" graph as a separate step if desired.
+    :param from_graph - merge from this graph
+    :param to_graph - merge to this graph
+    :param from_server - merge from this server.     if None: get from SEMTK_CONN_OVERRIDE.data[0]
+    :param from_server_type - type of 'from' server. if None: get from SEMTK_CONN_OVERRIDE.data[0]
+    :param to_server - merge to this server.         if None: get from SEMTK_CONN_OVERRIDE.data[0]
+    :param to_server_type - type of 'to' server.     if None: get from SEMTK_CONN_OVERRIDE.data[0]
+    :param user_name - if security needed on 'to' server
+    :param password - if security needed on 'to' server
+    :return status message string like "successfully copied uri://from into uri://to
+    :throws exception on any error
+    '''
+    if (SEMTK3_CONN_OVERRIDE):
+        conn = sparqlconnection.SparqlConnection(SEMTK3_CONN_OVERRIDE)
+        if not from_server:
+            from_server = conn.get_server_and_port("data",0) 
+        if not from_server_type:
+            from_server_type = conn.get_server_type("data",0)
+        if not to_server:
+            to_server = conn.get_server_and_port("data",0) 
+        if not to_server_type:
+            to_server_type = conn.get_server_type("data",0)
+    elif not from_server or not from_server_type or not to_server or not to_server_type:
+        raise Exception("empty params are invalid when there is no SEMTK3 connection override")
+    
+    nge_client = __get_nge_client()
+    status = nge_client.exec_copy_graph(from_server, from_server_type, from_graph, to_server, to_server_type, to_graph, user_name, password)
+    return status
 
 def check_services():
     '''
@@ -981,7 +1014,9 @@ def __get_nge_client():
     results_client = resultsclient.ResultsClient(__build_client_url(RESULTS_HOST, RESULTS_PORT))
     return nodegroupexecclient.NodegroupExecClient(__build_client_url(NODEGROUP_EXEC_HOST, NODEGROUP_EXEC_PORT), status_client, results_client)
 
-def __get_query_client(conn_json_str, user_name=None, password=None):
+def __get_query_client(conn_json_str="{}", user_name=None, password=None):
+    status_client = statusclient.StatusClient(__build_client_url(STATUS_HOST, STATUS_PORT))
+    results_client = resultsclient.ResultsClient(__build_client_url(RESULTS_HOST, RESULTS_PORT))
     conn = sparqlconnection.SparqlConnection(conn_json_str, user_name, password)
     return queryclient.QueryClient( __build_client_url(QUERY_HOST, QUERY_PORT), conn)
 

@@ -218,3 +218,20 @@ class NodegroupExecClient(semtkasyncclient.SemTkAsyncClient):
         status = self.post_async_to_status("dispatchCombineEntities", payload)
     
         return status
+    
+    def exec_copy_graph(self, from_server, from_server_type, from_graph, to_server, to_server_type, to_graph, user_name="no_user", password="no_password"):
+        payload = {}
+        payload["fromServerAndPort"] = from_server
+        payload["fromServerType"] = from_server_type
+        payload["fromGraph"] = from_graph
+        payload["toServerAndPort"] = to_server
+        payload["toServerType"] = to_server_type
+        payload["toGraph"] = to_graph
+        payload["toUser"] = user_name
+        payload["toPassword"] = password
+        
+        
+        # error unless res is success info
+        status = self.post_async_to_status("copyGraph", payload)
+    
+        return status

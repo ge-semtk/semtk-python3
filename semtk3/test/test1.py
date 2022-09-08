@@ -6,6 +6,7 @@ import shutil
 import semtk3
 import json
 from semtk3 import STORE_ITEM_TYPE_REPORT, STORE_ITEM_TYPE_ALL, STORE_ITEM_TYPE_NODEGROUP
+from semtk3 import sparqlconnection
 
 class TestSemtk3(unittest.TestCase):
 
@@ -24,6 +25,7 @@ class TestSemtk3(unittest.TestCase):
                 
         # set up the default connection
         TestSemtk3.conn_str = importlib.resources.read_text(TestSemtk3.PACKAGE, "conn.json")
+        TestSemtk3.conn2_str = importlib.resources.read_text(TestSemtk3.PACKAGE, "conn2.json")
         semtk3.set_connection_override(TestSemtk3.conn_str)
         
         # check semtk services
@@ -492,7 +494,14 @@ class TestSemtk3(unittest.TestCase):
         self.assertEqual(len(col_type_list[0].split(" ")), 1, "First column's type is complex, expected 'string' " + col_type_list[0]);
         self.assertEqual(col_type_list[0], "string")
         
-    def test_copy_graph(self):
+    def test_download_and_upload(self):
+        #
+        # Warning: this tests valid download and upload capabilities using smaller graphs
+        #          but copying a graph this way is more prone to timeouts and performance issues.
+        #
+        # To see the best way to copy a graph, see 
+        #           test_copy_graph()
+  
         # load a fresh graph
         self.clear_graph()
         self.load_cats_and_dogs()
@@ -556,6 +565,26 @@ class TestSemtk3(unittest.TestCase):
             ]
         print(semtk3.get_sparqlgraph_url("http://localhost:8080", conn_json_str=TestSemtk3.conn_str, nodegroup_id=CONSTRAINT_NG, runtime_constraints=rt_constraints))
 
+    def test_copy_graph(self):
+        # set up from_graph
+        self.clear_graph()
+        self.load_cats_and_dogs()
+        
+        # clear to_graph
+        semtk3.clear_graph(TestSemtk3.conn2_str, "data", 0)
+        
+        # perform the copy
+        from_graph = sparqlconnection.SparqlConnection(TestSemtk3.conn_str).get_graph("data", 0)
+        to_graph = sparqlconnection.SparqlConnection(TestSemtk3.conn2_str).get_graph("data", 0)
+        status = semtk3.copy_graph(from_graph, to_graph)
+        print(status)
+        
+        # test the results
+        tab = semtk3.query("select ?x ?y ?z from <" + to_graph +"> where { ?x ?y ?z }", TestSemtk3.conn2_str)
+        self.assertEqual(tab.get_num_rows(), 26, "Unexpected number of rows were copied")
+        
+
+        
         
 if __name__ == '__main__':
     unittest.main()
