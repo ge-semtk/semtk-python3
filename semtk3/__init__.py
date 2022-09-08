@@ -55,7 +55,6 @@ import urllib
 from semtk3.oinfoclient import OInfoClient
 from semtk3.semtkasyncclient import SemTkAsyncClient
 from semtk3.semtktable import SemtkTable
-from ase.gui import status
 
 # pip install requests
 
