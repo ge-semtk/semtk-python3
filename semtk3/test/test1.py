@@ -565,6 +565,9 @@ class TestSemtk3(unittest.TestCase):
             ]
         print(semtk3.get_sparqlgraph_url("http://localhost:8080", conn_json_str=TestSemtk3.conn_str, nodegroup_id=CONSTRAINT_NG, runtime_constraints=rt_constraints))
 
+        # run a report
+        print(semtk3.get_sparqlgraph_url("http://localhost:8080", conn_json_str=TestSemtk3.conn_str, report_id="report data verification"))
+        
     def test_copy_graph(self):
         # set up from_graph
         self.clear_graph()

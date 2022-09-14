@@ -367,11 +367,12 @@ def get_plot_spec_names_by_id(nodegroup_id):
     sg_json = sparqlgraphjson.SparqlGraphJson(json.loads(nodegroupStr))       
     return sg_json.get_plot_specs().get_plot_spec_names()
 
-def get_sparqlgraph_url(host_url:str, nodegroup_id:str = None,  runtime_constraints:[runtimeconstraint.RuntimeConstraint]=None, run_flag:str = None, conn_json_str:str = None):
+def get_sparqlgraph_url(host_url:str, nodegroup_id:str = None,  report_id:str = None, runtime_constraints:[runtimeconstraint.RuntimeConstraint]=None, run_flag:str = None, conn_json_str:str = None):
     '''
     Get a URL for sparqlgraph with params to launch a connection, nodegroup, query
     :param host_url: str - base url e.g. http://localhost:8080
     :param nodegroup_id : str - id of nodegroup in the store to launch.  By default, run the query.
+    :param report_id : str - id of report in the store to launch.  By default, run the report.
     :param runtime_constraints: [RuntimeConstraint] - constraints to apply to query if nodegroup_id is specified
     :param run_flag: str - "True" or "False", default "True"
     :param conn_json_str: str - connection to load.  Will override nodegroup_id's.
@@ -381,6 +382,9 @@ def get_sparqlgraph_url(host_url:str, nodegroup_id:str = None,  runtime_constrai
     params = []
     if nodegroup_id:
         params.append("nodegroupId=" + urllib.parse.quote(nodegroup_id))
+        
+    if report_id:
+        params.append("reportId=" + urllib.parse.quote(report_id))
         
     if runtime_constraints:
         constraints_str = "[" + ",".join(x.to_json() for x in runtime_constraints) + "]"
