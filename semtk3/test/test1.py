@@ -461,6 +461,91 @@ class TestSemtk3(unittest.TestCase):
         tab = semtk3.select_by_id("semtk_test_animalToCombineTigerTree")
         self.assertEqual(tab.get_num_rows(), 16, "Wrong number of rows returned")
         self.assertTrue("AUNTY_EM" not in tab.get_csv_string(), "Duplicate name was not removed")
+        
+    def test_combine_entities_table(self):
+        # Basic test of REST endpoint
+        # Real testing is don
+        self.clear_graph()
+        
+        with importlib.resources.path(TestSemtk3.PACKAGE, "AnimalSubProps.owl") as owl_path:
+            semtk3.upload_owl(owl_path, TestSemtk3.conn_str)
+        
+        with importlib.resources.path(TestSemtk3.PACKAGE, "AnimalsToCombineData.owl") as owl_path:
+            semtk3.upload_owl(owl_path, TestSemtk3.conn_str, model_or_data="data")
+        
+        # Build a table and run it
+        csv = '''target_name, duplicate_name, duplicate_type
+                 auntyEm,     AUNTY_EM,       http://AnimalSubProps#Tiger
+                 '''
+        target_dict={'target_name' : "http://AnimalSubProps#name"}
+        duplicate_dict={'duplicate_name' : "http://AnimalSubProps#name", "duplicate_type" : "#type"}
+        remove_target_prop_list = ["http://AnimalSubProps#name"]
+        semtk3.combine_entities_table(csv, target_dict, duplicate_dict, delete_predicates_from_target=remove_target_prop_list)
+        
+        # query results
+        nodegroup_json_str =  importlib.resources.read_text(TestSemtk3.PACKAGE, "animalsToCombineTigerTree.json")
+        semtk3.store_nodegroup("semtk_test_animalToCombineTigerTree", "comments", "semtk python test", nodegroup_json_str, True)
+        tab = semtk3.select_by_id("semtk_test_animalToCombineTigerTree")
+        
+        # test query results
+        self.assertEqual(tab.get_num_rows(), 16, "Wrong number of rows returned")
+        self.assertTrue("AuntyEm" not in tab.get_csv_string(), "Target name was not removed: AuntyEm")
+        self.assertTrue("AUNTY_EM" in tab.get_csv_string(), "Duplicate name was not retained: AUNTY_EM")
+
+    def test_combine_entities_table_errors(self):
+        # Basic test of REST endpoint
+        # Real testing is don
+        self.clear_graph()
+        
+        with importlib.resources.path(TestSemtk3.PACKAGE, "AnimalSubProps.owl") as owl_path:
+            semtk3.upload_owl(owl_path, TestSemtk3.conn_str)
+        
+        with importlib.resources.path(TestSemtk3.PACKAGE, "AnimalsToCombineData.owl") as owl_path:
+            semtk3.upload_owl(owl_path, TestSemtk3.conn_str, model_or_data="data")
+        
+        # Bad target dict prop
+        csv = '''target_name, duplicate_name, duplicate_type
+        auntyEm,     AUNTY_EM,       http://AnimalSubProps#Tiger
+        '''
+        target_dict={'target_name' : "http://AnimalSubProps#bad-target-prop"}
+        duplicate_dict={'duplicate_name' : "http://AnimalSubProps#name", "duplicate_type" : "#type"}
+        remove_target_prop_list = ["http://AnimalSubProps#name"]
+        try:
+            semtk3.combine_entities_table(csv, target_dict, duplicate_dict, delete_predicates_from_target=remove_target_prop_list)
+        except Exception as e:
+            self.assertTrue("bad-target-prop" in str(e), "Missing bad-target-prop in exception")
+            
+        # Bad duplicate dict prop
+        csv = '''target_name, duplicate_name, duplicate_type
+        auntyEm,     AUNTY_EM,       http://AnimalSubProps#Tiger
+        '''
+        target_dict={'target_name' : "http://AnimalSubProps#name"}
+        duplicate_dict={'duplicate_name' : "http://AnimalSubProps#bad-duplicate-prop", "duplicate_type" : "#type"}
+        remove_target_prop_list = ["http://AnimalSubProps#name"]
+        try:
+            semtk3.combine_entities_table(csv, target_dict, duplicate_dict, delete_predicates_from_target=remove_target_prop_list)
+        except Exception as e:
+            self.assertTrue("bad-duplicate-prop" in str(e), "Missing bad-duplicate-prop in exception")
+            
+        # Bad remove list prop
+        csv = "target_name, duplicate_name, duplicate_type\nauntyEm,     AUNTY_EM,       http://AnimalSubProps#Tiger"
+        target_dict={'target_name' : "http://AnimalSubProps#name"}
+        duplicate_dict={'duplicate_name' : "http://AnimalSubProps#name", "duplicate_type" : "#type"}
+        remove_target_prop_list = ["http://AnimalSubProps#bad-remove-prop"]
+        try:
+            semtk3.combine_entities_table(csv, target_dict, duplicate_dict, delete_predicates_from_target=remove_target_prop_list)
+        except Exception as e:
+            self.assertTrue("bad-remove-prop" in str(e), "Missing bad-remove-prop in exception")
+            
+        # Bad col name
+        csv = "target_name, duplicate_name, duplicate_type\nauntyEm,     AUNTY_EM,       http://AnimalSubProps#Tiger"
+        target_dict={'target_name' : "http://AnimalSubProps#name"}
+        duplicate_dict={'bad-col-name' : "http://AnimalSubProps#name", "duplicate_type" : "#type"}
+        remove_target_prop_list = ["http://AnimalSubProps#name"]
+        try:
+            semtk3.combine_entities_table(csv, target_dict, duplicate_dict, delete_predicates_from_target=remove_target_prop_list)
+        except Exception as e:
+            self.assertTrue("bad-col-name" in str(e), "Missing bad-col-name in exception")
     
     def test_get_oinfo(self):
         oinfo = semtk3.get_oinfo()  

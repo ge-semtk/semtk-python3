@@ -359,6 +359,34 @@ def combine_entities(target_uri, duplicate_uri, delete_predicates_from_target=No
    
     nge_client.exec_dispatch_combine_entities(target_uri, duplicate_uri, delete_predicates_from_target, delete_predicates_from_duplicate, my_conn)
 
+def combine_entities_table(csv_str, target_col_prop_dict, duplicate_col_prop_dict, delete_predicates_from_target=[], delete_predicates_from_duplicate=[], conn=None):
+    '''
+    Combine entities described by rows in a table.
+    Each row has col(s) to lookup the target and duplicate
+    Any properties outgoing from duplicate are ignored if they exist in the target
+    All incoming properties are combined
+    delete_predicates_from_* parameters occur before combining using the above rules
+    
+    "#type" may be used as a property shorthand
+    
+    :param csv_str: csv table of entities to combine
+    :param target_col_prop_dict: dictionary describing how to look up target dict[col_name]=prop_uri
+    :param duplicate_col_prop_dict: dictionary describing how to look up duplicate dict[col_name]=prop_uri
+    :param delete_predicates_from_target: list of propertyURI's to remove from target before combining
+    :param delete_predicatges_from_duplicate: list of propertyURI's to remove from duplicate before combining
+    :param conn : connection
+    :return status string
+    :throws exception with table of errors
+    '''
+    my_conn = conn or SEMTK3_CONN_OVERRIDE
+    if not my_conn:
+        raise Exception("No connection specified.  Use conn param or set_connection_override() function")
+    
+    nge_client = __get_nge_client()
+   
+    status = nge_client.exec_dispatch_combine_entities_table(csv_str, target_col_prop_dict, duplicate_col_prop_dict, delete_predicates_from_target, delete_predicates_from_duplicate, my_conn)
+    return status
+
 def get_plot_spec_names_by_id(nodegroup_id):
     '''
     Get available plot names for a given nodegroup id

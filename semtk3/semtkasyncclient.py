@@ -145,8 +145,15 @@ class SemTkAsyncClient(semtkclient.SemTkClient):
             return self.post_get_status_message(jobid), warningText
         except:
             # failure occurred in ingestion:  tack on the error table
+            msg = ""
+            try:
+                msg = self.post_get_status_message(jobid)
+                msg += "\n"
+            except:
+                msg = ""
+                
             table = self.post_get_table_results(jobid)
-            raise Exception(warningText + "Failures encountered:\n" + table.get_csv_string()) from None
+            raise Exception(msg + warningText + "Failures encountered:\n" + table.get_csv_string()) from None
          
     def post_async_to_status(self, endpoint, dataObj={}):
         ''' 

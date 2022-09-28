@@ -15,7 +15,6 @@
 # limitations under the License.
 #
 from . import semtkasyncclient
-from . import sparqlconnection
 
 class NodegroupExecClient(semtkasyncclient.SemTkAsyncClient):
     USE_NODEGROUP_CONN = "{\"name\": \"%NODEGROUP%\",\"domain\": \"%NODEGROUP%\",\"model\": [],\"data\": []}"
@@ -218,6 +217,21 @@ class NodegroupExecClient(semtkasyncclient.SemTkAsyncClient):
         status = self.post_async_to_status("dispatchCombineEntities", payload)
     
         return status
+    
+    def exec_dispatch_combine_entities_table(self, csv_str, target_col_prop_dict, duplicate_col_prop_dict, delete_predicates_from_target, delete_predicates_from_duplicate, conn_json_str):
+        
+        payload = {}
+        payload["csvString"] = csv_str
+        payload["targetColNames"] = list(target_col_prop_dict.keys())
+        payload["targetColProperties"] = list(target_col_prop_dict.values())
+        payload["duplicateColNames"] = list(duplicate_col_prop_dict.keys())
+        payload["duplicateColProperties"] = list(duplicate_col_prop_dict.values())
+        payload["deletePredicatesFromTarget"] = delete_predicates_from_target
+        payload["deletePredicatesFromDuplicate"] = delete_predicates_from_duplicate
+        payload["conn"] = conn_json_str
+     
+        statusMsg, warnMsg = self.post_async_to_record_process("dispatchCombineEntitiesTable", payload)
+        return statusMsg # never has any warnings
     
     def exec_copy_graph(self, from_server, from_server_type, from_graph, to_server, to_server_type, to_graph, user_name="no_user", password="no_password"):
         payload = {}
