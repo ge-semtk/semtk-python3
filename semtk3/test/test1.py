@@ -671,8 +671,22 @@ class TestSemtk3(unittest.TestCase):
         tab = semtk3.query("select ?x ?y ?z from <" + to_graph +"> where { ?x ?y ?z }", TestSemtk3.conn2_str)
         self.assertEqual(tab.get_num_rows(), 26, "Unexpected number of rows were copied")
         
+    def test_get_graph_names(self):
 
+        model_graph = sparqlconnection.SparqlConnection(TestSemtk3.conn_str).get_graph("model", 0)
+        data_graph = sparqlconnection.SparqlConnection(TestSemtk3.conn_str).get_graph("data", 0)
+
+        # clear, confirm 2 graphs not present
+        self.clear_graph()
+        graphs = semtk3.get_graph_names(TestSemtk3.conn_str)
+        self.assertFalse(model_graph in graphs)
+        self.assertFalse(data_graph in graphs)
         
+        # load data graph, confirm 2 graphs are present
+        self.load_cats_and_dogs()
+        graphs = semtk3.get_graph_names(TestSemtk3.conn_str)
+        self.assertTrue(model_graph in graphs)
+        self.assertTrue(data_graph in graphs)
         
 if __name__ == '__main__':
     unittest.main()

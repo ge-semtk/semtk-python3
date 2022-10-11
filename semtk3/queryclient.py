@@ -101,7 +101,20 @@ class QueryClient(SemTkClient):
             "resultType":    "TABLE",
             "query":         query
         }
-        
       
         res = self.post_to_table("query", payload)
+        return res
+
+    #
+    # Get graph names
+    #
+    def exec_select_graph_names(self):
+
+        payload = {
+            "serverAndPort": self.conn.get_server_and_port(sparqlconnection.SparqlConnection.MODEL, 0),
+            "serverType":    self.conn.get_server_type(sparqlconnection.SparqlConnection.MODEL, 0),
+            "graph":         "http://any#graph"
+        }
+
+        res = self.post_to_table("selectGraphNames", payload)
         return res
