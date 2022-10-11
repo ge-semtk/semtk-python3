@@ -640,10 +640,10 @@ def get_graph_names(conn_json_str):
     Get graph names present in the triple store
     :param conn_json_str: connection json string
     :return: a list of graph names
-    :rettype: semtktable
+    :rettype: list
     '''
     query_client = __get_query_client(conn_json_str)
-    return query_client.exec_select_graph_names()
+    return query_client.exec_select_graph_names().get_column(0)
 
 def get_nodegroup_by_id(nodegroup_id):
     '''
