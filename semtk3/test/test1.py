@@ -688,5 +688,12 @@ class TestSemtk3(unittest.TestCase):
         self.assertTrue(model_graph in graphs)
         self.assertTrue(data_graph in graphs)
         
+        # try with skip=False
+        graphs_false = semtk3.get_graph_names(TestSemtk3.conn_str, False)
+        self.assertTrue(len(graphs_false) == len(graphs), "skip_semtk_graphs = false returned different graphs than no skip_semtk_graphs param")
+        
+        # try with skip=True
+        # hard to test since there are no semtk graphs in the python junit graph TestSemtk3.conn_str
+        
 if __name__ == '__main__':
     unittest.main()

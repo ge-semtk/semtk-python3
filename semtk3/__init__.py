@@ -635,7 +635,7 @@ def query(query, conn_json_str, model_or_data=SEMTK3_CONN_DATA, conn_index=0):
     query_client = __get_query_client(conn_json_str)
     return query_client.exec_query(query, model_or_data, conn_index)
 
-def get_graph_names(conn_json_str):
+def get_graph_names(conn_json_str, skip_semtk_graphs=False):
     '''
     Get graph names present in the triple store
     :param conn_json_str: connection json string
@@ -643,7 +643,7 @@ def get_graph_names(conn_json_str):
     :rettype: list
     '''
     query_client = __get_query_client(conn_json_str)
-    return query_client.exec_select_graph_names().get_column(0)
+    return query_client.exec_select_graph_names(skip_semtk_graphs).get_column(0)
 
 def get_nodegroup_by_id(nodegroup_id):
     '''
