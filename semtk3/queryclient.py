@@ -108,12 +108,13 @@ class QueryClient(SemTkClient):
     #
     # Get graph names
     #
-    def exec_select_graph_names(self, skip_semtk_graphs):
+    def exec_select_graph_names(self, skip_semtk_graphs, graph_names_only):
 
         payload = {
             "serverAndPort": self.conn.get_server_and_port(sparqlconnection.SparqlConnection.MODEL, 0),
             "serverType":    self.conn.get_server_type(sparqlconnection.SparqlConnection.MODEL, 0),
-            "skipSemtkGraphs": skip_semtk_graphs
+            "skipSemtkGraphs": skip_semtk_graphs,
+            "graphNamesOnly": graph_names_only
         }
 
         res = self.post_to_table("selectGraphNames", payload)
