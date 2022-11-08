@@ -635,15 +635,17 @@ def query(query, conn_json_str, model_or_data=SEMTK3_CONN_DATA, conn_index=0):
     query_client = __get_query_client(conn_json_str)
     return query_client.exec_query(query, model_or_data, conn_index)
 
-def get_graph_names(conn_json_str, skip_semtk_graphs=False):
+def get_graph_info(conn_json_str, skip_semtk_graphs=False, graph_names_only=True):
     '''
-    Get graph names present in the triple store
+    Get names and triple counts of graphs present in the triple store
     :param conn_json_str: connection json string
-    :return: a list of graph names
-    :rettype: list
+    :param skip_semtk_graphs: true to exclude SemTK utility graphs
+    :param graph_names_only: true to only return graph names.  False to return other info like triple counts.
+    :return: a table with graph names and (optionally) triple counts
+    :rettype: semtktable
     '''
     query_client = __get_query_client(conn_json_str)
-    return query_client.exec_select_graph_names(skip_semtk_graphs).get_column(0)
+    return query_client.exec_select_graph_names(skip_semtk_graphs, graph_names_only)
 
 def get_nodegroup_by_id(nodegroup_id):
     '''
