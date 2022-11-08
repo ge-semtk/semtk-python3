@@ -88,10 +88,10 @@ class TestSemtk3(unittest.TestCase):
         self.assertTrue(warnMsg != '', "No ingestion warning was generated for extra column\n" + warnMsg)
         
         # try template
-        statusMsg, warnMsg = semtk3.ingest_using_class_template("http://AnimalSubProps#Cat", "name,Kitties_name,demons_name,child_name\nkitty,,,\nmom,kitty,,,\n", TestSemtk3.conn_str, "name")
+        statusMsg, warnMsg = semtk3.ingest_using_class_template("http://AnimalSubProps#Cat", "name,cat_type,Kitties_name,demons_name,child_name\nkitty,,,,\nmom,,kitty,,,\n", TestSemtk3.conn_str, "name")
         self.assertTrue(warnMsg == '', "Unexpected ingestion warning was generated:\n" + warnMsg)
         
-        statusMsg, warnMsg = semtk3.ingest_using_class_template("http://AnimalSubProps#Cat", "name,Kitties_YYYY\nkitty,null\nmom,kitty\n", TestSemtk3.conn_str, "name")
+        statusMsg, warnMsg = semtk3.ingest_using_class_template("http://AnimalSubProps#Cat", "name,cat_type,Kitties_YYYY\nkitty,,null\nmom,,kitty\n", TestSemtk3.conn_str, "name")
         self.assertTrue(warnMsg != '', "No ingestion warning was generated for misspelled column\n" + warnMsg)
         self.assertTrue("kitties_yyyy" in warnMsg, "Warning did not contain name of extra column Kitties_YYYY:\n" + warnMsg)
         self.assertTrue("kitties_name" in warnMsg, "Warning did not contain name of missing column Kitties_name:\n" + warnMsg)
@@ -181,7 +181,7 @@ class TestSemtk3(unittest.TestCase):
         # run the nodegroup as SELECT
         tab = semtk3.query_by_nodegroup(ng, query_type=semtk3.QUERY_TYPE_SELECT_DISTINCT, result_type=semtk3.RESULT_TYPE_TABLE)
         self.assertEquals(2, tab.get_num_rows(), "Incorrect number of rows")
-        self.assertEquals(4, tab.get_num_columns(), "Incorrect number of columns")
+        self.assertEquals(5, tab.get_num_columns(), "Incorrect number of columns")
         
         # ingest with a URI Lookup error.   Should throw an exception with error table.
         try:
@@ -671,27 +671,29 @@ class TestSemtk3(unittest.TestCase):
         tab = semtk3.query("select ?x ?y ?z from <" + to_graph +"> where { ?x ?y ?z }", TestSemtk3.conn2_str)
         self.assertEqual(tab.get_num_rows(), 26, "Unexpected number of rows were copied")
         
-    def test_get_graph_names(self):
+    def test_get_graph_info(self):
 
         model_graph = sparqlconnection.SparqlConnection(TestSemtk3.conn_str).get_graph("model", 0)
         data_graph = sparqlconnection.SparqlConnection(TestSemtk3.conn_str).get_graph("data", 0)
 
         # clear, confirm 2 graphs not present
         self.clear_graph()
-        graphs = semtk3.get_graph_names(TestSemtk3.conn_str)
+        graphs = semtk3.get_graph_info(TestSemtk3.conn_str).get_column("graph")
         self.assertFalse(model_graph in graphs)
         self.assertFalse(data_graph in graphs)
         
         # load data graph, confirm 2 graphs are present
         self.load_cats_and_dogs()
-        graphs = semtk3.get_graph_names(TestSemtk3.conn_str)
+        graphs = semtk3.get_graph_info(TestSemtk3.conn_str).get_column("graph")
         self.assertTrue(model_graph in graphs)
         self.assertTrue(data_graph in graphs)
         
         # try with skip=False
-        graphs_false = semtk3.get_graph_names(TestSemtk3.conn_str, False)
-        self.assertTrue(len(graphs_false) == len(graphs), "skip_semtk_graphs = false returned different graphs than no skip_semtk_graphs param")
-        
+        graphs_tab = semtk3.get_graph_info(TestSemtk3.conn_str, False, False)
+        graphs2 = graphs_tab.get_column("graph")
+        count2 = graphs_tab.get_column("triples")
+        self.assertTrue(len(graphs2) == len(graphs), "skip_semtk_graphs = false returned different graphs than no skip_semtk_graphs param")
+        self.assertTrue(int(count2[0]) > 0, "triple count is not a positive integer: " + count2[0])
         # try with skip=True
         # hard to test since there are no semtk graphs in the python junit graph TestSemtk3.conn_str
         
