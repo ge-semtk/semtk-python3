@@ -207,11 +207,9 @@ class NodegroupExecClient(semtkasyncclient.SemTkAsyncClient):
         payload["targetUri"] = target_uri
         payload["duplicateUri"] = duplicate_uri
         
-        
-        if delete_predicates_from_target:
-            payload["deletePredicatesFromTarget"] = delete_predicates_from_target
-        if delete_predicates_from_duplicate:
-            payload["deletePredicatesFromDuplicate"] = delete_predicates_from_duplicate
+        # optional
+        if delete_predicates_from_target: payload["deletePredicatesFromTarget"] = delete_predicates_from_target
+        if delete_predicates_from_duplicate: payload["deletePredicatesFromDuplicate"] = delete_predicates_from_duplicate
         
         # error unless res is success info
         status = self.post_async_to_status("dispatchCombineEntities", payload)
@@ -226,12 +224,32 @@ class NodegroupExecClient(semtkasyncclient.SemTkAsyncClient):
         payload["targetColProperties"] = list(target_col_prop_dict.values())
         payload["duplicateColNames"] = list(duplicate_col_prop_dict.keys())
         payload["duplicateColProperties"] = list(duplicate_col_prop_dict.values())
-        payload["deletePredicatesFromTarget"] = delete_predicates_from_target
-        payload["deletePredicatesFromDuplicate"] = delete_predicates_from_duplicate
+        
+        # optional
+        if delete_predicates_from_target: payload["deletePredicatesFromTarget"] = delete_predicates_from_target
+        if delete_predicates_from_duplicate: payload["deletePredicatesFromDuplicate"] = delete_predicates_from_duplicate
+        
         payload["conn"] = conn_json_str
      
         statusMsg, warnMsg = self.post_async_to_record_process("dispatchCombineEntitiesTable", payload)
         return statusMsg # never has any warnings
+    
+    def exec_dispatch_combine_entities_in_conn(self, same_as_class_uri, target_prop_uri, duplicate_prop_uri, delete_predicates_from_target, delete_predicates_from_duplicate, conn_json_str):
+        
+        payload = {}
+        
+        # almost all optional overrides.  Default is the Semtk Class in EntityResolution.sadl
+        if same_as_class_uri: payload["sameAsClassURI"] = same_as_class_uri 
+        if target_prop_uri: payload["targetPropURI"] = target_prop_uri
+        if duplicate_prop_uri: payload["duplicatePropURI"] = duplicate_prop_uri
+        if delete_predicates_from_target: payload["deletePredicatesFromTarget"] = delete_predicates_from_target
+        if delete_predicates_from_duplicate: payload["deletePredicatesFromDuplicate"] = delete_predicates_from_duplicate
+        
+        # required
+        payload["conn"] = conn_json_str
+     
+        statusMsg, warnMsg = self.post_async_to_record_process("dispatchCombineEntitiesInConn", payload)
+        return statusMsg 
     
     def exec_copy_graph(self, from_server, from_server_type, from_graph, to_server, to_server_type, to_graph, user_name="no_user", password="no_password"):
         payload = {}

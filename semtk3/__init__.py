@@ -387,6 +387,30 @@ def combine_entities_table(csv_str, target_col_prop_dict, duplicate_col_prop_dic
     status = nge_client.exec_dispatch_combine_entities_table(csv_str, target_col_prop_dict, duplicate_col_prop_dict, delete_predicates_from_target, delete_predicates_from_duplicate, my_conn)
     return status
 
+def combine_entities_in_conn(same_as_class_uri=None, target_prop_uri=None, duplicate_prop_uri=None, delete_predicates_from_target=[], delete_predicates_from_duplicate=[], conn=None):
+    '''
+    Combine entities described by SameAs instances in the data.
+    See EntityResolution.sadl  and Wiki on Entity Resolution
+    
+    Every param is an unusual override, except perhaps conn.   Normal: combine_entities_in_conn()
+    :param same_as_class_uri:  override
+    :param target_prop_uri: override
+    :param duplicate_prop_uri: override
+    :param delete_predicates_from_target: list of propertyURI's to remove from target before combining
+    :param delete_predicatges_from_duplicate: list of propertyURI's to remove from duplicate before combining
+    :param conn : connection
+    :return status string
+    :throws exception with table of errors
+    '''
+    my_conn = conn or SEMTK3_CONN_OVERRIDE
+    if not my_conn:
+        raise Exception("No connection specified.  Use conn param or set_connection_override() function")
+    
+    nge_client = __get_nge_client()
+   
+    status = nge_client.exec_dispatch_combine_entities_in_conn(same_as_class_uri, target_prop_uri, duplicate_prop_uri, delete_predicates_from_target, delete_predicates_from_duplicate, conn)
+    return status
+
 def get_plot_spec_names_by_id(nodegroup_id):
     '''
     Get available plot names for a given nodegroup id
