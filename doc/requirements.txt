@@ -1,7 +1,10 @@
-sphinx==2.2.0
-sphinx-paramlinks==0.3.7
-sphinxcontrib-autoprogram @ git+https://github.com/sphinx-contrib/autoprogram@be79535#egg=sphinxcontrib-autoprogram
+sphinx-paramlinks==0.5.4
+sphinx-rtd-theme==1.1.1
+sphinx==5.3.0
+sphinxcontrib-autoprogram==0.1.7
 
 # semtk3 requirements:
-requests
-python-dateutil
+python-dateutil==2.8.1
+requests==2.25.1
+Pillow==9.0.1
+plotly==4.14.3

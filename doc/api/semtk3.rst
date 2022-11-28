@@ -16,7 +16,6 @@ Submodules
    semtk3.demo
    semtk3.edcclient
    semtk3.fdccacheclient
-   semtk3.hiveclient
    semtk3.nodegroupclient
    semtk3.nodegroupexecclient
    semtk3.nodegroupstoreclient
