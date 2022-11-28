@@ -19,6 +19,11 @@ sphinx-build -b html . _build
 `venv/Scripts/activate.bat`.) You should now have HTML documentation available
 in `_build/`.
 
+NOTE: If you use a different name for your virtual environment folder, you will
+need to add it to the `exclude_patterns` of `conf.py`, else Sphinx will attempt
+to build docs for all Python modules in the virtual environment, and will likely
+yield errors such as "Error in currentmodule".
+
 ## Adding New Python Modules to the Documentation
 
 This section is for developers of semtk-python3.
