@@ -299,7 +299,7 @@ def query_by_id(nodegroup_id, limit_override=0, offset_override=0, runtime_const
 
         semtk3.semtktable.SemtkTable
 
-            A count query will be a SemtkTable with colum nname "count"
+            A count query will be a SemtkTable with column name "count"
 
             A confirm query will be a SemtkTable with column name "@message"
 
@@ -327,7 +327,7 @@ def query_by_nodegroup(nodegroup_str, runtime_constraints=None, edc_constraints=
 
         semtk3.semtktable.SemtkTable
 
-            A count query will be a SemtkTable with colum nname "count"
+            A count query will be a SemtkTable with column name "count"
 
             A confirm query will be a SemtkTable with column name "@message"
 
@@ -394,7 +394,7 @@ def combine_entities_table(csv_str, target_col_prop_dict, duplicate_col_prop_dic
     :param target_col_prop_dict: dictionary describing how to look up target dict[col_name]=prop_uri
     :param duplicate_col_prop_dict: dictionary describing how to look up duplicate dict[col_name]=prop_uri
     :param delete_predicates_from_target: list of propertyURI's to remove from target before combining
-    :param delete_predicatges_from_duplicate: list of propertyURI's to remove from duplicate before combining
+    :param delete_predicates_from_duplicate: list of propertyURI's to remove from duplicate before combining
     :param conn: connection
     :return: status string
     :throws: exception with table of errors
@@ -418,7 +418,7 @@ def combine_entities_in_conn(same_as_class_uri=None, target_prop_uri=None, dupli
     :param target_prop_uri: override
     :param duplicate_prop_uri: override
     :param delete_predicates_from_target: list of propertyURI's to remove from target before combining
-    :param delete_predicatges_from_duplicate: list of propertyURI's to remove from duplicate before combining
+    :param delete_predicates_from_duplicate: list of propertyURI's to remove from duplicate before combining
     :param conn : connection
     :return status string
     :throws exception with table of errors
@@ -541,7 +541,7 @@ def get_filter_values_by_id(nodegroup_id, target_obj_sparql_id, override_conn_js
 
 def build_constraint(sparql_id, operator, operand_list):
     '''
-    Build a contraint to be used as a query parameter
+    Build a constraint to be used as a query parameter
 
     :param sparql_id: the variable name
     :param operator: operator {MATCHES, REGEX, GREATERTHAN, GREATERTHANOREQUALS, LESSTHAN, LESSTHANOREQUALS, VALUEBETWEEN, VALUEBETWEENUNINCLUSIVE}
@@ -587,7 +587,7 @@ def get_class_template_csv(class_uri, conn_json_str=None, id_regex="identifier")
     Get sample CSV that will work with  class template
 
     :param class_uri: the class whose template should be used for ingestion
-    :param conn_json_str: optional conenction json string defaults to override
+    :param conn_json_str: optional connection json string defaults to override
     :param id_regex: optional regex to identify the key data properties of classes which are the object of object properties
     :return: "colname1, colname2, colname3"
     '''
@@ -600,7 +600,7 @@ def get_class_template(class_uri, conn_json_str=None, id_regex="identifier"):
     Get class template nodegroup
 
     :param class_uri: the class whose template should be used for ingestion
-    :param conn_json_str: optional conenction json string defaults to override
+    :param conn_json_str: optional connection json string defaults to override
     :param id_regex: optional regex to identify the key data properties of classes which are the object of object properties
     :returns nodegroup json string
     '''
@@ -613,7 +613,7 @@ def get_class_template_and_csv(class_uri, conn_json_str=None, id_regex="identifi
     Get class template nodegroup
 
     :param class_uri: the class whose template should be used for ingestion
-    :param conn_json_str: optional conenction json string defaults to override
+    :param conn_json_str: optional connection json string defaults to override
     :param id_regex: optional regex to identify the key data properties of classes which are the object of object properties
     :returns (ng_json_str, "col1, col2, col3\n", "string, int, dateTime\n")  note that types can be space-separated complex property types
     '''
@@ -625,7 +625,7 @@ def get_class_names(conn_json_str=None):
     '''
     Get a list of class names in the ontology
 
-    :param conn_json_str: optional conenction json string defaults to override
+    :param conn_json_str: optional connection json string defaults to override
     :returns list of full class URI's
     '''
     oinfo = get_oinfo(conn_json_str)
@@ -846,7 +846,7 @@ def store_folder(folder_path):
             with open(json_path,'r') as json_file:
                 nodegroup_json_str = json_file.read()
                 # store item.
-                # Overwriting is already handled more effciently above, so overwrite_flag=False
+                # Overwriting is already handled more efficiently above, so overwrite_flag=False
                 store_item(item_id, row["comments"], row["creator"], nodegroup_json_str, item_type, False)
 
 def retrieve_from_store(regex_str, folder_path):
