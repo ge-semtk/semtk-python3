@@ -147,18 +147,23 @@ class NodegroupExecClient(semtkasyncclient.SemTkAsyncClient):
         table = self.post_async_to_table("dispatchCountById", payload)
         
         return table
-    def exec_async_dispatch_raw_sparql(self, sparql, override_conn_json_str=None):
+    def exec_async_dispatch_raw_sparql(self, sparql, override_conn_json_str=None, result_type=semtkasyncclient.RESULT_TYPE_TABLE):
         ''' execute a select by nodegroup id
-            returns: the table
+            result_type: RESULT_TYPE_TABLE or RESULT_TYPE_GRAPH_JSONLD
+            returns: table or json depending on result_type
             thorws: exception otherwise
         '''
         payload = {}
         payload["sparql"] = sparql
         payload["sparqlConnection"] = override_conn_json_str if override_conn_json_str else self.USE_NODEGROUP_CONN
-        
-        table = self.post_async_to_table("dispatchRawSparql", payload)
-        
-        return table
+        payload["resultType"] = result_type
+        if result_type==semtkasyncclient.RESULT_TYPE_TABLE:
+            return self.post_async_to_table("dispatchRawSparql", payload)
+        elif result_type==semtkasyncclient.RESULT_TYPE_GRAPH_JSONLD:
+            return self.post_async_to_json_blob("dispatchRawSparql", payload)
+        # how should we handle CONFIRM
+        else:
+            raise Exception("Bad result_type: " + result_type)
     
     def exec_get_runtime_constraints_by_id(self, nodegroup_id):
         ''' execute a select by nodegroup id

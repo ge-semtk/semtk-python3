@@ -71,11 +71,12 @@ QUERY_TYPE_CONSTRUCT = "CONSTRUCT"
 QUERY_TYPE_ASK = "ASK"
 QUERY_TYPE_DELETE = "DELETE"
 
-RESULT_TYPE_TABLE = "TABLE"
-RESULT_TYPE_GRAPH_JSONLD = "GRAPH_JSONLD"
-RESULT_TYPE_CONFIRM = "CONFIRM"
-RESULT_TYPE_RDF = "RDF"
-RESULT_TYPE_HTML = "HTML"
+# make shorter hand versions for end users
+RESULT_TYPE_TABLE = semtkasyncclient.RESULT_TYPE_TABLE
+RESULT_TYPE_GRAPH_JSONLD = semtkasyncclient.RESULT_TYPE_GRAPH_JSONLD
+RESULT_TYPE_CONFIRM = semtkasyncclient.RESULT_TYPE_CONFIRM
+RESULT_TYPE_RDF = semtkasyncclient.RESULT_TYPE_RDF
+RESULT_TYPE_HTML = semtkasyncclient.RESULT_TYPE_HTML
 
 STORE_ITEM_TYPE_NODEGROUP = "PrefabNodeGroup"
 STORE_ITEM_TYPE_REPORT = "Report"
@@ -682,7 +683,8 @@ def upload_turtle(ttl_file_path, conn_json_str, user_name, password, model_or_da
 
 def query(query, conn_json_str, model_or_data=SEMTK3_CONN_DATA, conn_index=0):
     '''
-    Run a raw SPARQL query
+    Run a raw SPARQL query synchronously and return a table.
+    Consider query_raw_sparql for async queries that are less likely to time out
 
     :param query: SPARQL
     :param conn_json_str: connection json string
@@ -694,6 +696,36 @@ def query(query, conn_json_str, model_or_data=SEMTK3_CONN_DATA, conn_index=0):
     '''
     query_client = __get_query_client(conn_json_str)
     return query_client.exec_query(query, model_or_data, conn_index)
+
+def query_raw_sparql(query, conn_json_str=None, model_or_data=SEMTK3_CONN_DATA, conn_index=0, result_type=RESULT_TYPE_TABLE):
+    '''
+    Execute a query asynchronously and retrieve given result type
+    - either a SemtkTable, or
+    - a json-ld dict, which typically contains keys "@graph" and "@context"
+
+    :param query - SPARQL
+    :param conn_json_str: optional connection json string defaults to SEMTK_CONN_OVERRIDE
+    :param model_or_data: optional "model" or "data" specifying which endpoint in the sparql connection to query, defaults to "data"
+    :param conn_index:    optional index specifying which of the model or data endpoints in the sparql connection, defaults to 0
+    :param result_type    optional RESULT_TYPE_TABLE or RESULT_TYPE_GRAPH_JSONLD
+    :return: results 
+    :rtype: semtktable or json-ld
+    '''
+    nge_client = __get_nge_client()
+    
+    # build connection
+    conn_str = conn_json_str if conn_json_str != None else SEMTK3_CONN_OVERRIDE
+    conn = sparqlconnection.SparqlConnection(conn_str, None, None)
+    new_conn = sparqlconnection.SparqlConnection()
+    new_conn.build("temp conn", 
+                   conn.get_server_type(model_or_data, conn_index), 
+                   conn.get_server_and_port(model_or_data, conn_index), 
+                   [conn.get_graph(model_or_data, conn_index)], 
+                   conn.get_graph(model_or_data, conn_index), 
+                   [])
+    
+    # real work
+    return nge_client.exec_async_dispatch_raw_sparql(query, new_conn.to_conn_str(), result_type)
 
 def get_graph_info(conn_json_str, skip_semtk_graphs=False, graph_names_only=True):
     '''

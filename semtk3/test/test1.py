@@ -696,6 +696,17 @@ class TestSemtk3(unittest.TestCase):
         self.assertTrue(int(count2[0]) > 0, "triple count is not a positive integer: " + count2[0])
         # try with skip=True
         # hard to test since there are no semtk graphs in the python junit graph TestSemtk3.conn_str
+    
+    def test_query_raw_sparql(self):  
+        self.clear_graph()
+        self.load_cats_and_dogs()
+        data_graph = sparqlconnection.SparqlConnection(TestSemtk3.conn_str).get_graph("data", 0)
+        
+        table = semtk3.query_raw_sparql("SELECT ?s ?p ?o FROM <" + data_graph + "> WHERE {?s ?p ?o.} LIMIT 5", result_type=semtk3.RESULT_TYPE_TABLE)
+        self.assertEqual(5, table.get_num_rows(), "wrong number of rows returned")
+        
+        json_ld = semtk3.query_raw_sparql("CONSTRUCT { ?s ?p ?o } FROM <" + data_graph + "> WHERE {?s ?p ?o.} LIMIT 5", result_type=semtk3.RESULT_TYPE_GRAPH_JSONLD)
+        self.assertTrue(len(json_ld["@graph"]) > 0, "empty json-ld[@graph] returned")
         
 if __name__ == '__main__':
     unittest.main()

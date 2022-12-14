@@ -20,10 +20,17 @@ import logging
 
 semtk3_logger = logging.getLogger("semtk3")
 
+RESULT_TYPE_TABLE = "TABLE"
+RESULT_TYPE_GRAPH_JSONLD = "GRAPH_JSONLD"
+RESULT_TYPE_CONFIRM = "CONFIRM"
+RESULT_TYPE_RDF = "RDF"
+RESULT_TYPE_HTML = "HTML"
+    
 class SemTkAsyncClient(semtkclient.SemTkClient):
     PRINT_DOTS = False
     WAIT_MSEC = 5000
     PERCENT_INCREMENT = 20
+    
     
     def __init__(self, baseURL, service=None, status_client=None, results_client=None):
         ''' Client for a semtk service that uses status and results services
