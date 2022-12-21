@@ -430,7 +430,14 @@ def combine_entities_in_conn(same_as_class_uri=None, target_prop_uri=None, dupli
     
     nge_client = __get_nge_client()
    
-    status = nge_client.exec_dispatch_combine_entities_in_conn(same_as_class_uri, target_prop_uri, duplicate_prop_uri, delete_predicates_from_target, delete_predicates_from_duplicate, conn)
+    try:
+        status = nge_client.exec_dispatch_combine_entities_in_conn(same_as_class_uri, target_prop_uri, duplicate_prop_uri, delete_predicates_from_target, delete_predicates_from_duplicate, conn)
+    except Exception as e:
+        if "Nothing to combine" in str(e):
+            get_logger().warning("Nothing to combine")
+            status="Success"
+        else:
+            raise e
     return status
 
 def get_plot_spec_names_by_id(nodegroup_id):

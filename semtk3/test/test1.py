@@ -547,6 +547,26 @@ class TestSemtk3(unittest.TestCase):
         except Exception as e:
             self.assertTrue("bad-col-name" in str(e), "Missing bad-col-name in exception")
     
+    def test_combine_entities_in_conn(self):
+        # Basic test of REST endpoint
+        # Real testing is don
+        self.clear_graph()
+        
+        # put everything into same graph (#model)
+        conn2_str = TestSemtk3.conn_str.replace("http://semtk-python-test/data", "http://semtk-python-test/model")
+        
+        with importlib.resources.path(TestSemtk3.PACKAGE, "EntityResolution.owl") as owl_path:
+            semtk3.upload_owl(owl_path, conn2_str)
+        
+        with importlib.resources.path(TestSemtk3.PACKAGE, "EntityResolutionTestPy.owl") as owl_path:
+            semtk3.upload_owl(owl_path, conn2_str)
+            
+        # Java junit tests the actual results
+        semtk3.combine_entities_in_conn(conn=conn2_str)
+        
+        # just check there's no exception:  warning might be printed. hard to test.
+        semtk3.combine_entities_in_conn(conn=conn2_str)
+        
     def test_get_oinfo(self):
         oinfo = semtk3.get_oinfo()  
         class_list = oinfo.get_class_list()
