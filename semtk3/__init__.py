@@ -688,20 +688,21 @@ def upload_turtle(ttl_file_path, conn_json_str, user_name, password, model_or_da
     query_client = __get_query_client(conn_json_str, user_name, password)
     return query_client.exec_upload_turtle(ttl_file_path, model_or_data, conn_index)
 
-def query(query, conn_json_str, model_or_data=SEMTK3_CONN_DATA, conn_index=0):
+def query(query, conn_json_str=None, model_or_data=SEMTK3_CONN_DATA, conn_index=0):
     '''
     Run a raw SPARQL query synchronously and return a table.
     Consider query_raw_sparql for async queries that are less likely to time out
 
     :param query: SPARQL
-    :param conn_json_str: connection json string
+    :param conn_json_str: optional connection json string
     :param model_or_data: optional "model" or "data" specifying which endpoint in the sparql connection, defaults to "data"
     :param conn_index: index specifying which of the model or data endpoints in the sparql connection, defaults to 0
     :return: results
     :rtype: semtktable
 
     '''
-    query_client = __get_query_client(conn_json_str)
+    conn_str = conn_json_str if conn_json_str != None else SEMTK3_CONN_OVERRIDE
+    query_client = __get_query_client(conn_str)
     return query_client.exec_query(query, model_or_data, conn_index)
 
 def query_raw_sparql(query, conn_json_str=None, model_or_data=SEMTK3_CONN_DATA, conn_index=0, result_type=RESULT_TYPE_TABLE):
@@ -831,15 +832,9 @@ def store_item(item_id, comments, creator, item_json_str, item_type, overwrite_f
     :return: status
     :rtype: string
     '''
-    if overwrite_flag:
-        try:
-            delete_item_from_store(item_id, item_type)
-        except Exception as e:
-            if "No stored item exists with id" not in str(e):
-                raise e
 
     store_client = __get_nodegroup_store_client()
-    return store_client.exec_store_item(item_id, comments, creator, item_json_str, item_type)
+    return store_client.exec_store_item(item_id, comments, creator, item_json_str, item_type, overwrite_flag)
 
 
 def store_nodegroups(folder_path):
@@ -873,20 +868,12 @@ def store_folder(folder_path):
             else:
                 item_type = STORE_ITEM_TYPE_NODEGROUP
 
-            # delete if already exists of the same type
-            if item_id in id_list:
-                i = id_list.index(item_id)
-
-                if (type_list[i].endswith(item_type)):
-                    delete_item_from_store(item_id, item_type)
-
             # read the json and store the nodegroup
             json_path = os.path.join(folder_path, row["jsonFile"])
             with open(json_path,'r') as json_file:
                 nodegroup_json_str = json_file.read()
                 # store item.
-                # Overwriting is already handled more efficiently above, so overwrite_flag=False
-                store_item(item_id, row["comments"], row["creator"], nodegroup_json_str, item_type, False)
+                store_item(item_id, row["comments"], row["creator"], nodegroup_json_str, item_type, True)
 
 def retrieve_from_store(regex_str, folder_path):
     print("retrieve_from_store() is deprecated.  Use retrieve_nodegroups_from_store() or retrieve_items_from_store()")

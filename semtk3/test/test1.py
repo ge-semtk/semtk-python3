@@ -207,6 +207,21 @@ class TestSemtk3(unittest.TestCase):
         no_rt_ng = importlib.resources.read_text(TestSemtk3.PACKAGE, "animalSubPropsCats.json")
         semtk3.store_item(self.NO_RT_ID, "testing", "PyUnit", no_rt_ng, STORE_ITEM_TYPE_NODEGROUP)
         
+        try:
+            semtk3.store_item(self.NO_RT_ID, "testing", "PyUnit", no_rt_ng, STORE_ITEM_TYPE_NODEGROUP)
+            self.assertTrue(False, "Missing expected store_item already exists exception")
+        except Exception as e: 
+            self.assertTrue("exists" in str(e))
+          
+        try:  
+            semtk3.store_item(self.NO_RT_ID, "testing", "PyUnit", no_rt_ng, STORE_ITEM_TYPE_NODEGROUP, False)
+            self.assertTrue(False, "Missing expected store_item already exists exception")
+        except Exception as e: 
+            self.assertTrue("exists" in str(e))
+            
+        # with overwrite_flag true, it should succeed
+        semtk3.store_item(self.NO_RT_ID, "testing", "PyUnit", no_rt_ng, STORE_ITEM_TYPE_NODEGROUP, True)
+
         # store a report
         report = importlib.resources.read_text(TestSemtk3.PACKAGE, "animalTestReport.json")
         semtk3.store_item(self.REPORT_ID, "testing", "PyUnit", report, STORE_ITEM_TYPE_REPORT)
@@ -327,6 +342,9 @@ class TestSemtk3(unittest.TestCase):
         self.assertEqual(0, len(table.get_matching_rows("ID", "^semtk_test")),  "Nodegroups were not deleted")
         
         # store multiple nodegroups from disk
+        semtk3.store_nodegroups(DIR)
+        
+        # store again overwrites silently
         semtk3.store_nodegroups(DIR)
         
         # verify restoration

@@ -51,7 +51,7 @@ class NodegroupStoreClient(semtkclient.SemTkClient):
         self.post_to_status("deleteStoredItem", payload)
         return
     
-    def exec_store_item(self, item_id, comments, creator, item_json_str, item_type):
+    def exec_store_item(self, item_id, comments, creator, item_json_str, item_type, overwrite_flag=False):
 
         payload = {}
         payload["name"] = item_id
@@ -59,6 +59,7 @@ class NodegroupStoreClient(semtkclient.SemTkClient):
         payload["creator"] = creator
         payload["item"] = item_json_str
         payload["itemType"] = item_type
+        payload["overwriteFlag"] = overwrite_flag
         
         self.post_to_status("storeItem", payload)
         return
