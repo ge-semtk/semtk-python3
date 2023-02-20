@@ -1,6 +1,6 @@
 import unittest
 import importlib.resources
-import os 
+import os
 import shutil
 
 import semtk3
@@ -746,5 +746,24 @@ class TestSemtk3(unittest.TestCase):
         json_ld = semtk3.query_raw_sparql("CONSTRUCT { ?s ?p ?o } FROM <" + data_graph + "> WHERE {?s ?p ?o.} LIMIT 5", result_type=semtk3.RESULT_TYPE_GRAPH_JSONLD)
         self.assertTrue(len(json_ld["@graph"]) > 0, "empty json-ld[@graph] returned")
         
+    def test_load_ingestion_package(self):
+
+        # test a load
+        with importlib.resources.path(TestSemtk3.PACKAGE, "IngestionPackage.zip") as ingestion_package_path:
+            with semtk3.load_ingestion_package(str(ingestion_package_path)) as response:
+                response_str = ""
+                for line in response.iter_lines():
+                    response_str += str(line.decode())  # TODO test that we get updates as the load progresses?
+                self.assertTrue(response_str.startswith("Loading ingestion package..."))
+                self.assertTrue(response_str.endswith("Load complete"))
+
+        # confirm fails when send a file in a format other than zip
+        with importlib.resources.path(TestSemtk3.PACKAGE, "EntityResolution.owl") as ingestion_package_path:
+            with semtk3.load_ingestion_package(str(ingestion_package_path)) as response:
+                response_str = ""
+                for line in response.iter_lines():
+                    response_str += str(line.decode())
+                self.assertTrue(response_str == "Error: This endpoint only accepts ingestion packages in zip file format")
+
 if __name__ == '__main__':
     unittest.main()

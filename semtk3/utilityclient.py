@@ -16,6 +16,7 @@
 #
 from . import semtkclient
 from . import plotspecs
+import os.path
 
 class UtilityClient(semtkclient.SemTkClient):
    
@@ -35,5 +36,15 @@ class UtilityClient(semtkclient.SemTkClient):
         plotJson = self.get_simple_field(simple, "plot")
         return plotspecs.PlotSpec(plotJson)
         
-            
-    
+
+    def exec_load_ingestion_package(self, ingestion_package_path):
+        '''
+        Load an ingestion package
+        :param ingestion_package_path: path to in ingestion package (zip file) containing manifest and contents to load
+        '''
+        payload = {}
+        files = {
+            "file": (os.path.basename(ingestion_package_path), open(ingestion_package_path, 'rb'))
+        }
+
+        return self.post_to_stream("loadIngestionPackage", payload, files=files)

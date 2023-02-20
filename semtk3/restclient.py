@@ -78,14 +78,13 @@ class RestClient(object):
         raise RestException(self.lastURL + ": " + msg + "\nDetails:\n" + c)
         
     def post(self, endpoint, dataObj={}, files=None):
-        ''' basic POST 
-               endpoint - string
-               dataObj - dict will be converted to json for the post  (default {})
-                
-               returns string - response content
-               raises RestException if response is not OK
+        ''' Post, returning response as string
+            :param endpoint: the endpoint string
+            :param dataObj: dictionary to be sent (as json) with the post (default {})
+            :param files: files to send with the request (optional)
+            :return string: response content
+            :raises RestException if response is not OK
         '''
-        
         self.lastURL = self.baseURL + endpoint
         semtk3_logger.debug("Posting to " + self.lastURL + "...")
         
@@ -93,14 +92,9 @@ class RestClient(object):
         if (files):
             headers.pop("content-type", None)
             response = requests.request("POST", self.lastURL, params=dataObj, headers=headers, files=files)
-
         else :
             headers["content-type"] = "application/json"
             response = requests.request("POST", self.lastURL, data=json.dumps(dataObj), headers=headers)
-            
-        
-        
-        
 
         if response.ok:
             self.lastContent = response.content
@@ -108,11 +102,24 @@ class RestClient(object):
         else:
             self.raise_exception("failed with reason: " + response.text)
     
-    #
-    # Post, saving results into a file
-    # Returns the first line as string (which you may be able to use to check for errors)
-    #       
+    def post_to_stream(self, endpoint, dataObj, files=None):
+        ''' Post, returning the response object.  Caller may use iter_lines() on this object to read streaming response.
+            :param endpoint: the endpoint string
+            :param dataObj: dictionary to be sent (as json) with the post
+            :param files: files to send with the request (optional)
+            :return requests.Response
+        '''
+        self.lastURL = self.baseURL + endpoint
+        s = requests.Session()
+        return s.post(self.lastURL, json=dataObj, headers=None, files=files, stream=True)
+
     def post_to_file(self, endpoint, dataObj, filename):
+        ''' Post, saving results into a file
+            :param endpoint: the endpoint string
+            :param dataObj: dictionary to be sent (as json) with the post
+            :param filename: name of output file
+            :return first line of output as string (useful to check for errors)
+        '''
         self.lastURL = self.baseURL + endpoint
         s = requests.Session()
         first_line = None
@@ -122,5 +129,4 @@ class RestClient(object):
                     fp.write(line)
                     if (first_line==None):
                         first_line = line
-                            
         return first_line.decode()

@@ -1149,6 +1149,13 @@ def override_hosts(query_host=None, status_host=None, results_host=None, hive_ho
 def query_hive(hiveserver_host, hiveserver_port, hiveserver_database, query):
     raise Exception("Hive is no longer supported")
 
+def load_ingestion_package(ingestion_package_path):
+    '''
+    Load an ingestion package
+    :param ingestion_package_path: path to an ingestion package (zip file) containing manifest and contents to load
+    '''
+    return __get_utility_client().exec_load_ingestion_package(ingestion_package_path)
+
 ##############################
 def __get_fdc_cache_client():
     status_client = statusclient.StatusClient(__build_client_url(STATUS_HOST, STATUS_PORT))
