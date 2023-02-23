@@ -1149,12 +1149,17 @@ def override_hosts(query_host=None, status_host=None, results_host=None, hive_ho
 def query_hive(hiveserver_host, hiveserver_port, hiveserver_database, query):
     raise Exception("Hive is no longer supported")
 
-#def load_ingestion_package(ingestion_package_path):
+def load_ingestion_package(triple_store_url:str, triple_store_type:str, ingestion_package_path:str, clear:bool, default_model_graph:str, default_data_graph:str):
     '''
     Load an ingestion package
+    :param triple_store_url: the URL e.g. "http://localhost:3030/DATASET"
+    :param triple_store_type: "fuseki" "neptune" "virtuoso", etc.
     :param ingestion_package_path: path to an ingestion package (zip file) containing manifest and contents to load
+    :param clear: if true, clears the footprint graphs (before loading)
+    :param default_model_graph: model graph to use if not otherwise specified
+    :param default_data_graph: data graph to use if not otherwise specified
     '''
-#    return __get_utility_client().exec_load_ingestion_package(ingestion_package_path)
+    return __get_utility_client().exec_load_ingestion_package(triple_store_url, triple_store_type, ingestion_package_path, clear, default_model_graph, default_data_graph)
 
 ##############################
 def __get_fdc_cache_client():

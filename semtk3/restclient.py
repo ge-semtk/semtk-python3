@@ -111,7 +111,7 @@ class RestClient(object):
         '''
         self.lastURL = self.baseURL + endpoint
         s = requests.Session()
-        return s.post(self.lastURL, json=dataObj, headers=None, files=files, stream=True)
+        return s.post(self.lastURL, data=dataObj, headers=None, files=files, stream=True)
 
     def post_to_file(self, endpoint, dataObj, filename):
         ''' Post, saving results into a file
