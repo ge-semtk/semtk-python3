@@ -17,6 +17,7 @@
 import json
 import requests
 import logging
+import sys
 
 semtk3_logger = logging.getLogger("semtk3")
 
@@ -113,19 +114,19 @@ class RestClient(object):
         s = requests.Session()
         return s.post(self.lastURL, data=dataObj, headers=None, files=files, stream=True)
 
-    def post_to_file(self, endpoint, dataObj, filename):
+    def post_to_file(self, endpoint, dataObj, filename=None):
         ''' Post, saving results into a file
             :param endpoint: the endpoint string
             :param dataObj: dictionary to be sent (as json) with the post
-            :param filename: name of output file
+            :param filename: name of output file.  if None then sys.stdout
             :return first line of output as string (useful to check for errors)
         '''
         self.lastURL = self.baseURL + endpoint
         s = requests.Session()
         first_line = None
-        with open(filename,"wb") as fp:
+        with open(filename,"wb") if filename else open(sys.stdout.fileno(), "wb") as fp:
             with s.post(self.lastURL, json=dataObj, headers=None, stream=True) as resp:
-                for line in resp.iter_lines():
+                for line in resp.iter_lines(decode_unicode=True):
                     fp.write(line)
                     if (first_line==None):
                         first_line = line
