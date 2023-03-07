@@ -37,12 +37,23 @@ class UtilityClient(semtkclient.SemTkClient):
         return plotspecs.PlotSpec(plotJson)
         
 
-    def exec_load_ingestion_package(self, ingestion_package_path):
+    def exec_load_ingestion_package(self, triple_store_url:str, triple_store_type:str, ingestion_package_path, clear:bool, default_model_graph:str, default_data_graph:str):
         '''
         Load an ingestion package
-        :param ingestion_package_path: path to in ingestion package (zip file) containing manifest and contents to load
+        :param triple_store_url: the URL e.g. "http://localhost:3030/DATASET"
+        :param triple_store_type: "fuseki" "neptune" "virtuoso", etc.
+        :param ingestion_package_path: path to an ingestion package (zip file) containing manifest and contents to load
+        :param clear: if true, clears the footprint graphs (before loading)
+        :param default_model_graph: model graph to use if not otherwise specified
+        :param default_data_graph: data graph to use if not otherwise specified
         '''
-        payload = {}
+        payload = {
+            "serverAndPort":        triple_store_url,
+            "serverType":           triple_store_type,
+            "clear":                clear,
+            "defaultModelGraph":    default_model_graph,
+            "defaultDataGraph":     default_data_graph
+        }
         files = {
             "file": (os.path.basename(ingestion_package_path), open(ingestion_package_path, 'rb'))
         }

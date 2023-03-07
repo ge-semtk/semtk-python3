@@ -57,6 +57,12 @@ class SparqlConnection:
         for graph in [data_graph] + extra_data_graphs:
             self.conn_dict["data"].append({"type": triple_store_type, "url": triple_store, "graph": graph})
     
+    def get_model_graphs(self):
+        return [(sei["graph"] if sei["graph"] else sei["dataset"]) for sei in self.conn_dict["model"] ]
+    
+    def get_data_graphs(self):
+        return [(sei["graph"] if sei["graph"] else sei["dataset"]) for sei in self.conn_dict["data"] ]
+            
     def to_conn_str(self):
         return json.dumps(self.conn_dict)
     

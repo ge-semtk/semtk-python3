@@ -205,9 +205,15 @@ def build_connection_str(
         dg = data_graph[0]
     else:
         dg = data_graph
+        
+    # same for model_graphs
+    if isinstance(model_graphs, str):
+        mg_list = [model_graphs]
+    else:
+        mg_list = model_graphs
 
     conn = sparqlconnection.SparqlConnection()
-    conn.build(name, triple_store_type, triple_store_url, model_graphs, dg, extra_data_graphs)
+    conn.build(name, triple_store_type, triple_store_url, mg_list, dg, extra_data_graphs)
     return conn.to_conn_str()
 
 def build_default_connection_str(name, triple_store_type, triple_store_url):
@@ -670,7 +676,7 @@ def download_owl(owl_file_path, conn_json_str, user_name="noone", password="nopa
     :return: None - raises exception on error
     '''
     query_client = __get_query_client(conn_json_str, user_name, password)
-    query_client.exec_download_owl(owl_file_path, model_or_data, conn_index)
+    query_client.exec_download_owl_file(owl_file_path, model_or_data, conn_index)
 
 def upload_turtle(ttl_file_path, conn_json_str, user_name, password, model_or_data=SEMTK3_CONN_MODEL, conn_index=0):
     '''
@@ -1149,13 +1155,21 @@ def override_hosts(query_host=None, status_host=None, results_host=None, hive_ho
 def query_hive(hiveserver_host, hiveserver_port, hiveserver_database, query):
     raise Exception("Hive is no longer supported")
 
-#def load_ingestion_package(ingestion_package_path):
+def load_ingestion_package(triple_store_url:str, triple_store_type:str, ingestion_package_path:str, clear:bool, default_model_graph:str, default_data_graph:str):
     '''
     Load an ingestion package
+    :param triple_store_url: the URL e.g. "http://localhost:3030/DATASET"
+    :param triple_store_type: "fuseki" "neptune" "virtuoso", etc.
     :param ingestion_package_path: path to an ingestion package (zip file) containing manifest and contents to load
+    :param clear: if true, clears the footprint graphs (before loading)
+    :param default_model_graph: model graph to use if not otherwise specified
+    :param default_data_graph: data graph to use if not otherwise specified
     '''
-#    return __get_utility_client().exec_load_ingestion_package(ingestion_package_path)
+    return __get_utility_client().exec_load_ingestion_package(triple_store_url, triple_store_type, ingestion_package_path, clear, default_model_graph, default_data_graph)
 
+
+
+    
 ##############################
 def __get_fdc_cache_client():
     status_client = statusclient.StatusClient(__build_client_url(STATUS_HOST, STATUS_PORT))
