@@ -678,9 +678,9 @@ def download_owl(owl_file_path, conn_json_str, user_name="noone", password="nopa
     query_client = __get_query_client(conn_json_str, user_name, password)
     query_client.exec_download_owl_file(owl_file_path, model_or_data, conn_index)
 
-def upload_turtle(ttl_file_path, conn_json_str, user_name, password, model_or_data=SEMTK3_CONN_MODEL, conn_index=0):
+def upload_turtle(ttl_file_path, conn_json_str, user_name="noone", password="nopass", model_or_data=SEMTK3_CONN_MODEL, conn_index=0):
     '''
-    Upload an turtle file
+    Upload a turtle file
 
     :param ttl_file_path: path to the file
     :param conn_json_str: connection json string
