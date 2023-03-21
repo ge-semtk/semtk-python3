@@ -15,18 +15,29 @@
 # limitations under the License.
 #
 from . import plotspecs
+from . import sparqlconnection
+import json
 
 #
 # Encapsulate the JSON format of a nodegroup
 #
 class SparqlGraphJson:
         
-    def __init__(self, json):
-        self.json = json
-        if "plotSpecs" in json:
-            self.plot_specs = plotspecs.PlotSpecs(json["plotSpecs"])
-        else:
-            self.plot_specs = plotspecs.PlotSpecs([])            
+    def __init__(self, json_str):
+        if isinstance(json_str, str):
+            self.json = json.loads(json_str)
+        elif isinstance(json_str, dict):
+            # backwards compatibility
+            self.json = json_str 
    
     def get_plot_specs(self):
-        return self.plot_specs
+        if "plotSpecs" in self.json:
+            self.plot_specs = plotspecs.PlotSpecs(self.json["plotSpecs"])
+        else:
+            self.plot_specs = plotspecs.PlotSpecs([])     
+    
+    def get_conn(self):
+        if "sparqlConn" in self.json:
+            return sparqlconnection.SparqlConnection(json.dumps(self.json["sparqlConn"]))
+        else:
+            return sparqlconnection.SparqlConnection()
