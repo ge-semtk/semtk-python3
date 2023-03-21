@@ -645,6 +645,15 @@ class TestSemtk3(unittest.TestCase):
         
         # reset the default graph for other tests
         semtk3.set_connection_override(TestSemtk3.conn_str)
+
+    def test_upload_turtle(self):
+        self.clear_graph()
+        with importlib.resources.path(TestSemtk3.PACKAGE, "musicTestDataset_2017.q2.ttl") as ttl_path:
+            semtk3.upload_turtle(ttl_path, TestSemtk3.conn_str, model_or_data=semtk3.SEMTK3_CONN_DATA, conn_index=0)  # upload turtle file
+        # confirm it uploaded
+        graph_counts = semtk3.get_graph_info(TestSemtk3.conn_str, True, False)
+        graph_name = sparqlconnection.SparqlConnection(TestSemtk3.conn_str).get_graph("data", 0)
+        self.assertTrue(any('215' in sublist for sublist in graph_counts.get_matching_rows("graph", "^" + graph_name + "$")), "Uploaded turtle but do not see the expected number of triples")
         
     def test_get_instance_dict(self):
         # load a fresh graph
@@ -759,8 +768,9 @@ class TestSemtk3(unittest.TestCase):
             with semtk3.load_ingestion_package(triple_store_url, triple_store_type, str(ingestion_package_path), True, default_model_graph, default_data_graph) as response:
                 response_str = ""
                 for line in response.iter_lines():
+
                     response_str += str(line.decode())
-                self.assertTrue(response_str.endswith("Load complete"))
+                self.assertTrue(response_str.endswith("INFO: Load complete"))
 
         # confirm fails when send a file in a format other than zip
         with importlib.resources.path(TestSemtk3.PACKAGE, "EntityResolution.owl") as ingestion_package_path:
@@ -768,7 +778,7 @@ class TestSemtk3(unittest.TestCase):
                 response_str = ""
                 for line in response.iter_lines():
                     response_str += str(line.decode())
-                self.assertTrue(response_str == "Error: This endpoint only accepts ingestion packages in zip file format")
+                self.assertTrue(response_str == "ERROR: This endpoint only accepts ingestion packages in zip file format")
 
 if __name__ == '__main__':
     unittest.main()
