@@ -31,7 +31,7 @@ filelock==3.0.12
 Flask==1.1.2
 Flask-Compress==1.9.0
 Flask-RESTful==0.3.9
-future==0.18.2
+future==0.18.3
 globus-nexus-client==0.3.0
 globus-sdk==2.0.1
 idna==2.10
