@@ -77,6 +77,7 @@ RESULT_TYPE_GRAPH_JSONLD = semtkasyncclient.RESULT_TYPE_GRAPH_JSONLD
 RESULT_TYPE_CONFIRM = semtkasyncclient.RESULT_TYPE_CONFIRM
 RESULT_TYPE_RDF = semtkasyncclient.RESULT_TYPE_RDF
 RESULT_TYPE_HTML = semtkasyncclient.RESULT_TYPE_HTML
+RESULT_TYPE_N_TRIPLES = semtkasyncclient.RESULT_TYPE_N_TRIPLES
 
 STORE_ITEM_TYPE_NODEGROUP = "PrefabNodeGroup"
 STORE_ITEM_TYPE_REPORT = "Report"
@@ -296,19 +297,97 @@ def check_services():
 
     return b1 and b2 and b3 and b4 and b5 and b6 and b7 and b8 and b9
 
+def extract_count(query_results):
+    '''
+    @return integer count from QUERY_TYPE_COUNT query results
+    '''
+    if query_results.get_column_names()[0] == "count":
+        return query_results.get_cell_as_int(0,0)
+    else:
+        raise Exception("Can't find count in query results")
+
+def extract_message(query_results):
+    '''
+    @return string message from QUERY_TYPE_DELETE or RESULT_TYPE_CONFIRM query results
+    '''
+    if query_results.get_column_names()[0] == "@message":
+        return query_results.get_cell_as_string(0,0)
+    else:
+        raise Exception("Can't find message in query results")
+    
+def extract_results(query_results, result_type=None):
+    '''
+    Extract results based on the result_type
+        RESULT_TYPE_TABLE - semtktable
+        RESULT_TYPE_CONFIRM - string message
+        RESULT_TYPE_GRAPH_JSONLD - json array
+        RESULT_TYPE_N_TRIPLES - array of triples
+        RESULT_TYPE_RDF - string of rdf
+    
+    @return json or string or table
+    '''
+    if result_type == RESULT_TYPE_TABLE:  
+        if not isinstance(query_results, semtktable.SemtkTable):
+            raise Exception("Can't extract table from non-table results")
+        return query_results 
+    
+    elif result_type == RESULT_TYPE_CONFIRM:
+        if not isinstance(query_results, semtktable.SemtkTable):
+            raise Exception("Can't extract message from non-table results")
+        return extract_message(query_results) if query_results else ""
+    
+    elif isinstance(query_results, semtktable.SemtkTable):
+        raise Exception("Can't extract from table results: ", result_type)
+    
+    elif result_type == RESULT_TYPE_GRAPH_JSONLD:
+        if query_results == {}:
+            return []
+        elif "@graph" in query_results:
+            return query_results["@graph"]
+        else:
+            raise Exception("Can't extract json-ld @graph from results")
+        
+    elif result_type == RESULT_TYPE_N_TRIPLES: 
+        if query_results == {}:
+            return []
+        
+        elif "N_TRIPLES" in query_results:
+            triples = []
+            for line in re.split("\. *[\n\r]+", query_results["N_TRIPLES"]):
+                f = line.strip().split(" ")
+                if len(f) > 2:
+                    triples.append( [ f[0], f[1], " ".join(f[2:]) ] )
+                elif len(f) != 1 or len(f[0]) != 0:
+                    raise Exception("Can't parse triple: " + line)
+            return triples
+        else:
+            raise Exception("Can't extract n-triples from results")   
+    
+    elif result_type == RESULT_TYPE_RDF:
+        if query_results == {}:
+            return ""
+        elif ["RDF"] in query_results:
+            return query_results["RDF"] 
+        else:
+            raise Exception("Can't extract RDF from results") 
+    else:
+        raise Exception("Unknown result_type: " + result_type)
+    
 def query_by_id(nodegroup_id, limit_override=0, offset_override=0, runtime_constraints=None, edc_constraints=None, flags=None, query_type=None, result_type=None):
     '''
     Execute the default query type for a given nodegroup id
-
+    
     Check results for type(result) is
 
-        dict - json ld results
+        dict - json results will contain one of:
+            dict["@graph"]
+            dict["N_TRIPLES"]
+            dict["RDF"]
 
         semtk3.semtktable.SemtkTable
-
-            A count query will be a SemtkTable with column name "count"
-
-            A confirm query will be a SemtkTable with column name "@message"
+            Select query returns table with all the selected values
+            A count query has a single row with column name "count"
+            A confirm query has a single row column column name "@message"
 
     :param nodegroup_id: id of nodegroup in the store
     :param limit_override: optional override of LIMIT clause
@@ -317,7 +396,7 @@ def query_by_id(nodegroup_id, limit_override=0, offset_override=0, runtime_const
     :param edc_constraints: optional edc constraints
     :param flags: optional query flags
     :return: results: dict or semtk3.semtktable.SemtkTable
-    :rtype: semtktable or JSON
+    :rtype: semtktable or JSON - see extract_*() functions
     '''
     nge_client = __get_nge_client()
 
@@ -343,7 +422,7 @@ def query_by_nodegroup(nodegroup_str, runtime_constraints=None, edc_constraints=
     :param edc_constraints: optional edc constraints
     :param flags: optional query flags
     :return: results: dict or semtk3.semtktable.SemtkTable
-    :rtype: semtktable or JSON
+    :rtype: semtktable or JSON - see extract_*() functions
     '''
     nge_client = __get_nge_client()
 

@@ -121,7 +121,10 @@ class NodegroupExecClient(semtkasyncclient.SemTkAsyncClient):
     def __get_result_type_based_result(self, simple_res, jobid):
         result_type = self.get_simple_field(simple_res, self.RESULT_TYPE_KEY)
         
-        if (result_type == "GRAPH_JSONLD"):
+        if result_type == semtkasyncclient.RESULT_TYPE_GRAPH_JSONLD or \
+            result_type == semtkasyncclient.RESULT_TYPE_RDF or \
+            result_type == semtkasyncclient.RESULT_TYPE_N_TRIPLES :
+            
             return self.post_get_json_blob_results(jobid);
         else:
             return self.post_get_table_results(jobid);
