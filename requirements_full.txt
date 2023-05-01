@@ -28,7 +28,7 @@ emit==0.4.0
 entrypoints==0.3
 fair-research-login==0.2.0
 filelock==3.0.12
-Flask==1.1.2
+Flask==2.3.2
 Flask-Compress==1.9.0
 Flask-RESTful==0.3.9
 future==0.18.2
