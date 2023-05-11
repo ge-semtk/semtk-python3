@@ -30,10 +30,21 @@ def main(command_line=None):
     add_sei_args(subparser_clear)
     
     # download
-    subparser_clear = subparsers.add_parser("download")
-    subparser_clear.add_argument("format", choices=["owl"])
-    add_sei_args(subparser_clear)
+    subparser_download = subparsers.add_parser("download")
+    subparser_download.add_argument("format", choices=["owl"])
+    add_sei_args(subparser_download)
     
+    # store
+    subparser_store = subparsers.add_parser("store")
+    subparser_store.add_argument("semtk_host")
+    subparser_store.add_argument("folder")
+    
+    # retrieve
+    subparser_retrieve = subparsers.add_parser("retrieve")
+    subparser_retrieve.add_argument("semtk_host")
+    subparser_retrieve.add_argument("regex")
+    subparser_retrieve.add_argument("folder")
+
     args = parser.parse_args(command_line)
 
     if args.command == "import":
@@ -51,6 +62,14 @@ def main(command_line=None):
         if args.format == "owl":
             semtk3.download_owl
         semtk3.download_owl(None, get_conn_str(args), "", "", "model", 0)
+        
+    elif args.command == "store":
+        semtk3.set_host(args.semtk_host)
+        semtk3.store_folder(args.folder)
+    
+    elif args.command == "retrieve":
+        semtk3.set_host(args.semtk_host)
+        semtk3.retrieve_from_store(args.regex, args.folder)
         
 if __name__ == '__main__':
     main() 

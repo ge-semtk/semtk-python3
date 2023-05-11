@@ -155,7 +155,7 @@ class SemTkClient(restclient.RestClient):
         ''' 
             returns records processed successfully
             raises RestException unless failuresEncountered = 0
-        '''
+s        '''
         content = self.post(endpoint, dataObj=dataObj, files=files)
         content = json.loads(content.decode("utf-8", errors='ignore'))
 
