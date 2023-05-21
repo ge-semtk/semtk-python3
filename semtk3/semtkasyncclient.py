@@ -151,17 +151,23 @@ class SemTkAsyncClient(semtkclient.SemTkClient):
         try:
             self.poll_until_success(jobid)
             return self.post_get_status_message(jobid), warningText
-        except:
+        except Exception as e1:
             # failure occurred in ingestion:  tack on the error table
-            msg = ""
+            ingest_err_msg = repr(e1)
+            
+            table = None
             try:
-                msg = self.post_get_status_message(jobid)
-                msg += "\n"
+                # try to get table of errors
+                table = self.post_get_table_results(jobid)
             except:
-                msg = ""
-                
-            table = self.post_get_table_results(jobid)
-            raise Exception(msg + warningText + "Failures encountered:\n" + table.get_csv_string()) from None
+                # if it was really bad, getting table caused more problems.
+                # so, just give the original
+                raise Exception(ingest_err_msg)
+            
+            # if getting an error table worked, then raise that  
+            raise Exception(ingest_err_msg + "\n" + warningText + "Failures encountered:\n" + table.get_csv_string()) from None
+            
+               
          
     def post_async_to_status(self, endpoint, dataObj={}):
         ''' 

@@ -15,7 +15,6 @@
 # limitations under the License.
 #
 import json
-import sys
 import logging
 from . import restclient
 from . import semtktable
@@ -75,7 +74,12 @@ class SemTkClient(restclient.RestClient):
             
             self.raise_exception("Rest service did not record process results")
     
-    
+    def _load_json(self, content):
+        try:
+            return json.loads(content.decode("utf-8", errors='ignore'))
+        except:
+            raise Exception(content.decode("utf-8", errors='ignore')[0:500])
+        
     def get_simple_field(self, simple_res, field):
         ''' get a simple field with REST error handling
         '''
@@ -124,7 +128,7 @@ class SemTkClient(restclient.RestClient):
                            which can be used as a regular dict, or with error-handling get_simple_field*() methods
         '''
         content = self.post(endpoint, dataObj=dataObj, files=files)
-        content = json.loads(content.decode("utf-8", errors='ignore'))
+        content = self._load_json(content)
         self._check_status(content)
         return content
         
@@ -134,7 +138,7 @@ class SemTkClient(restclient.RestClient):
                            which can be used as a regular dict, or with error-handling get_simple_field*() methods
         '''
         content = self.post(endpoint, dataObj=dataObj, files=files)
-        content = json.loads(content.decode("utf-8", errors='ignore'))
+        content = self._load_json(content)
         self._check_simple(content)
         return content["simpleresults"]
     
@@ -144,7 +148,7 @@ class SemTkClient(restclient.RestClient):
             raises RestException
         '''
         content = self.post(endpoint, dataObj)
-        content = json.loads(content.decode("utf-8", errors='ignore'))
+        content = self._load_json(content)
 
         self._check_table(content)
         
@@ -157,7 +161,7 @@ class SemTkClient(restclient.RestClient):
             raises RestException unless failuresEncountered = 0
 s        '''
         content = self.post(endpoint, dataObj=dataObj, files=files)
-        content = json.loads(content.decode("utf-8", errors='ignore'))
+        content = self._load_json(content)
 
         # throw exception if no recordProcessResults
         self._check_record_process(content)
