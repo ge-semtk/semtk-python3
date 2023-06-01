@@ -69,7 +69,7 @@ def main(command_line=None):
     
     elif args.command == "retrieve":
         semtk3.set_host(args.semtk_host)
-        semtk3.retrieve_from_store(args.regex, args.folder)
+        semtk3.retrieve_nodegroups_from_store(args.regex, args.folder)
         
 if __name__ == '__main__':
     main() 
