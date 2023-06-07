@@ -21,26 +21,26 @@ def main(command_line=None):
     subparsers = parser.add_subparsers(dest='command')
 
     # import
-    subparser_import = subparsers.add_parser("import")
+    subparser_import = subparsers.add_parser("import", help="upload owl or ttl to a graph")
     add_sei_args(subparser_import)
     subparser_import.add_argument("owl_or_ttl_file")
     
     # clear
-    subparser_clear = subparsers.add_parser("clear")
+    subparser_clear = subparsers.add_parser("clear", help="clear a graph")
     add_sei_args(subparser_clear)
     
     # download
-    subparser_download = subparsers.add_parser("download")
+    subparser_download = subparsers.add_parser("download", help="download entire graph to local file")
     subparser_download.add_argument("format", choices=["owl"])
     add_sei_args(subparser_download)
     
     # store
-    subparser_store = subparsers.add_parser("store")
+    subparser_store = subparsers.add_parser("store", help="add a folder of store items to the store")
     subparser_store.add_argument("semtk_host")
     subparser_store.add_argument("folder")
     
     # retrieve
-    subparser_retrieve = subparsers.add_parser("retrieve")
+    subparser_retrieve = subparsers.add_parser("retrieve", help="retrieve matching items from the store to local folder")
     subparser_retrieve.add_argument("semtk_host")
     subparser_retrieve.add_argument("regex")
     subparser_retrieve.add_argument("folder")
@@ -69,7 +69,7 @@ def main(command_line=None):
     
     elif args.command == "retrieve":
         semtk3.set_host(args.semtk_host)
-        semtk3.retrieve_nodegroups_from_store(args.regex, args.folder)
+        semtk3.retrieve_items_from_store(args.regex, args.folder)
         
 if __name__ == '__main__':
     main() 
