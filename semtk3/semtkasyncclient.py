@@ -16,6 +16,7 @@
 #
 from . import semtkclient
 import logging
+import sys
 
 
 semtk3_logger = logging.getLogger("semtk3")
@@ -115,14 +116,14 @@ class SemTkAsyncClient(semtkclient.SemTkClient):
     #
     # Use async jobID and results/status to get table
     #
-    def post_async_to_table(self, endpoint, dataObj={}):
+    def post_async_to_table(self, endpoint, dataObj={}, log_status_info=False):
         ''' 
             returns SemTkTable
             raises errors otherwise
         '''
         jobid = self.post_to_jobid(endpoint, dataObj)
         semtk3_logger.debug("jobid:  " + jobid)
-        self.poll_until_success(jobid)
+        self.poll_until_success(jobid, log_status_info)
         table = self.post_get_table_results(jobid)
         return table
     
@@ -169,7 +170,7 @@ class SemTkAsyncClient(semtkclient.SemTkClient):
             
                
          
-    def post_async_to_status(self, endpoint, dataObj={}):
+    def post_async_to_status(self, endpoint, dataObj={}, log_status_info=False):
         ''' 
         
             returns success message
@@ -178,39 +179,44 @@ class SemTkAsyncClient(semtkclient.SemTkClient):
         jobid = self.post_to_jobid(endpoint, dataObj)
         semtk3_logger.debug("jobid:  " + jobid)
         
-        self.poll_until_success(jobid)
+        self.poll_until_success(jobid, log_status_info)
         return self.post_get_status_message(jobid)
          
       
-    def poll_until_success(self, jobid):
+    def poll_until_success(self, jobid, log_status_info=False):
         ''' poll for percent complete and return if SUCCESS
             raises RestException including if status="failure"
             
             returns void
         '''
         
-        
-        percent_complete = self.post_wait_for_percent_or_msec(jobid, SemTkAsyncClient.PERCENT_INCREMENT, SemTkAsyncClient.WAIT_MSEC)
+        # get initial percent
+        percent_complete = self.post_wait_for_percent_or_msec(jobid, 0, 0)
         semtk3_logger.info("Percent complete:  " + str(percent_complete) + "%")
 
         # loop on percent complete calls
         while percent_complete < 100:
-            percent_complete += SemTkAsyncClient.PERCENT_INCREMENT
-            if percent_complete > 100:
-                percent_complete = 100
             
-            percent_complete = self.post_wait_for_percent_or_msec(jobid, percent_complete, SemTkAsyncClient.WAIT_MSEC)
-            semtk3_logger.info("Percent complete:  " + str(percent_complete) + "%")
+            # poll
+            percent_complete = self.post_wait_for_percent_or_msec(jobid, percent_complete + 1, SemTkAsyncClient.WAIT_MSEC)
+            msg = self.post_get_status_message(jobid) if log_status_info else None
+            
+            # print
+            if msg != None:
+                print(str(percent_complete) + "%  : " + msg, flush=True, file=sys.stderr)
+            else:
+                semtk3_logger.info("Percent complete:  " + str(percent_complete) + "%")
+                
             if SemTkAsyncClient.PRINT_DOTS:
                 print('.', end='')
                 
         if SemTkAsyncClient.PRINT_DOTS:
                 print(' ')
                     
-        # throw exception on job failure
+        # 100% : check for success/failure
         if not self.post_get_status_boolean(jobid):
             msg = self.post_get_status_message(jobid)
-            self.raise_exception("Job " + jobid + " failed: " + msg)
+            raise Exception("Job " + jobid + " failed: " + msg)
         else:
             semtk3_logger.debug("SUCCESS")
             

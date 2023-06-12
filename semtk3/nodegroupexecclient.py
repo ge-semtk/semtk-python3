@@ -15,6 +15,8 @@
 # limitations under the License.
 #
 from . import semtkasyncclient
+from . import stitchingstep
+from typing import List
 
 class NodegroupExecClient(semtkasyncclient.SemTkAsyncClient):
     USE_NODEGROUP_CONN = "{\"name\": \"%NODEGROUP%\",\"domain\": \"%NODEGROUP%\",\"model\": [],\"data\": []}"
@@ -274,5 +276,15 @@ class NodegroupExecClient(semtkasyncclient.SemTkAsyncClient):
         
         # error unless res is success info
         status = self.post_async_to_status("copyGraph", payload)
+    
+        return status
+    
+    def exec_dispatch_stitched_nodegroups(self, step_array : List[stitchingstep.StitchingStep], conn_json_str="NODEGROUP_DEFAULT"):
+        payload = {}
+        payload["steps"] = "[" + ",".join([s.to_json_str() for s in step_array]) + "]"
+        payload["sparqlConnection"] = conn_json_str
+        
+        # handle async throwing error if not successful: log status messages to info
+        status = self.post_async_to_table("dispatchStitchedNodegroups", payload, True)
     
         return status

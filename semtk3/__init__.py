@@ -40,7 +40,10 @@ from . import sparqlconnection
 from . import semtkasyncclient
 from . import semtktable
 from . import sparqlgraphjson
+from . import stitchingstep
 from . import predicatestats
+
+from typing import List
 
 import csv
 import json
@@ -50,7 +53,6 @@ import sys
 import logging
 import plotly
 import requests
-from typing import List
 import urllib
 
 from semtk3.oinfoclient import OInfoClient
@@ -59,7 +61,7 @@ from semtk3.semtktable import SemtkTable
 
 # pip install requests
 
-SEMTK3_CONN_OVERRIDE=None
+SEMTK3_CONN_OVERRIDE=None    # back-end should change to: '{"name":"%NODEGROUP%","domain":"%NODEGROUP%","model":[],"data":[]}'
 
 SEMTK3_CONN_MODEL = sparqlconnection.SparqlConnection.MODEL
 SEMTK3_CONN_DATA = sparqlconnection.SparqlConnection.DATA
@@ -1050,6 +1052,27 @@ def retrieve_reports_from_store(regex_str, folder_path):
                         _write_item_file(ng_id, item_type, ng_json_str, folder_path)
                         _add_to_store_data_csv(store_writer, ng_id, comments, creator, item_type)
 
+def run_fdc_cache_spec(spec_id, conn_json_str):
+    '''
+    run an fdc cache spec
+
+    :param spec_id: name of the spec
+    :param conn_json_str: graph to ingest the results
+
+    :return a status message of success, otherwise throws an error
+    '''
+    return __get_fdc_cache_client().exec_run_fdc_spec(spec_id, conn_json_str)
+
+def dispatch_stitched_nodegroups(step_array : List[stitchingstep.StitchingStep], conn_json_str=None):
+    '''
+    run a list of nodegroups and stitch together the results into one table
+
+    :param step_array : a list of StitchingSteps
+    :param conn_json_str: optional override when running nodegroups by id
+
+    '''
+    return __get_nge_client().exec_dispatch_stitched_nodegroups(step_array, conn_json_str if conn_json_str else SEMTK3_CONN_OVERRIDE)
+    
 def _init_store_data_csv(f):
     store_writer = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL,lineterminator='\n')
     headers = ['ID', 'comments', 'creator', 'jsonFile', 'itemType']

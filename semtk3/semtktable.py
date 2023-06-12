@@ -167,11 +167,10 @@ class SemtkTable():
     
         si = io.StringIO()
         cw = csv.writer(si)
-        
-        cw.writerow(self.get_column_names())
+        cw.writerow([ str(s) for s in self.get_column_names() ])
         
         for row in range(self.get_num_rows()):
-            cw.writerow(self.dict[JSON_KEY_ROWS][row])
+            cw.writerow([ str(s) for s in self.dict[JSON_KEY_ROWS][row] ])
 
         return re.sub("[\r\n]+", "\n", si.getvalue())  # ghetto improper use of io.StringIO
     

@@ -1,6 +1,8 @@
 import semtk3
 import sys
 import argparse
+import json
+from semtk3 import stitchingstep
 
 #https://stackoverflow.com/questions/17909294/python-argparse-mutual-exclusive-group
 
@@ -14,6 +16,10 @@ def add_sei_args(parser):
 def get_conn_str(args):
     conn_str = semtk3.build_connection_str("temp", args.triplestore_type, args.triplestore_url, [args.graph], args.graph, [])
     return conn_str
+
+def file_to_string(filename):
+    with open(filename, "r") as file:
+        return file.read()
     
 def main(command_line=None):
 
@@ -44,6 +50,24 @@ def main(command_line=None):
     subparser_retrieve.add_argument("semtk_host")
     subparser_retrieve.add_argument("regex")
     subparser_retrieve.add_argument("folder")
+    
+    # stitch
+    subparser_stitch = subparsers.add_parser("stitch", help="run multiple nodegroups, stitching results")
+    subparser_stitch.add_argument("semtk_host")
+    subparser_stitch.add_argument("stitch_file", help='[{"nodegroupId": "name1"}, {"nodegroupId": "name2", "keyColumns": ["id"]')
+    subparser_stitch.add_argument("-c", "--conn", required=False, help='connection file')
+    
+    # fdc_cache
+    subparser_fdc_cache = subparsers.add_parser("fdc_cache", help="run an fdc cache spec")
+    subparser_fdc_cache.add_argument("semtk_host")
+    subparser_fdc_cache.add_argument("spec_id")
+    subparser_fdc_cache.add_argument("conn_file", help='connection file')
+    
+    # query
+    subparser_query = subparsers.add_parser("query", help="run query by nodegroup id to table csv")
+    subparser_query.add_argument("semtk_host")
+    subparser_query.add_argument("nodegroup_id")
+    subparser_query.add_argument("-c", "--conn", required=False, help='connection file')
 
     args = parser.parse_args(command_line)
 
@@ -70,6 +94,31 @@ def main(command_line=None):
     elif args.command == "retrieve":
         semtk3.set_host(args.semtk_host)
         semtk3.retrieve_items_from_store(args.regex, args.folder)
+        
+    elif args.command == "stitch":
+        semtk3.set_host(args.semtk_host)
+        
+        steps_json_array = json.loads(file_to_string(args.stitch_file))
+        step_array = [stitchingstep.StitchingStep(x["nodegroupId"], x["keyColumns"] if "keyColumns" in x else None) for x in steps_json_array]
+        
+        conn_json_str = file_to_string(args.conn) if args.conn is not None else "NODEGROUP_DEFAULT"
+        
+        print(semtk3.dispatch_stitched_nodegroups(step_array, conn_json_str)
+                .get_csv_string().encode('cp850', errors='replace').decode('cp850'))                         #  handle the wonkiest of non-ascii non-utf8 chars
+        
+    elif args.command == "query":
+        semtk3.set_host(args.semtk_host)
+        
+        if args.conn is not None: 
+            semtk3.set_connection_override(file_to_string(args.conn))
+        
+        print(semtk3.query_by_id(args.nodegroup_id, 0, 0, None, None, None, semtk3.QUERY_TYPE_SELECT_DISTINCT, semtk3.RESULT_TYPE_TABLE)
+                .get_csv_string().encode('cp850', errors='replace').decode('cp850'))                         #  handle the wonkiest of non-ascii non-utf8 chars
+        
+    elif args.command == "fdc_cache":
+        semtk3.set_host(args.semtk_host)
+        
+        print(semtk3.run_fdc_cache_spec(args.spec_id, file_to_string(args.conn_file)))
         
 if __name__ == '__main__':
     main() 

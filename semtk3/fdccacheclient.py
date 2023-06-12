@@ -41,3 +41,14 @@ class FdcCacheClient(semtkasyncclient.SemTkAsyncClient):
         job_id = self.post_to_jobid("cacheUsingTableBootstrap", payload)
         self.poll_until_success(job_id)
         return
+    
+        
+    def exec_run_fdc_spec(self, spec_id, conn_json_str):
+        payload = {}
+        payload["specId"] = spec_id
+        payload["conn"] = conn_json_str
+       
+        # handle async throwing error if not successful: log status messages to info
+        status = self.post_async_to_status("runFdcSpec", payload, True)
+    
+        return status
