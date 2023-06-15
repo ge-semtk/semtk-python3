@@ -12,6 +12,19 @@ def add_sei_args(parser):
     parser.add_argument("triplestore_url")
     parser.add_argument("graph")
     
+def add_semtk_host_arg(parser : argparse.ArgumentParser, required : bool):
+    
+    if required:
+        parser.add_argument("semtk_host", type=str, help='Machine URL hosting semtk services')
+    else:
+        parser.add_argument("-s", "--semtk-host", required=False, type=str, default="http://localhost", help='Machine URL hosting semtk services (default: http://localhost)')
+
+def add_conn_file_arg(parser : argparse.ArgumentParser, required : bool):
+    if required:
+        parser.add_argument("conn_file", type=str, help="File containing connection JSON")
+    else:
+        parser.add_argument("-c", "--conn-file", required=False, type=str, default=None, help="File containing connection JSON")
+
 # put the sei_args into a conn_str as data[0] and model[0]
 def get_conn_str(args):
     conn_str = semtk3.build_connection_str("temp", args.triplestore_type, args.triplestore_url, [args.graph], args.graph, [])
@@ -22,7 +35,7 @@ def file_to_string(filename):
         return file.read()
     
 def main(command_line=None):
-
+    
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(dest='command')
 
@@ -30,44 +43,49 @@ def main(command_line=None):
     subparser_import = subparsers.add_parser("import", help="upload owl or ttl to a graph")
     add_sei_args(subparser_import)
     subparser_import.add_argument("owl_or_ttl_file")
+    add_semtk_host_arg(subparser_import, required=False)
     
     # clear
     subparser_clear = subparsers.add_parser("clear", help="clear a graph")
     add_sei_args(subparser_clear)
+    add_semtk_host_arg(subparser_clear, required=False)
+
     
     # download
     subparser_download = subparsers.add_parser("download", help="download entire graph to local file")
     subparser_download.add_argument("format", choices=["owl"])
     add_sei_args(subparser_download)
+    add_semtk_host_arg(subparser_download, required=False)
+
     
     # store
     subparser_store = subparsers.add_parser("store", help="add a folder of store items to the store")
-    subparser_store.add_argument("semtk_host")
+    add_semtk_host_arg(subparser_store, required=False)
     subparser_store.add_argument("folder")
     
     # retrieve
     subparser_retrieve = subparsers.add_parser("retrieve", help="retrieve matching items from the store to local folder")
-    subparser_retrieve.add_argument("semtk_host")
+    add_semtk_host_arg(subparser_retrieve, required=False)
     subparser_retrieve.add_argument("regex")
     subparser_retrieve.add_argument("folder")
     
     # stitch
     subparser_stitch = subparsers.add_parser("stitch", help="run multiple nodegroups, stitching results")
-    subparser_stitch.add_argument("semtk_host")
+    add_semtk_host_arg(subparser_stitch, required=False)
     subparser_stitch.add_argument("stitch_file", help='[{"nodegroupId": "name1"}, {"nodegroupId": "name2", "keyColumns": ["id"]')
-    subparser_stitch.add_argument("-c", "--conn", required=False, help='connection file')
+    add_conn_file_arg(subparser_stitch, required=False)
     
     # fdc_cache
     subparser_fdc_cache = subparsers.add_parser("fdc_cache", help="run an fdc cache spec")
-    subparser_fdc_cache.add_argument("semtk_host")
+    add_semtk_host_arg(subparser_fdc_cache, required=False)
     subparser_fdc_cache.add_argument("spec_id")
-    subparser_fdc_cache.add_argument("conn_file", help='connection file')
+    add_conn_file_arg(subparser_fdc_cache, required=False)
     
     # query
     subparser_query = subparsers.add_parser("query", help="run query by nodegroup id to table csv")
-    subparser_query.add_argument("semtk_host")
+    add_semtk_host_arg(subparser_query, required=False)
     subparser_query.add_argument("nodegroup_id")
-    subparser_query.add_argument("-c", "--conn", required=False, help='connection file')
+    add_conn_file_arg(subparser_query, required=False)
 
     args = parser.parse_args(command_line)
 
@@ -101,7 +119,7 @@ def main(command_line=None):
         steps_json_array = json.loads(file_to_string(args.stitch_file))
         step_array = [stitchingstep.StitchingStep(x["nodegroupId"], x["keyColumns"] if "keyColumns" in x else None) for x in steps_json_array]
         
-        conn_json_str = file_to_string(args.conn) if args.conn is not None else "NODEGROUP_DEFAULT"
+        conn_json_str = file_to_string(args.conn_file) if args.conn_file is not None else "NODEGROUP_DEFAULT"
         
         print(semtk3.dispatch_stitched_nodegroups(step_array, conn_json_str)
                 .get_csv_string().encode('cp850', errors='replace').decode('cp850'))                         #  handle the wonkiest of non-ascii non-utf8 chars
@@ -109,8 +127,8 @@ def main(command_line=None):
     elif args.command == "query":
         semtk3.set_host(args.semtk_host)
         
-        if args.conn is not None: 
-            semtk3.set_connection_override(file_to_string(args.conn))
+        if args.conn_file is not None: 
+            semtk3.set_connection_override(file_to_string(args.conn_file))
         
         print(semtk3.query_by_id(args.nodegroup_id, 0, 0, None, None, None, semtk3.QUERY_TYPE_SELECT_DISTINCT, semtk3.RESULT_TYPE_TABLE)
                 .get_csv_string().encode('cp850', errors='replace').decode('cp850'))                         #  handle the wonkiest of non-ascii non-utf8 chars
