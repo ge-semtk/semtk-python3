@@ -16,11 +16,11 @@ def add_sei_args(parser):
 def add_semtk_host_arg(parser : argparse.ArgumentParser):
     parser.add_argument("-s", "--semtk-host", required=False, type=str, default="http://localhost", help='Machine URL hosting semtk services (default: http://localhost)')
 
-def add_conn_file_arg(parser : argparse.ArgumentParser, required : bool, help : str):
+def add_conn_file_arg(parser : argparse.ArgumentParser, required : bool, help_str : str):
     if required:
-        parser.add_argument("conn_file", type=str, help="File containing connection JSON")
+        parser.add_argument("conn_file", type=str, help=help_str)
     else:
-        parser.add_argument("-c", "--conn-file", required=False, type=str, default=None, help=help)
+        parser.add_argument("-c", "--conn-file", required=False, type=str, default=None, help=help_str)
 
 # put the sei_args into a conn_str as data[0] and model[0]
 def get_conn_str(args):
@@ -70,19 +70,19 @@ def main(command_line=None):
     subparser_stitch = subparsers.add_parser("stitch", help="run multiple nodegroups, stitching results")
     add_semtk_host_arg(subparser_stitch)
     subparser_stitch.add_argument("stitch_file", help='[{"nodegroupId": "name1"}, {"nodegroupId": "name2", "keyColumns": ["id"]')
-    add_conn_file_arg(subparser_stitch, required=False, help="connection json file used as nodegroup override")
+    add_conn_file_arg(subparser_stitch, required=False, help_str="connection json file used as nodegroup override")
     
     # fdc_cache
     subparser_fdc_cache = subparsers.add_parser("fdc_cache", help="run an fdc cache spec")
     add_semtk_host_arg(subparser_fdc_cache)
     subparser_fdc_cache.add_argument("spec_id")
-    add_conn_file_arg(subparser_fdc_cache, required=False, help="connection json file used as nodegroup override and data[0] gets results")
+    add_conn_file_arg(subparser_fdc_cache, required=True, help_str="connection json file used as nodegroup override and data[0] gets results")
     
     # query
     subparser_query = subparsers.add_parser("query", help="run query by nodegroup id to table csv")
     subparser_query.add_argument("nodegroup_id")
     add_semtk_host_arg(subparser_query)
-    add_conn_file_arg(subparser_query, required=False, help="connection json file used as nodegroup override")
+    add_conn_file_arg(subparser_query, required=False, help_str="connection json file used as nodegroup override")
 
     args = parser.parse_args(command_line)
 
