@@ -26,7 +26,7 @@ class IngestionClient(semtkasyncclient.SemTkAsyncClient):
         '''
         super(IngestionClient, self).__init__(serverURL, "ingestion", status_client, results_client)
     
-    def exec_from_csv_using_class_template(self, class_uri, csv_str, conn_json_str,  id_regex=None):
+    def exec_from_csv_using_class_template(self, class_uri, csv_str, conn_json_str,  id_regex=None, data_class_regex=None):
         ''' execute a create_nodegroup
             throws: exception otherwise
             returns status,warnings  where status is always a string and warnings might be ""
@@ -38,13 +38,15 @@ class IngestionClient(semtkasyncclient.SemTkAsyncClient):
         payload["data"] = csv_str;
         if id_regex:
             payload["idRegex"] = id_regex
+        if data_class_regex:
+            payload["dataClassRegex"] = data_class_regex
     
         # return is:  status, warnings
         statusMsg, warnMsg = self.post_async_to_record_process("fromCsvUsingClassTemplate", payload)
         return statusMsg, warnMsg
     
     
-    def exec_get_class_template_and_csv(self, class_uri, conn_json_str, id_regex=None):
+    def exec_get_class_template_and_csv(self, class_uri, conn_json_str, id_regex=None, data_class_regex=None):
         ''' get class template csv and possibly types.  
             throws: exception otherwise
             :param class_uri : the class
@@ -57,6 +59,9 @@ class IngestionClient(semtkasyncclient.SemTkAsyncClient):
         payload["classURI"] = class_uri
         if id_regex:
             payload["idRegex"] = id_regex
+        if data_class_regex:
+            payload["dataClassRegex"] = data_class_regex
+    
         res = self.post_to_simple("getClassTemplateAndCsv", payload)
         
         return (json.dumps(res["sgjson"]), res["csv"], res["csvTypes"])

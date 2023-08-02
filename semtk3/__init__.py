@@ -662,19 +662,20 @@ def ingest_by_id(nodegroup_id, csv_str, override_conn_json_str=None):
     (statusMsg, warnMsg) = nge_client.exec_async_ingest_from_csv(nodegroup_id, csv_str, override_conn_json_str)
     return (statusMsg, warnMsg)
 
-def ingest_using_class_template(class_uri, csv_str, conn_json_str=None, id_regex="identifier"):
+def ingest_using_class_template(class_uri, csv_str, conn_json_str=None, id_regex=None, data_class_regex=None):
     '''
     Ingest using class template, throwing exception on failure
 
     :param class_uri: the class whose template should be used for ingestion
     :param csv_str: string csv data
-    :param id_regex: regex matching properties that should be used for lookups
+    :param id_regex: regex matching properties that should be used for lookups. semtk default is "identifier"
+    :param data_class_regex: regex matching classes to treat as data.  semtk default is "#Measurement$"
     :conn_json_str: connection
     :return: (statusMsg, warnMsg)   where warnMsg is often ''
     :rtype: string tuple
     '''
     ingest_client = __get_ingestion_client()
-    (statusMsg, warnMsg) = ingest_client.exec_from_csv_using_class_template(class_uri, csv_str, conn_json_str if conn_json_str else SEMTK3_CONN_OVERRIDE, id_regex)
+    (statusMsg, warnMsg) = ingest_client.exec_from_csv_using_class_template(class_uri, csv_str, conn_json_str if conn_json_str else SEMTK3_CONN_OVERRIDE, id_regex, data_class_regex)
     return (statusMsg, warnMsg)
 
 def get_class_template_csv(class_uri, conn_json_str=None, id_regex="identifier"):
