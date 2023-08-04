@@ -76,3 +76,17 @@ class OInfoClient(semtkasyncclient.SemTkAsyncClient):
         res = self.post_to_simple("getOntologyInfoJson", payload)
         return self.get_simple_field(res, "ontologyInfo")
     
+    #
+    # Get cardinality violations
+    #
+    def exec_get_cardinality_violations(self, max_rows: int = -1, concise_format: bool = False):
+        
+        payload = {
+            "conn": self.conn_json_str,
+            "maxRows": max_rows,
+            "conciseFormat": concise_format
+        }
+
+        res = self.post_async_to_table("getCardinalityViolations", payload)
+        return res
+    

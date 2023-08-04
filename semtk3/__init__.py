@@ -1136,6 +1136,18 @@ def get_oinfo_predicate_stats(conn_json_str=None):
     j = oinfo_client.exec_get_predicate_stats()
     return predicatestats.PredicateStats(j)
 
+def get_cardinality_violations(conn_json_str=None, max_rows=-1, concise_format=False):
+    '''
+    Get a table of cardinality violations
+
+    :param conn_json_str: connection string
+    :param max_rows: maximum number of violations to return (-1 for no max)
+    :param concise_format: return using format that reduces redundant data and adds class instance count column
+    :rtype: semtktable
+    '''
+    oinfo_client = __get_oinfo_client(conn_json_str if conn_json_str else SEMTK3_CONN_OVERRIDE)
+    return oinfo_client.exec_get_cardinality_violations(max_rows, concise_format)
+
 def get_oinfo(conn_json_str=None):
     '''
     Get a table describing the ontology model
