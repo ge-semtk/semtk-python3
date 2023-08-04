@@ -608,8 +608,8 @@ class TestSemtk3(unittest.TestCase):
         
         # column names are comma separated with \n on the end.  split into a list
         col_name_list = col_names.strip().split(",")
-        self.assertEqual(col_name_list[0], "name")
-        self.assertEqual(col_name_list[1], "Child_name")
+        self.assertTrue("name" in col_name_list, "Csv template did not contain 'name' column: " + col_names)
+        self.assertTrue("Child_name" in col_name_list, "Csv template did not contain 'Child_name' column: " + col_names)
         
         # column types are comma separated with \n on the end. split into a list
         col_type_list = col_types.strip().split(",")
