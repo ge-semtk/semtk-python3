@@ -542,6 +542,7 @@ def get_sparqlgraph_url(host_url:str, nodegroup_id:str = None,  report_id:str = 
     :param str host_url: base url e.g. http://localhost:8080
     :param str nodegroup_id: id of nodegroup in the store to launch.  By default, run the query.
     :param str report_id: id of report in the store to launch.  By default, run the report.
+    :param bool explore_restrictions: True to open SPARQLgraph to the Explore tab Restrictions mode, default False
     :param RuntimeConstraint runtime_constraints: constraints to apply to query if nodegroup_id is specified
     :param str run_flag: "True" or "False", default "True"
     :param str conn_json_str: connection to load.  Will override nodegroup_id's.
