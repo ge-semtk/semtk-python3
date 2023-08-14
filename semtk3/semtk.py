@@ -113,12 +113,11 @@ def main(command_line=None):
     elif args.command == "stitch":
         semtk3.set_host(args.semtk_host)
         
-        steps_json_array = json.loads(file_to_string(args.stitch_file))
-        step_array = [stitchingstep.StitchingStep(x["nodegroupId"], x["keyColumns"] if "keyColumns" in x else None) for x in steps_json_array]
+        steps_json_str = file_to_string(args.stitch_file)
         
         conn_json_str = file_to_string(args.conn_file) if args.conn_file is not None else "NODEGROUP_DEFAULT"
         
-        print(semtk3.dispatch_stitched_nodegroups(step_array, conn_json_str)
+        print(semtk3.dispatch_stitched_nodegroups(steps_json_str, conn_json_str)
                 .get_csv_string().encode('cp850', errors='replace').decode('cp850'))                         #  handle the wonkiest of non-ascii non-utf8 chars
         
     elif args.command == "query":

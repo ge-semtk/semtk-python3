@@ -1068,7 +1068,7 @@ def run_fdc_cache_spec(spec_id, conn_json_str):
     '''
     return __get_fdc_cache_client().exec_run_fdc_spec(spec_id, conn_json_str)
 
-def dispatch_stitched_nodegroups(step_array : List[stitchingstep.StitchingStep], conn_json_str=None):
+def dispatch_stitched_nodegroups(steps_json_str : str, conn_json_str=None):
     '''
     run a list of nodegroups and stitch together the results into one table
 
@@ -1076,7 +1076,7 @@ def dispatch_stitched_nodegroups(step_array : List[stitchingstep.StitchingStep],
     :param conn_json_str: optional override when running nodegroups by id
 
     '''
-    return __get_nge_client().exec_dispatch_stitched_nodegroups(step_array, conn_json_str if conn_json_str else SEMTK3_CONN_OVERRIDE)
+    return __get_nge_client().exec_dispatch_stitched_nodegroups(steps_json_str, conn_json_str if conn_json_str else SEMTK3_CONN_OVERRIDE)
     
 def _init_store_data_csv(f):
     store_writer = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL,lineterminator='\n')

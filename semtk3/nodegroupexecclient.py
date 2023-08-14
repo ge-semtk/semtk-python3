@@ -279,9 +279,10 @@ class NodegroupExecClient(semtkasyncclient.SemTkAsyncClient):
     
         return status
     
-    def exec_dispatch_stitched_nodegroups(self, step_array : List[stitchingstep.StitchingStep], conn_json_str="NODEGROUP_DEFAULT"):
+    def exec_dispatch_stitched_nodegroups(self, steps_json_str : str, common_col=[], conn_json_str="NODEGROUP_DEFAULT"):
         payload = {}
-        payload["steps"] = "[" + ",".join([s.to_json_str() for s in step_array]) + "]"
+        payload["steps"] = steps_json_str
+        payload["commonCols"]
         payload["sparqlConnection"] = conn_json_str
         
         # handle async throwing error if not successful: log status messages to info
