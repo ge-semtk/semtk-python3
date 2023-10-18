@@ -37,7 +37,8 @@ setuptools.setup(
     ],
     install_requires=[
         'requests',
-        'python-dateutil'
+        'python-dateutil',
+        'plotly'
     ],
     python_requires='>=3.6',
      entry_points={
