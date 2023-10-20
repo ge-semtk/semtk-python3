@@ -1,0 +1,17 @@
+###
+### SHACL for unit test
+### Accompanies the model/data in AnimalSubProps.owl
+###
+
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix animalsubprops: <http://AnimalSubProps#> .
+@prefix test: <http://test#> .
+
+### a shape that expects each cat to have at least two names (will produce violations, since each cat only has one name)
+test:CatHasAtLeastTwoNames
+	a sh:NodeShape;
+	sh:targetClass animalsubprops:Cat;
+	sh:property [
+		sh:path 		animalsubprops:name;
+		sh:minCount 	2;
+	];

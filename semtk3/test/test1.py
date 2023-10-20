@@ -780,5 +780,11 @@ class TestSemtk3(unittest.TestCase):
                     response_str += str(line.decode())
                 self.assertTrue(response_str == "ERROR: This endpoint only accepts ingestion packages in zip file format")
 
+    def test_shacl(self):
+        self.clear_graph()
+        self.load_cats_and_dogs()
+        results = semtk3.get_shacl_results(TestSemtk3.conn_str, 'Animal-shacl.ttl', 'Info') # SHACL expects each cat to have at least 2 names     
+        self.assertEquals(len(results["reportEntries"]), 6)  # all 6 cats only have 1 name
+
 if __name__ == '__main__':
     unittest.main()
