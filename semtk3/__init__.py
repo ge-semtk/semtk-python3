@@ -1286,9 +1286,15 @@ def load_ingestion_package(triple_store_url:str, triple_store_type:str, ingestio
     '''
     return __get_utility_client().exec_load_ingestion_package(triple_store_url, triple_store_type, ingestion_package_path, clear, default_model_graph, default_data_graph)
 
+def get_shacl_results(conn, shacl_ttl_path, severity):
+    '''
+    Evaluate SHACL constraints and return results
+    :param conn: a SemTK connection json string
+    :param shacl_ttl_path: path to a SHACL file in TTL format
+    :param severity: minimum severity filter: Info, Warning, Violation
+    '''
+    return __get_utility_client().exec_get_shacl_results(conn, shacl_ttl_path, severity)
 
-
-    
 ##############################
 def __get_fdc_cache_client():
     status_client = statusclient.StatusClient(__build_client_url(STATUS_HOST, STATUS_PORT))
@@ -1326,7 +1332,9 @@ def __get_nodegroup_client():
     return nodegroupclient.NodegroupClient(__build_client_url(NODEGROUP_HOST, NODEGROUP_PORT), status_client, results_client)
 
 def __get_utility_client():
-    return utilityclient.UtilityClient( __build_client_url(UTILITY_HOST, UTILITY_PORT))
+    status_client = statusclient.StatusClient(__build_client_url(STATUS_HOST, STATUS_PORT))
+    results_client = resultsclient.ResultsClient(__build_client_url(RESULTS_HOST, RESULTS_PORT))
+    return utilityclient.UtilityClient( __build_client_url(UTILITY_HOST, UTILITY_PORT), status_client, results_client)
 
 def __get_ingestion_client():
     status_client = statusclient.StatusClient(__build_client_url(STATUS_HOST, STATUS_PORT))

@@ -14,16 +14,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from . import semtkclient
+from . import semtkasyncclient
 from . import plotspecs
 import os.path
 
-class UtilityClient(semtkclient.SemTkClient):
+class UtilityClient(semtkasyncclient.SemTkAsyncClient):
    
-    def __init__(self, serverURL):
+    def __init__(self, serverURL, status_client=None, results_client=None):
         ''' serverURL string - e.g. http://machine:8099
         '''
-        semtkclient.SemTkClient.__init__(self, serverURL, "utility")
+        semtkasyncclient.SemTkAsyncClient.__init__(self, serverURL, "utility", status_client, results_client)
 
     
     def exec_process_plot_spec(self, plotSpec, table):
@@ -59,3 +59,22 @@ class UtilityClient(semtkclient.SemTkClient):
         }
 
         return self.post_to_stream("loadIngestionPackage", payload, files=files)
+
+    def exec_get_shacl_results(self, conn:str, shacl_ttl_path:str, severity:str):
+        '''
+        Evaluate SHACL constraints and return results
+        :param conn: a SemTK connection json string
+        :param shacl_ttl_path: path to a SHACL file in TTL format
+        :param severity: minimum severity filter: Info, Warning, Violation
+        '''
+
+        payload = {
+            "conn": conn,
+            "severity": severity
+        }
+
+        files = {
+            "shaclTtlFile": (os.path.basename(shacl_ttl_path), open(shacl_ttl_path, 'rb'))
+        }
+
+        return self.post_async_to_json_blob("getShaclResults", payload, files=files)

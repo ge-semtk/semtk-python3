@@ -182,12 +182,12 @@ s        '''
 
         return record_process["recordsProcessed"]
     
-    def post_to_jobid(self, endpoint, dataObj={}):
+    def post_to_jobid(self, endpoint, dataObj={}, files=None):
         ''' 
             returns string jobid
             raises errors otherwise
         '''
-        simple_res = self.post_to_simple(endpoint, dataObj)
+        simple_res = self.post_to_simple(endpoint, dataObj, files)
         return self.get_simple_field_str(simple_res, SemTkClient.JOB_ID_KEY)
     
     def post_to_jobid_warnings(self, endpoint, dataObj={}):

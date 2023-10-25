@@ -127,12 +127,12 @@ class SemTkAsyncClient(semtkclient.SemTkClient):
         table = self.post_get_table_results(jobid)
         return table
     
-    def post_async_to_json_blob(self, endpoint, dataObj={}):
+    def post_async_to_json_blob(self, endpoint, dataObj={}, files=None):
         ''' 
             returns json
             raises errors otherwise
         '''
-        jobid = self.post_to_jobid(endpoint, dataObj)
+        jobid = self.post_to_jobid(endpoint, dataObj, files)
         semtk3_logger.debug("jobid:  " + jobid)
         self.poll_until_success(jobid)
         ret = self.post_get_json_blob_results(jobid)
